@@ -4,19 +4,26 @@ import traceback
 
 try:
     from locations import LOCATIONS
-    from stats import Player
+    from stats import Player, Stats, RACES, CLASSES
     from npc import NPC, FRIENDLY_ROLES, HOSTILE_ROLES, NAME_POOLS
     from combat import Combat
     from tags import TAGS, FLAVOR_VIGNETTES, RUMOR_POOL
     from ui import UI
     from items import generate_random_item, Item
     from events import trigger_random_event, explore_location
-    from quests import list_player_quests, QuestLog, generate_location_appropriate_quest, add_quest_to_log
+    from quests import (
+        list_player_quests,
+        QuestLog,
+        generate_location_appropriate_quest,
+        add_quest_to_log,
+        generate_reward
+    )
 except ImportError as e:
     print(f"Error importing modules: {e}")
     input("Press Enter to exit...")
     exit(1)
 
+# Global variables for tracking discovered locations, NPCs and current encounter details.
 known_locations = set()
 npc_registry = {}
 current_location = None
@@ -379,15 +386,19 @@ def combat_demo(player):
 
 def start_game():
     try:
-        # Define character classes
-        CLASSES = {
-            "1": {"name": "Warrior", "desc": "A master of weapons and armor.", "attributes": {"strength": 60, "agility": 40}, "skills": {"blade": 20, "block": 15}, "inventory": ["Iron Sword", "Leather Armor"]},
-            "2": {"name": "Mage", "desc": "A wielder of powerful spells.", "attributes": {"intelligence": 60, "willpower": 50}, "skills": {"destruction": 20, "restoration": 15}, "inventory": ["Novice Robes", "Spellbook"]},
-            "3": {"name": "Thief", "desc": "A master of stealth and trickery.", "attributes": {"agility": 60, "luck": 50}, "skills": {"sneak": 20, "lockpicking": 15}, "inventory": ["Dagger", "Leather Armor", "Lockpicks"]}
-        }
+        # Race selection
+        print("Choose your race:")
+        for race_id, race_name in RACES.items():
+            print(f"[{race_id}] {race_name}")
+        race_choice = input("> ").strip()
+        if race_choice not in RACES:
+            print("Invalid race choice. Defaulting to Nord.")
+            player_race = "Nord"
+        else:
+            player_race = RACES[race_choice]
 
         # Class selection
-        print("Choose your class:")
+        print("\nChoose your class:")
         for class_id, class_data in CLASSES.items():
             print(f"[{class_id}] {class_data['name']} - {class_data['desc']}")
         class_choice = input("> ").strip()
@@ -395,36 +406,45 @@ def start_game():
             print("Invalid class choice. Defaulting to Warrior.")
             class_choice = "1"
 
-        # Player name and race
+        # Subclass selection
+        print(f"\nChoose your {CLASSES[class_choice]['name']} subclass:")
+        for subclass_id, subclass_data in CLASSES[class_choice]["subclasses"].items():
+            print(f"[{subclass_id}] {subclass_data['name']}")
+        subclass_choice = input("> ").strip()
+        if subclass_choice not in CLASSES[class_choice]["subclasses"]:
+            print(f"Invalid subclass choice. Defaulting to the first subclass.")
+            subclass_choice = "1"
+
+        # Player name
         player_name = ""
         while not player_name:
             player_name = input("Speak your name, traveler: ").strip()
             if not player_name:
                 print("A name is required for your legend to be sung in the halls of Sovngarde.")
-        player_race = input("What is your race? (e.g., Nord, Imperial, Breton, Dunmer, etc.): ").strip().lower() or "nord"
 
         # Create Player object
         selected_class = CLASSES[class_choice]
-        player = Player(player_name, player_race, selected_class["name"],
-                        attributes=selected_class["attributes"],
-                        skills=selected_class["skills"])
+        selected_subclass = selected_class["subclasses"][subclass_choice]
+        player = Player(player_name, player_race, selected_class["name"], selected_subclass["name"],
+                        attributes=selected_subclass["attributes"],
+                        skills=selected_subclass["skills"])
 
         # Add starting inventory and equipment
         for item_name in selected_class["inventory"]:
             item = generate_random_item(item_name.lower().replace(" ", "_"), player.level)
             player.add_item(item)
-            if item.category in ["weapon", "armor"]: #Equip starting gear
+            if item.category in ["weapon", "armor"]:
                 player.equip_item(item)
 
         player.quest_log = QuestLog()
 
         # Random starting location (tavern in a city)
         city_locations = [loc for loc in ALL_LOCATIONS if "city" in loc.get("tags", []) and "sub_locations" in loc]
+        global current_location
         if city_locations:
             start_city = random.choice(city_locations)
             tavern_locations = [sub_loc for sub_loc in start_city.get("sub_locations", []) if "tavern" in sub_loc.get("tags", [])]
             if tavern_locations:
-                global current_location
                 current_location = random.choice(tavern_locations)
                 known_locations.add(start_city["id"])
                 known_locations.add(current_location["id"])
@@ -454,11 +474,16 @@ def start_game():
         slow_print("By the grace of the Divines, your tale begins.\n")
         slow_print(get_flavor_text(current_location['tags'], "location_tags", ensure_vignette=True))
 
+        # Generate an initial quest using the current location's tags.
         starter_quest = generate_location_appropriate_quest(player.level, current_location["tags"])
-        add_quest_to_log(player, starter_quest)
+        # Generate an additional reward piece based on quest tags.
+        extra_reward = generate_reward(current_location["tags"])
+        starter_quest.reward += f" and {extra_reward} gold"
+        add_quest_to_log(player_state=player.__dict__, quest=starter_quest)
         UI.slow_print(f"A patron asks you to: {starter_quest.description}. Reward: {starter_quest.reward}")
         player.quest_log.add_quest(starter_quest)
 
+        # Main game loop.
         while True:
             # Apply encumbrance penalty
             if player.stats.current_encumbrance > player.stats.encumbrance_limit:
@@ -467,7 +492,7 @@ def start_game():
                 slow_print("Your heavy load slows your steps and hinders your agility.")
             else:
                 player.stats.speed = player.attributes["speed"]
-                player.stats.dodge_chance = min(0.05 + player.stats.agility / 200, 0.3)
+                player.stats.dodge_chance = min(0.05 + player.attributes["agility"] / 200, 0.3)
 
             print("\nChoose Your Path:")
             print("1) Seek Known Realms")
@@ -503,9 +528,13 @@ def start_game():
             elif choice == "7":
                 explore_location(player, current_location, random_encounters, npc_registry, LOCATIONS, UI)
             elif choice == "8":
-                list_player_quests(player)
+                # Display the player's quest log.
+                print("\n--- Quest Log ---")
+                print(player.quest_log)
             elif choice == "9":
-                print("Inventory:", ", ".join([f"[{i+1}] {item}" for i, item in enumerate(player.inventory)]))
+                print("Inventory:")
+                for i, item in enumerate(player.inventory, 1):
+                    print(f"[{i}] {item}")
                 item_index = input("Which item do you want to use? (Enter the item number, 0 to cancel): ")
                 if item_index.isdigit():
                     item_index = int(item_index) - 1

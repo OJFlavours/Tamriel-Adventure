@@ -132,7 +132,7 @@ class NPC:
         self.culture_tag = culture_tag
         self.role_tag = role_tag
         # Determine social status by role
-        self.social_status = "Noble" if role_tag in NOBLE_ROLES else "Commoner"
+        self.social_status = "Noble" if role_tag in NOBLE_ROLES else "commoner"
         
         self.level = level
         self.gender = gender or random.choice(["male", "female"])
@@ -244,7 +244,11 @@ class NPC:
         return fm.get(self.role_tag, "Safe travels.")
 
     def share_random_rumor(self, current_location) -> None:
-        rumor = random.choice(RUMOR_POOL)
+        if current_location and current_location["tags"]:
+            rumors = RUMOR_POOL.get(current_location["tags"][0], ["A strange tale circulates..."])
+        else:
+            rumors = ["A strange tale circulates..."]
+        rumor = random.choice(rumors)
         UI.slow_print(f"“Rumor has it: {rumor}”")
 
     def dialogue(self, player, current_location) -> None:

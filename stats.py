@@ -133,19 +133,65 @@ class Stats:
                 f"Fatigue:{self.current_fatigue}/{self.max_fatigue} | Encumbrance:{self.current_encumbrance}/{self.encumbrance_limit} | "
                 f"STR:{self.strength} END:{self.endurance} INT:{self.intelligence} AGI:{self.agility} SPD:{self.speed} PER:{self.personality} LUCK:{self.luck}")
 
+# Define races
+RACES = {
+    "1": "Nord",
+    "2": "Imperial",
+    "3": "Breton",
+    "4": "Dunmer",
+    "5": "Altmer",
+    "6": "Khajiit",
+    "7": "Argonian"
+}
+
+# Define character classes and subclasses
+CLASSES = {
+    "1": {"name": "Warrior", "desc": "A master of weapons and armor.",
+          "subclasses": {
+              "1": {"name": "Knight", "attributes": {"strength": 65, "endurance": 55, "agility": 40, "intelligence": 30, "willpower": 30, "personality": 30, "luck": 20, "speed": 30}, "skills": {"blade": 25, "block": 20}},
+              "2": {"name": "Barbarian", "attributes": {"strength": 70, "endurance": 60, "agility": 50, "intelligence": 20, "willpower": 20, "personality": 20, "luck": 30, "speed": 40}, "skills": {"axe": 25, "heavy_armor": 20}},
+              "3": {"name": "Crusader", "attributes": {"strength": 60, "endurance": 50, "agility": 30, "intelligence": 30, "willpower": 60, "personality": 30, "luck": 40, "speed": 30}, "skills": {"blade": 20, "restoration": 20}},
+              "4": {"name": "Agent", "attributes": {"strength": 50, "endurance": 40, "agility": 60, "intelligence": 40, "willpower": 30, "personality": 30, "luck": 50, "speed": 40}, "skills": {"sneak": 20, "blade": 20}},
+              "5": {"name": "Hunter", "attributes": {"strength": 50, "endurance": 50, "agility": 50, "intelligence": 40, "willpower": 30, "personality": 30, "luck": 40, "speed": 50}, "skills": {"archery": 25, "sneak": 15}}
+          },
+          "inventory": ["Iron Sword", "Leather Armor"]},
+    "2": {"name": "Mage", "desc": "A wielder of powerful spells.",
+          "subclasses": {
+              "1": {"name": "Sorcerer", "attributes": {"intelligence": 70, "willpower": 60, "endurance": 30, "agility": 30, "strength": 20, "personality": 30, "luck": 30, "speed": 30}, "skills": {"destruction": 25, "alteration": 20}},
+              "2": {"name": "Healer", "attributes": {"intelligence": 50, "willpower": 70, "endurance": 40, "agility": 30, "strength": 30, "personality": 40, "luck": 30, "speed": 30}, "skills": {"restoration": 25, "mysticism": 20}},
+              "3": {"name": "Battlemage", "attributes": {"intelligence": 60, "willpower": 50, "endurance": 40, "agility": 40, "strength": 40, "personality": 30, "luck": 30, "speed": 30}, "skills": {"destruction": 20, "blade": 20}},
+              "4": {"name": "Nightblade", "attributes": {"intelligence": 60, "willpower": 50, "endurance": 30, "agility": 50, "strength": 30, "personality": 40, "luck": 40, "speed": 40}, "skills": {"illusion": 20, "sneak": 20}},
+              "5": {"name": "Warlock", "attributes": {"intelligence": 70, "willpower": 50, "endurance": 30, "agility": 30, "strength": 20, "personality": 30, "luck": 50, "speed": 30}, "skills": {"conjuration": 25, "mysticism": 15}}
+          },
+          "inventory": ["Novice Robes", "Wooden Staff"]},
+    "3": {"name": "Thief", "desc": "A master of stealth and trickery.",
+          "subclasses": {
+              "1": {"name": "Assassin", "attributes": {"agility": 70, "luck": 60, "speed": 50, "endurance": 30, "strength": 20, "intelligence": 30, "willpower": 20, "personality": 30}, "skills": {"sneak": 25, "blade": 20}},
+              "2": {"name": "Acrobat", "attributes": {"agility": 70, "luck": 50, "speed": 60, "endurance": 30, "strength": 30, "intelligence": 20, "willpower": 20, "personality": 30}, "skills": {"acrobatics": 25, "light_armor": 20}},
+              "3": {"name": "Bard", "attributes": {"agility": 50, "luck": 50, "speed": 40, "endurance": 40, "strength": 30, "intelligence": 30, "willpower": 30, "personality": 60}, "skills": {"illusion": 20, "speechcraft": 20}},
+              "4": {"name": "Rogue", "attributes": {"agility": 60, "luck": 60, "speed": 50, "endurance": 40, "strength": 30, "intelligence": 30, "willpower": 20, "personality": 40}, "skills": {"sneak": 20, "lockpicking": 20}},
+              "5": {"name": "Agent", "attributes": {"agility": 60, "luck": 50, "speed": 50, "endurance": 40, "strength": 30, "intelligence": 40, "willpower": 30, "personality": 40}, "skills": {"sneak": 20, "speechcraft": 20}}
+          },
+          "inventory": ["Dagger", "Leather Armor"]}
+}
+
 # Example Player wrapper
 class Player:
-    def __init__(self, name, race, character_class, level=1, attributes=None, skills=None, inventory=None, equipment=None):
+    def __init__(self, name, race, character_class, subclass, level=1, attributes=None, skills=None, inventory=None, equipment=None):
         self.name = name
         self.race = race
         self.character_class = character_class
+        self.subclass = subclass
         self.level = level
-        # Initialize attributes with default speed if not provided
-        self.attributes = attributes or {"speed": 40, "strength": 40, "agility": 40}  # Include other base attributes
+        # Initialize attributes with default values, including all attributes
+        default_attributes = {"strength": 40, "intelligence": 40, "willpower": 40, "agility": 40, "speed": 40, "endurance": 40, "personality": 40, "luck": 40}
+        self.attributes = default_attributes.copy()
+        if attributes:
+            self.attributes.update(attributes)
         self.skills = skills or {}
-        self.stats = Stats(level=level, strength=self.attributes["strength"], agility=self.attributes["agility"]) # Pass attributes to stats
+        self.stats = Stats(level=level, **self.attributes)
         self.inventory = inventory or []
-        self.equipment = equipment or [] # Initialize equipment
+        self.equipment = equipment or []
         self.quest_log = []
         self.combat = None
 
@@ -187,4 +233,4 @@ class Player:
         return False
 
     def __str__(self):
-        return f"{self.name} the {self.race} {self.character_class}, Level {self.level}"
+        return f"{self.name} the {self.race} {self.character_class} ({self.subclass}), Level {self.level}"
