@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import time
 import random
 import traceback
@@ -457,11 +458,15 @@ def start_game():
                 discover_connected_locations(start_city)
                 generate_npcs_for_location(start_city)
         else:
-            print("Could not find any cities. Starting in first available location.")
-            current_location = ALL_LOCATIONS[0]
-            known_locations.add(ALL_LOCATIONS[0]["id"])
-            discover_connected_locations(ALL_LOCATIONS[0])
-            generate_npcs_for_location(ALL_LOCATIONS[0])
+            # Use default city "Whiterun Hold" if no cities are found.
+            print("Could not find any cities. Using default location: Whiterun Hold")
+            default_location = next((loc for loc in ALL_LOCATIONS if loc["name"] == "Whiterun Hold"), None)
+            if default_location is None:
+                default_location = ALL_LOCATIONS[0]
+            current_location = default_location
+            known_locations.add(current_location["id"])
+            discover_connected_locations(current_location)
+            generate_npcs_for_location(current_location)
 
         if current_location["id"] not in random_encounters:
             random_encounters[current_location["id"]] = []
@@ -478,7 +483,8 @@ def start_game():
         starter_quest = generate_location_appropriate_quest(player.level, current_location["tags"])
         # Generate an additional reward piece based on quest tags.
         extra_reward = generate_reward(current_location["tags"])
-        starter_quest.reward += f" and {extra_reward} gold"
+        # Fix the reward concatenation by converting the reward to a string.
+        starter_quest.reward = f"{starter_quest.reward} and {extra_reward} gold"
         add_quest_to_log(player_state=player.__dict__, quest=starter_quest)
         UI.slow_print(f"A patron asks you to: {starter_quest.description}. Reward: {starter_quest.reward}")
         player.quest_log.add_quest(starter_quest)
