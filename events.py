@@ -368,6 +368,7 @@ def explore_location(player, current_location, random_encounters, npc_registry, 
 
 def trigger_random_event(location_tags, player, UI):
     """Triggers a random event based on location tags."""
+    event = None  # Initialize event to None
     try:
         possible_events = []
         for tag in location_tags:

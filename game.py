@@ -379,42 +379,65 @@ def combat_demo(player):
 
 def start_game():
     try:
+        # Define character classes
+        CLASSES = {
+            "1": {"name": "Warrior", "desc": "A master of weapons and armor.", "attributes": {"strength": 60, "agility": 40}, "skills": {"blade": 20, "block": 15}, "inventory": ["Iron Sword", "Leather Armor"]},
+            "2": {"name": "Mage", "desc": "A wielder of powerful spells.", "attributes": {"intelligence": 60, "willpower": 50}, "skills": {"destruction": 20, "restoration": 15}, "inventory": ["Novice Robes", "Spellbook"]},
+            "3": {"name": "Thief", "desc": "A master of stealth and trickery.", "attributes": {"agility": 60, "luck": 50}, "skills": {"sneak": 20, "lockpicking": 15}, "inventory": ["Dagger", "Leather Armor", "Lockpicks"]}
+        }
+
+        # Class selection
+        print("Choose your class:")
+        for class_id, class_data in CLASSES.items():
+            print(f"[{class_id}] {class_data['name']} - {class_data['desc']}")
+        class_choice = input("> ").strip()
+        if class_choice not in CLASSES:
+            print("Invalid class choice. Defaulting to Warrior.")
+            class_choice = "1"
+
+        # Player name and race
         player_name = ""
         while not player_name:
             player_name = input("Speak your name, traveler: ").strip()
             if not player_name:
                 print("A name is required for your legend to be sung in the halls of Sovngarde.")
         player_race = input("What is your race? (e.g., Nord, Imperial, Breton, Dunmer, etc.): ").strip().lower() or "nord"
-        player_class = input("What is your class? (e.g., warrior, mage, thief, etc.): ").strip().lower() or "warrior"
-        player = Player(player_name, player_race, player_class)
+
+        # Create Player object
+        selected_class = CLASSES[class_choice]
+        player = Player(player_name, player_race, selected_class["name"],
+                        attributes=selected_class["attributes"],
+                        skills=selected_class["skills"])
+
+        # Add starting inventory and equipment
+        for item_name in selected_class["inventory"]:
+            item = generate_random_item(item_name.lower().replace(" ", "_"), player.level)
+            player.add_item(item)
+            if item.category in ["weapon", "armor"]: #Equip starting gear
+                player.equip_item(item)
 
         player.quest_log = QuestLog()
-        starting_food = generate_random_item("food", player.level)
-        player.inventory = [starting_food]
-        player.stats.current_encumbrance += starting_food.weight
 
-        start_loc = next((l for l in ALL_LOCATIONS if l['name'].lower() == "whiterun"), None)
-        if start_loc:
-            whiterun_inn = next((sl for sl in start_loc.get("sub_locations", []) if sl["name"].lower() == "the bannered mare"), None)
-            if whiterun_inn:
+        # Random starting location (tavern in a city)
+        city_locations = [loc for loc in ALL_LOCATIONS if "city" in loc.get("tags", []) and "sub_locations" in loc]
+        if city_locations:
+            start_city = random.choice(city_locations)
+            tavern_locations = [sub_loc for sub_loc in start_city.get("sub_locations", []) if "tavern" in sub_loc.get("tags", [])]
+            if tavern_locations:
                 global current_location
-                current_location = whiterun_inn
-                known_locations.add(start_loc["id"])
-                known_locations.add(whiterun_inn["id"])
-                discover_connected_locations(start_loc)
-                generate_npcs_for_location(whiterun_inn)
+                current_location = random.choice(tavern_locations)
+                known_locations.add(start_city["id"])
+                known_locations.add(current_location["id"])
+                discover_connected_locations(start_city)
+                generate_npcs_for_location(current_location)
             else:
-                print("Could not find 'The Bannered Mare' in Whiterun. Starting in main city.")
-                current_location = start_loc
-                known_locations.add(start_loc["id"])
-                discover_connected_locations(start_loc)
-                generate_npcs_for_location(start_loc)
-                starter_quest = generate_location_appropriate_quest(player.level, start_loc["tags"])
-                add_quest_to_log(player, starter_quest)
-                UI.slow_print(f"A worried mother asks you to: {starter_quest.description}. Reward: {starter_quest.reward}")
-                player.quest_log.add_quest(starter_quest)
+                print("Could not find a tavern in the starting city. Starting in main city.")
+                current_location = start_city
+                known_locations.add(start_city["id"])
+                discover_connected_locations(start_city)
+                generate_npcs_for_location(start_city)
         else:
-            print("Could not find Whiterun. Starting in first available location.")
+            print("Could not find any cities. Starting in first available location.")
             current_location = ALL_LOCATIONS[0]
             known_locations.add(ALL_LOCATIONS[0]["id"])
             discover_connected_locations(ALL_LOCATIONS[0])
@@ -431,9 +454,14 @@ def start_game():
         slow_print("By the grace of the Divines, your tale begins.\n")
         slow_print(get_flavor_text(current_location['tags'], "location_tags", ensure_vignette=True))
 
+        starter_quest = generate_location_appropriate_quest(player.level, current_location["tags"])
+        add_quest_to_log(player, starter_quest)
+        UI.slow_print(f"A patron asks you to: {starter_quest.description}. Reward: {starter_quest.reward}")
+        player.quest_log.add_quest(starter_quest)
+
         while True:
             # Apply encumbrance penalty
-            if player.stats.current_encumbrance > player.stats.encumbrance:
+            if player.stats.current_encumbrance > player.stats.encumbrance_limit:
                 player.stats.speed = max(10, player.stats.speed - 10)
                 player.stats.dodge_chance = max(0.05, player.stats.dodge_chance - 0.1)
                 slow_print("Your heavy load slows your steps and hinders your agility.")
@@ -470,7 +498,8 @@ def start_game():
                 combat_demo(player)
             elif choice == "6":
                 print("Inventory:", ", ".join([str(item) for item in player.inventory]))
-                print(f"Encumbrance: {player.stats.current_encumbrance}/{player.stats.encumbrance}")
+                print("Equipment:", ", ".join([str(item) for item in player.equipment]))
+                print(f"Encumbrance: {player.stats.current_encumbrance}/{player.stats.encumbrance_limit}")
             elif choice == "7":
                 explore_location(player, current_location, random_encounters, npc_registry, LOCATIONS, UI)
             elif choice == "8":

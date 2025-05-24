@@ -175,14 +175,23 @@ class Combat:
     def _calculate_damage(self, attacker, defender, action: ActionType, extra: Dict) -> tuple:
         skill_value = 15
         skill_name = ""
+        weapon = next((item for item in attacker.equipment if item.category == "weapon"), None)
+
         if action == ActionType.ATTACK:
-            weapon = next((item for item in attacker.equipment if item.category == "weapon"), None)
             if weapon:
                 skill_name = "blade" if weapon.name in ["Sword", "Dagger"] else "blunt" if weapon.name in ["Axe", "Mace"] else "hand_to_hand"
                 skill_value = attacker.skills.get(skill_name, 15)
+            else:
+                skill_name = "hand_to_hand"  # Use hand_to_hand skill for unarmed
+                skill_value = attacker.skills.get(skill_name, 15)
         elif action == ActionType.RANGED_ATTACK:
-            skill_name = "marksman"
-            skill_value = attacker.skills.get(skill_name, 15)
+            if weapon:
+                skill_name = "marksman"
+                skill_value = attacker.skills.get(skill_name, 15)
+            else:
+                #No weapon, cannot perform ranged attack
+                return 0, None, False, "physical"
+
         elif action == ActionType.CAST_SPELL:
             skill_name = extra.get("spell").skill
             skill_value = attacker.skills.get(skill_name, 15)
@@ -194,7 +203,6 @@ class Combat:
         effect = None
         damage_type = "physical"
         if action in [ActionType.ATTACK, ActionType.RANGED_ATTACK]:
-            weapon = next((item for item in attacker.equipment if item.category == "weapon"), None)
             if weapon and weapon.durability > 0:
                 damage = random.randint(weapon.base_damage[0], weapon.base_damage[1]) * (1 + skill_value / 100)
                 material_mod = {"ebony": 1.3, "daedric": 1.4, "dwemer": 1.2}.get(weapon.material.lower(), 1.0)
@@ -284,4 +292,78 @@ class Combat:
             if hit and dmg > 0:
                 target.stats.take_damage(dmg, dmgtype)
                 if effect:
-                    self.status
+                    self.status_effects[target.name].append(effect)
+                    UI.slow_print(effect.apply(target))
+                UI.slow_print(f"You deal {dmg} {dmgtype} damage to {target.name}.")
+            else:
+                UI.slow_print(f"Your spell misses {target.name}!")
+            return True
+        elif choice == "3":
+            UI.slow_print("Not implemented yet.")
+            return True
+        elif choice == "4":
+            UI.slow_print("You attempt to flee!")
+            return False
+        else:
+            UI.slow_print("Invalid action.")
+            return True
+
+    def npc_turn(self, npc: NPC) -> bool:
+        action, extra = self._npc_choose_action(npc)
+        if action is None:
+            UI.slow_print(f"{npc.name} is unable to act!")
+            return True
+        target = self.player
+        if action == ActionType.FLEE:
+            UI.slow_print(f"{npc.name} flees!")
+            self.enemies.remove(npc)
+            return False
+        dmg, effect, hit, dmgtype = self._calculate_damage(npc, target, action, extra)
+        UI.slow_print(self._get_flavor_text(action, npc, target, hit, extra))
+        if hit and dmg > 0:
+            target.stats.take_damage(dmg, dmgtype)
+            if effect:
+                self.status_effects[target.name].append(effect)
+                UI.slow_print(effect.apply(target))
+            UI.slow_print(f"{npc.name} deals {dmg} {dmgtype} damage to {target.name}.")
+        else:
+            UI.slow_print(f"{npc.name}'s blow misses {target.name}!")
+        return True
+
+    def run(self):  # Added the run method
+        UI.slow_print(f"Entering combat at {self.location['name']}!")
+        while self.player.stats.is_alive() and self.enemies:
+            self.turn += 1
+            UI.slow_print(f"\n--- Turn {self.turn} ---")
+            # Apply status effects
+            messages = self._apply_status_effects(self.player)
+            for msg in messages:
+                UI.slow_print(msg)
+            for enemy in self.enemies:
+                messages = self._apply_status_effects(enemy)
+                for msg in messages:
+                    UI.slow_print(msg)
+
+            # Player turn
+            if not self.player_turn():
+                break
+
+            # Check if any enemies died
+            self.enemies = [enemy for enemy in self.enemies if enemy.stats.is_alive()]
+
+            # Enemy turns
+            for enemy in self.enemies[:]:  # Iterate over a copy to allow removal during loop
+                if not self.npc_turn(enemy):
+                    break
+
+            # Check if player died or enemies are all defeated
+            if not self.player.stats.is_alive():
+                UI.slow_print("You have been defeated!")
+                break
+            if not self.enemies:
+                UI.slow_print("You have defeated all your enemies!")
+                break
+
+        # Cleanup after combat
+        self.player.combat = None
+        UI.slow_print("Combat ends.")

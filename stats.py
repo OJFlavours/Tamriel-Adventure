@@ -78,7 +78,7 @@ class Stats:
 
     def add_to_inventory(self, item):
         """Adds an item if it can be carried, and updates encumbrance."""
-        if self.can_carry(getattr(item, "weight", 0)):
+        if self.can_carry(getattr(item, "weight", 0)) :
             self.inventory.append(item)
             self.update_encumbrance()
             return True
@@ -135,15 +135,17 @@ class Stats:
 
 # Example Player wrapper
 class Player:
-    def __init__(self, name, race, character_class, level=1, attributes=None, skills=None):
+    def __init__(self, name, race, character_class, level=1, attributes=None, skills=None, inventory=None, equipment=None):
         self.name = name
         self.race = race
         self.character_class = character_class
         self.level = level
-        self.attributes = attributes or {}
+        # Initialize attributes with default speed if not provided
+        self.attributes = attributes or {"speed": 40, "strength": 40, "agility": 40}  # Include other base attributes
         self.skills = skills or {}
-        self.stats = Stats(level=level)
-        self.inventory = []
+        self.stats = Stats(level=level, strength=self.attributes["strength"], agility=self.attributes["agility"]) # Pass attributes to stats
+        self.inventory = inventory or []
+        self.equipment = equipment or [] # Initialize equipment
         self.quest_log = []
         self.combat = None
 
@@ -166,6 +168,23 @@ class Player:
         else:
             self.skills[skill] = 15 + amt
 
+    def equip_item(self, item):
+        """Equips an item, adding it to the equipment list."""
+        if item in self.inventory:
+            self.equipment.append(item)
+            self.inventory.remove(item)
+            self.stats.update_encumbrance()  # Update encumbrance after equipping
+            return True
+        return False
+
+    def unequip_item(self, item):
+        """Unequips an item, adding it back to the inventory."""
+        if item in self.equipment:
+            self.equipment.remove(item)
+            self.inventory.append(item)
+            self.stats.update_encumbrance()  # Update encumbrance after unequipping
+            return True
+        return False
+
     def __str__(self):
         return f"{self.name} the {self.race} {self.character_class}, Level {self.level}"
-
