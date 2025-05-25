@@ -1,11 +1,13 @@
+# combat.py
 import random
 from enum import Enum
 from typing import List, Dict, Optional
-from items import Item
-from tags import TAGS, FLAVOR_VIGNETTES
+from items import Item, generate_random_item # Import generate_random_item
+from tags import TAGS, get_tags # Import TAGS dictionary and get_tags function
 from npc import NPC
 from stats import Player, Stats
 from ui import UI
+import flavor # Import flavor module directly
 
 class ActionType(Enum):
     ATTACK = "attack"
@@ -32,6 +34,7 @@ class StatusEffectType(Enum):
     FIRE = "fire"
     SILENCE = "silence"
     WEAKNESS = "weakness"
+    BLEEDING = "bleeding" # Added new status effect
 
 class StatusEffect:
     def __init__(self, effect_type: StatusEffectType, duration: int, potency: float, source: str):
@@ -40,330 +43,413 @@ class StatusEffect:
         self.potency = potency
         self.source = source
 
-    def apply(self, target) -> str:
-        flavor = {
-            StatusEffectType.POISON: f"Venom from {self.source} sears {target.name}'s blood!",
-            StatusEffectType.PARALYSIS: f"{target.name} is locked in {self.source}'s paralyzing grip!",
-            StatusEffectType.FROST: f"{target.name} trembles under {self.source}'s icy embrace!",
-            StatusEffectType.SHOCK: f"{self.source}'s lightning courses through {target.name}!",
-            StatusEffectType.FIRE: f"{self.source}'s flames engulf {target.name}!",
-            StatusEffectType.SILENCE: f"{self.source} seals {target.name}'s voice, blocking spells!",
-            StatusEffectType.WEAKNESS: f"{self.source} drains {target.name}'s vitality!"
-        }
-        return flavor.get(self.effect_type, "")
+    def apply(self, target):
+        """
+        Applies the status effect to the target.
+        Returns a list of messages describing the effect.
+        """
+        messages = []
+        if self.effect_type == StatusEffectType.POISON:
+            damage = int(self.potency)
+            target.stats.current_health -= damage
+            messages.append(f"{target.name} is poisoned and takes {damage} damage!")
+        elif self.effect_type == StatusEffectType.PARALYSIS:
+            messages.append(f"{target.name} is paralyzed and cannot act!")
+            # This effect would typically be handled in the turn logic to skip actions
+        elif self.effect_type == StatusEffectType.FROST:
+            target.stats.speed = max(0, target.stats.speed - int(self.potency)) # Ensure speed doesn't go below 0
+            messages.append(f"{target.name} is slowed by frost!")
+        elif self.effect_type == StatusEffectType.SHOCK:
+            target.stats.current_magicka = max(0, target.stats.current_magicka - int(self.potency))
+            messages.append(f"{target.name} loses magicka due to shock!")
+        elif self.effect_type == StatusEffectType.FIRE:
+            damage = int(self.potency)
+            target.stats.current_health -= damage
+            messages.append(f"{target.name} is burning and takes {damage} fire damage!")
+        elif self.effect_type == StatusEffectType.SILENCE:
+            messages.append(f"{target.name} is silenced and cannot cast spells!")
+            # This effect would typically be handled in the turn logic to prevent spellcasting
+        elif self.effect_type == StatusEffectType.WEAKNESS:
+            target.stats.armor_rating = max(0, target.stats.armor_rating - int(self.potency))
+            messages.append(f"{target.name} is weakened, reducing their armor!")
+        elif self.effect_type == StatusEffectType.BLEEDING:
+            damage = int(self.potency)
+            target.stats.current_health -= damage
+            messages.append(f"{target.name} is bleeding and takes {damage} damage!")
+        return messages
 
-class Spell:
-    def __init__(self, name: str, school: MagicSchool, mana_cost: int, damage: tuple, skill: str, effect: Optional[StatusEffectType] = None, effect_chance: float = 0.0):
-        self.name = name
-        self.school = school
-        self.mana_cost = mana_cost
-        self.damage = damage
-        self.skill = skill
-        self.effect = effect
-        self.effect_chance = effect_chance
-
-SPELLS = {
-    "fire_damage": Spell("Fire Damage", MagicSchool.DESTRUCTION, 20, (10, 20), "destruction", StatusEffectType.FIRE, 0.5),
-    "frost_damage": Spell("Frost Damage", MagicSchool.DESTRUCTION, 18, (8, 18), "destruction", StatusEffectType.FROST, 0.6),
-    "shock_damage": Spell("Shock Damage", MagicSchool.DESTRUCTION, 22, (12, 22), "destruction", StatusEffectType.SHOCK, 0.4),
-    "restore_health": Spell("Restore Health", MagicSchool.RESTORATION, 25, (15, 25), "restoration"),
-    "fortify_armor": Spell("Fortify Armor", MagicSchool.ALTERATION, 15, (0, 0), "alteration"),
-    "charm": Spell("Charm", MagicSchool.ILLUSION, 15, (0, 0), "illusion"),
-    "summon_skeleton": Spell("Summon Skeleton", MagicSchool.CONJURATION, 35, (0, 0), "conjuration"),
-    "soul_trap": Spell("Soul Trap", MagicSchool.MYSTICISM, 20, (0, 0), "mysticism", StatusEffectType.WEAKNESS, 0.3),
-    "paralyze": Spell("Paralyze", MagicSchool.ILLUSION, 30, (0, 0), "illusion", StatusEffectType.PARALYSIS, 0.4)
-}
+    def tick(self):
+        """Decrements the duration of the effect. Returns True if the effect has worn off."""
+        self.duration -= 1
+        return self.duration <= 0
 
 class Combat:
     def __init__(self, player: Player, enemies: List[NPC], location: Dict):
         self.player = player
-        self.player.combat = self
-        self.enemies = [enemy for enemy in enemies if enemy.is_alive()]
+        self.enemies = enemies
         self.location = location
         self.turn = 0
-        self.environmental_modifiers = self._calculate_environmental_modifiers()
-        self.status_effects: Dict[str, List[StatusEffect]] = {player.name: [], **{enemy.name: [] for enemy in enemies}}
-        self.summoned_allies: List[NPC] = []
+        self.combat_log = []
 
-    def _calculate_environmental_modifiers(self) -> Dict:
-        modifiers = {"hit_chance": 1.0, "damage": 1.0, "fatigue_cost": 1.0, "magicka_cost": 1.0, "regen_rate": 1.0}
-        for tag in self.location.get("tags", []):
-            if tag == "snowy":
-                modifiers["hit_chance"] *= 0.9
-                modifiers["fatigue_cost"] *= 1.2
-                modifiers["regen_rate"] *= 0.8
-            elif tag == "cavern":
-                modifiers["hit_chance"] *= 0.95
-                modifiers["damage"] *= 1.1
-            elif tag == "swamp":
-                modifiers["fatigue_cost"] *= 1.3
-                modifiers["hit_chance"] *= 0.85
-                modifiers["regen_rate"] *= 0.7
-            elif tag == "mountain":
-                modifiers["fatigue_cost"] *= 1.15
-                modifiers["magicka_cost"] *= 1.1
-            elif tag == "forest":
-                modifiers["hit_chance"] *= 0.9
-            elif tag == "ruin":
-                modifiers["magicka_cost"] *= 0.9
-        return modifiers
-
-    def _get_flavor_text(self, action: ActionType, attacker, target, success: bool = True, extra: Dict = None) -> str:
-        weapon = next((item for item in attacker.equipment if item.category == "weapon"), None)
-        weapon_name = weapon.name.lower() if weapon else "fist"
-        spell_name = extra.get("spell").name if extra and "spell" in extra else ""
-        base_flavor = {
-            ActionType.ATTACK: f"{attacker.name} slashes with their {weapon_name} at {target.name}",
-            ActionType.RANGED_ATTACK: f"{attacker.name} looses an arrow from their {weapon_name} at {target.name}",
-            ActionType.BLOCK: f"{attacker.name} raises their shield to fend off {target.name}",
-            ActionType.DODGE: f"{attacker.name} dances away from {target.name}'s strike",
-            ActionType.CAST_SPELL: f"{attacker.name} unleashes {spell_name} upon {target.name}",
-            ActionType.USE_ITEM: f"{attacker.name} quaffs a potion",
-            ActionType.FLEE: f"{attacker.name} seeks to escape {target.name}"
-        }
-        flavor = base_flavor.get(action, "")
-        if not success:
-            flavor += ", but the blow misses!" if action in [ActionType.ATTACK, ActionType.RANGED_ATTACK, ActionType.CAST_SPELL] else ", but fails!"
-        vignettes = [FLAVOR_VIGNETTES[tag] for tag in self.location.get("tags", []) if tag in FLAVOR_VIGNETTES]
-        vignettes = [v if isinstance(v, str) else random.choice(v) for v in vignettes]
-        if vignettes and random.random() < 0.4:
-            flavor += f" as {random.choice(vignettes).lower()}"
-        return flavor
-
-    def _apply_status_effects(self, target) -> List[str]:
+    def _apply_status_effects(self, character):
+        """
+        Applies and ticks down status effects for a character.
+        Removes effects that have worn off.
+        """
         messages = []
-        active_effects = self.status_effects.get(target.name, [])
-        for effect in active_effects[:]:
-            effect.duration -= 1
-            resistance = {
-                StatusEffectType.POISON: target.stats.poison_resist,
-                StatusEffectType.PARALYSIS: target.stats.magic_resist,
-                StatusEffectType.FROST: target.stats.frost_resist,
-                StatusEffectType.SHOCK: target.stats.shock_resist,
-                StatusEffectType.FIRE: target.stats.fire_resist,
-                StatusEffectType.SILENCE: target.stats.magic_resist,
-                StatusEffectType.WEAKNESS: target.stats.magic_resist
-            }.get(effect.effect_type, 0)
-            potency = effect.potency * (1 - resistance / 100)
-
-            if effect.effect_type == StatusEffectType.POISON:
-                damage = int(potency * 5)
-                target.stats.take_damage(damage, "poison")
-                messages.append(f"{target.name} writhes, taking {damage} poison damage.")
-            elif effect.effect_type == StatusEffectType.PARALYSIS:
-                messages.append(f"{target.name} is paralyzed, struggling to move!")
-            elif effect.effect_type == StatusEffectType.FROST:
-                target.stats.speed = max(10, target.stats.speed - int(potency * 10))
-                messages.append(f"{target.name}'s limbs stiffen in the frost's grip.")
-            elif effect.effect_type == StatusEffectType.SHOCK:
-                target.stats.current_magicka = max(0, target.stats.current_magicka - int(potency * 15))
-                messages.append(f"Shock drains {target.name}'s magicka.")
-            elif effect.effect_type == StatusEffectType.FIRE:
-                damage = int(potency * 6)
-                target.stats.take_damage(damage, "fire")
-                messages.append(f"{target.name} burns, taking {damage} fire damage.")
-            elif effect.effect_type == StatusEffectType.SILENCE:
-                messages.append(f"{target.name} is silenced, unable to weave spells!")
-            elif effect.effect_type == StatusEffectType.WEAKNESS:
-                target.stats.strength = max(10, target.stats.strength - int(potency * 10))
-                target.stats.update_combat_stats()
-                messages.append(f"{target.name}'s strength wanes under weakness.")
-            if effect.duration <= 0:
-                active_effects.remove(effect)
+        new_effects = []
+        for effect in character.status_effects:
+            messages.extend(effect.apply(character))
+            if not effect.tick():
+                new_effects.append(effect)
+            else:
+                messages.append(f"{character.name}'s {effect.effect_type.value} effect wears off.")
+        character.status_effects = new_effects
         return messages
 
-    def _calculate_damage(self, attacker, defender, action: ActionType, extra: Dict) -> tuple:
-        skill_value = 15
-        skill_name = ""
-        weapon = next((item for item in attacker.equipment if item.category == "weapon"), None)
-
-        if action == ActionType.ATTACK:
-            if weapon:
-                skill_name = "blade" if weapon.name in ["Sword", "Dagger"] else "blunt" if weapon.name in ["Axe", "Mace"] else "hand_to_hand"
-                skill_value = attacker.skills.get(skill_name, 15)
-            else:
-                skill_name = "hand_to_hand"  # Use hand_to_hand skill for unarmed
-                skill_value = attacker.skills.get(skill_name, 15)
-        elif action == ActionType.RANGED_ATTACK:
-            if weapon:
-                skill_name = "marksman"
-                skill_value = attacker.skills.get(skill_name, 15)
-            else:
-                #No weapon, cannot perform ranged attack
-                return 0, None, False, "physical"
-
-        elif action == ActionType.CAST_SPELL:
-            skill_name = extra.get("spell").skill
-            skill_value = attacker.skills.get(skill_name, 15)
-
-        if not attacker.stats.roll_to_hit(skill_value, defender.stats):
-            return 0, None, False, "physical"
-
-        damage = 0
-        effect = None
-        damage_type = "physical"
-        if action in [ActionType.ATTACK, ActionType.RANGED_ATTACK]:
-            if weapon and weapon.durability > 0:
-                damage = random.randint(weapon.base_damage[0], weapon.base_damage[1]) * (1 + skill_value / 100)
-                material_mod = {"ebony": 1.3, "daedric": 1.4, "dwemer": 1.2}.get(weapon.material.lower(), 1.0)
-                damage *= material_mod
-                if weapon.enchantment in [e.value for e in StatusEffectType] and random.random() < 0.3:
-                    effect = StatusEffect(StatusEffectType(weapon.enchantment), 3, 1.0, weapon.name)
-                    damage_type = weapon.enchantment if weapon.enchantment in ["fire", "frost", "shock", "poison"] else "physical"
-                weapon.damage_item(5)
-            else:
-                damage = random.randint(attacker.stats.weapon_damage_min, attacker.stats.weapon_damage_max)
-                skill_value = attacker.skills.get("hand_to_hand", 15)
-                damage *= (1 + skill_value / 100)
-        elif action == ActionType.CAST_SPELL and "spell" in extra:
-            spell = extra["spell"]
-            if not attacker.stats.roll_spell_success(skill_value):
-                UI.slow_print(f"{attacker.name}'s spell fizzles!")
-                return 0, None, False, "magical"
-            damage = random.randint(spell.damage[0], spell.damage[1]) * (1 + skill_value / 100)
-            if spell.effect and random.random() < spell.effect_chance:
-                effect = StatusEffect(spell.effect, 3, 1.0, spell.name)
-            damage_type = spell.effect.value if spell.effect in [StatusEffectType.FIRE, StatusEffectType.FROST, StatusEffectType.SHOCK] else "magical"
-
-        if attacker.stats.roll_critical():
-            damage *= attacker.stats.critical_multiplier
-            UI.slow_print(f"{attacker.name} lands a critical strike!")
-
-        damage = int(damage * self.environmental_modifiers["damage"])
-        return damage, effect, True, damage_type
-
-    def _npc_choose_action(self, npc: NPC) -> tuple:
-        if StatusEffectType.PARALYSIS in [e.effect_type for e in self.status_effects[npc.name]] and random.random() < 0.7:
-            return None, {}
-        if StatusEffectType.SILENCE in [e.effect_type for e in self.status_effects[npc.name]]:
-            spell_actions = []
+    def _get_target(self, attacker, target_list):
+        """Helper to get a target from a list, prompting the player if the attacker is the player."""
+        if not target_list:
+            return None
+        if attacker == self.player:
+            UI.slow_print("Choose a target:")
+            for i, enemy in enumerate(target_list):
+                UI.slow_print(f"[{i+1}] {enemy.name} (Health: {enemy.stats.current_health}/{enemy.stats.max_health})")
+            while True:
+                try:
+                    choice = int(input("Enter target number: ")) - 1
+                    if 0 <= choice < len(target_list):
+                        return target_list[choice]
+                    else:
+                        UI.slow_print("Invalid target.")
+                except ValueError:
+                    UI.slow_print("Invalid input. Please enter a number.")
         else:
-            spell_actions = [ActionType.CAST_SPELL]
+            # NPCs target the player by default in this simplified example
+            return self.player
 
-        if npc.alignment == "hostile":
-            if npc.role_tag in ["mage", "necromancer"] and npc.stats.current_magicka >= 20 and random.random() < 0.6:
-                spell = random.choice([s for s in SPELLS.values() if s.school in [MagicSchool.DESTRUCTION, MagicSchool.ILLUSION, MagicSchool.MYSTICISM]])
-                return ActionType.CAST_SPELL, {"spell": spell}
-            elif npc.role_tag in ["bandit", "warrior"] and any(item.name == "Bow" for item in npc.equipment) and random.random() < 0.4:
-                return ActionType.RANGED_ATTACK, {}
-            elif npc.role_tag == "thief":
-                return random.choice([ActionType.ATTACK, ActionType.DODGE]), {}
-            return ActionType.ATTACK, {}
-        elif npc.role_tag == "healer" and npc.stats.current_magicka >= 25 and npc.stats.current_health < npc.stats.max_health * 0.5:
-            return ActionType.CAST_SPELL, {"spell": SPELLS["restore_health"]}
-        if npc.stats.current_health < npc.stats.max_health * 0.3 and random.random() < 0.5:
-            return ActionType.FLEE, {}
-        return ActionType.ATTACK, {}
-
-    def player_turn(self) -> bool:
-        UI.slow_print("\nYour turn:")
-        print(f"Health: {self.player.stats.current_health}/{self.player.stats.max_health}, Magicka: {self.player.stats.current_magicka}/{self.player.stats.max_magicka}, Fatigue: {self.player.stats.current_fatigue}/{self.player.stats.max_fatigue}")
-        print("Choose action:")
-        print("1) Attack  2) Cast Spell  3) Use Item  4) Flee")
-        choice = input("> ").strip()
-        if choice == "1":
-            target = self.enemies[0]
-            dmg, effect, hit, dmgtype = self._calculate_damage(self.player, target, ActionType.ATTACK, {})
-            UI.slow_print(self._get_flavor_text(ActionType.ATTACK, self.player, target, hit))
-            if hit and dmg > 0:
-                target.stats.take_damage(dmg, dmgtype)
-                if effect:
-                    self.status_effects[target.name].append(effect)
-                    UI.slow_print(effect.apply(target))
-                UI.slow_print(f"You deal {dmg} {dmgtype} damage to {target.name}.")
-            else:
-                UI.slow_print(f"Your blow misses {target.name}!")
-            return True
-        elif choice == "2":
-            UI.slow_print("Which spell?")
-            for i, key in enumerate(SPELLS, 1):
-                print(f"{i}) {SPELLS[key].name}")
-            sel = input("> ").strip()
-            if not sel.isdigit() or int(sel) < 1 or int(sel) > len(SPELLS):
-                UI.slow_print("No spell cast.")
-                return True
-            spell = list(SPELLS.values())[int(sel)-1]
-            if not self.player.stats.consume_magicka(spell.mana_cost):
-                UI.slow_print("Not enough magicka!")
-                return True
-            target = self.enemies[0]
-            dmg, effect, hit, dmgtype = self._calculate_damage(self.player, target, ActionType.CAST_SPELL, {"spell": spell})
-            UI.slow_print(self._get_flavor_text(ActionType.CAST_SPELL, self.player, target, hit, {"spell": spell}))
-            if hit and dmg > 0:
-                target.stats.take_damage(dmg, dmgtype)
-                if effect:
-                    self.status_effects[target.name].append(effect)
-                    UI.slow_print(effect.apply(target))
-                UI.slow_print(f"You deal {dmg} {dmgtype} damage to {target.name}.")
-            else:
-                UI.slow_print(f"Your spell misses {target.name}!")
-            return True
-        elif choice == "3":
-            UI.slow_print("Not implemented yet.")
-            return True
-        elif choice == "4":
-            UI.slow_print("You attempt to flee!")
-            return False
+    def _calculate_damage(self, attacker, defender, is_ranged=False):
+        """
+        Calculates damage based on attacker's stats, equipped items, and defender's armor/resistances.
+        Includes basic critical hit chance and skill modifiers.
+        """
+        base_damage = 0
+        # Determine base damage based on attacker's primary combat stat
+        if is_ranged:
+            base_damage = attacker.stats.agility // 10
+            skill_modifier = attacker.skills.get("archery", 0) // 10
         else:
-            UI.slow_print("Invalid action.")
-            return True
+            base_damage = attacker.stats.strength // 10
+            skill_modifier = attacker.skills.get("one_handed", 0) // 10 if not attacker.equipment or not any(item.category == "weapon" and item.equipment_tag == "two_handed" for item in attacker.equipment) else attacker.skills.get("two_handed", 0) // 10
 
-    def npc_turn(self, npc: NPC) -> bool:
-        action, extra = self._npc_choose_action(npc)
-        if action is None:
-            UI.slow_print(f"{npc.name} is unable to act!")
-            return True
-        target = self.player
-        if action == ActionType.FLEE:
-            UI.slow_print(f"{npc.name} flees!")
-            self.enemies.remove(npc)
-            return False
-        dmg, effect, hit, dmgtype = self._calculate_damage(npc, target, action, extra)
-        UI.slow_print(self._get_flavor_text(action, npc, target, hit, extra))
-        if hit and dmg > 0:
-            target.stats.take_damage(dmg, dmgtype)
-            if effect:
-                self.status_effects[target.name].append(effect)
-                UI.slow_print(effect.apply(target))
-            UI.slow_print(f"{npc.name} deals {dmg} {dmgtype} damage to {target.name}.")
+        # Add weapon damage if equipped
+        weapon_damage = 0
+        if attacker.equipment:
+            for item in attacker.equipment:
+                if item.category == "weapon" and item.base_damage:
+                    weapon_damage += random.randint(item.base_damage[0], item.base_damage[1])
+        base_damage += weapon_damage + skill_modifier
+
+        # Apply enchantment damage if any
+        enchantment_damage = 0
+        if attacker.equipment:
+            for item in attacker.equipment:
+                if item.enchantment:
+                    if "fire" in item.enchantment.lower():
+                        enchantment_damage += random.randint(5, 15)
+                    elif "frost" in item.enchantment.lower():
+                        enchantment_damage += random.randint(5, 15)
+                    elif "shock" in item.enchantment.lower():
+                        enchantment_damage += random.randint(5, 15)
+
+        total_damage = base_damage + enchantment_damage
+
+        # Critical hit chance (Luck based)
+        if random.randint(1, 100) <= attacker.stats.luck // 2: # 0.5% chance per point of luck
+            total_damage = int(total_damage * 1.5) # 50% extra damage for critical hit
+            UI.slow_print(f"{attacker.name} lands a critical hit!")
+        # Armor reduction
+        armor_reduction = defender.stats.armor_rating
+        final_damage = max(0, total_damage - armor_reduction)
+
+        # Apply elemental resistances
+        if "fire" in (item.enchantment.lower() for item in attacker.equipment if item.enchantment) if attacker.equipment else False:
+            final_damage *= (100 - defender.stats.fire_resist) / 100
+        if "frost" in (item.enchantment.lower() for item in attacker.equipment if item.enchantment) if attacker.equipment else False:
+            final_damage *= (100 - defender.stats.frost_resist) / 100
+        if "shock" in (item.enchantment.lower() for item in attacker.equipment if item.enchantment) if attacker.equipment else False:
+            final_damage *= (100 - defender.stats.shock_resist) / 100
+
+        # Apply magic resistance for spells (if implemented)
+        # if is_spell:
+        #     final_damage *= (100 - defender.stats.magic_resist) / 100
+
+        return int(final_damage)
+
+    def _handle_player_item_use(self, item: Item):
+        """Handles the effects of using an item."""
+        messages = []
+        if item.category == "potion":
+            if "health" in item.name.lower():
+                heal_amount = random.randint(20, 50) # Example heal
+                self.player.stats.current_health = min(self.player.stats.max_health, self.player.stats.current_health + heal_amount)
+                messages.append(f"You used a {item.name} and restored {heal_amount} health.")
+            elif "magicka" in item.name.lower():
+                restore_amount = random.randint(20, 50) # Example restore
+                self.player.stats.current_magicka = min(self.player.stats.max_magicka, self.player.stats.current_magicka + restore_amount)
+                messages.append(f"You used a {item.name} and restored {restore_amount} magicka.")
+            elif "stamina" in item.name.lower():
+                restore_amount = random.randint(20, 50) # Example restore
+                self.player.stats.current_fatigue = min(self.player.stats.max_fatigue, self.player.stats.current_fatigue + restore_amount)
+                messages.append(f"You used a {item.name} and restored {restore_amount} stamina.")
+            # Add more potion types as needed
+            self.player.remove_item(item)
+        elif item.category == "food":
+            heal_amount = random.randint(10, 30)
+            self.player.stats.current_health = min(self.player.stats.max_health, self.player.stats.current_health + heal_amount)
+            messages.append(f"You ate {item.name} and restored {heal_amount} health.")
+            self.player.remove_item(item)
+        elif item.category == "scroll":
+            # Example: A scroll of Fireball
+            if "fireball" in item.name.lower():
+                target = self._get_target(self.player, self.enemies)
+                if target:
+                    spell_damage = random.randint(25, 40)
+                    target.stats.current_health -= spell_damage
+                    messages.append(f"You cast a powerful Fireball from the {item.name} on {target.name} for {spell_damage} damage!")
+                    if not target.stats.is_alive():
+                        messages.append(f"You defeated {target.name}!")
+            self.player.remove_item(item)
         else:
-            UI.slow_print(f"{npc.name}'s blow misses {target.name}!")
+            messages.append(f"You can't use {item.name} in combat right now.")
+        return messages
+
+
+    def player_turn(self):
+        """Handles the player's combat turn, offering more actions."""
+        UI.slow_print(f"\n{self.player.name}'s turn (Health: {self.player.stats.current_health}/{self.player.stats.max_health}, Magicka: {self.player.stats.current_magicka}/{self.player.stats.max_magicka}, Fatigue: {self.player.stats.current_fatigue}/{self.player.stats.max_fatigue})") #cite: 1
+        UI.slow_print("Enemies remaining:") #cite: 1
+        for i, enemy in enumerate(self.enemies): #cite: 1
+            UI.slow_print(f"  [{i+1}] {enemy.name} (Health: {enemy.stats.current_health}/{enemy.stats.max_health})") #cite: 1
+
+        options = {
+            "1": "Attack",
+            "2": "Cast Spell",
+            "3": "Use Item",
+            "4": "Block",
+            "5": "Dodge",
+            "6": "Flee"
+        }
+        # Check for ranged weapon to add ranged attack option
+        if any(item.category == "weapon" and item.equipment_tag == "ranged" for item in self.player.equipment):
+            options["1.5"] = "Ranged Attack"
+
+        sorted_options = sorted(options.items(), key=lambda item: float(item[0]))
+        UI.slow_print(" ".join([f"[{k}] {v}" for k, v in sorted_options])) #cite: 1
+        choice = input("What will you do? ") #cite: 1
+
+        if choice == "1": # Melee Attack
+            target = self._get_target(self.player, self.enemies)
+            if target:
+                damage = self._calculate_damage(self.player, target, is_ranged=False)
+                target.stats.current_health -= damage
+                UI.slow_print(f"You attack {target.name} for {damage} damage!") #cite: 1
+                if not target.stats.is_alive():
+                    UI.slow_print(f"You defeated {target.name}!") #cite: 1
+                    return True
+        elif choice == "1.5": # Ranged Attack
+            target = self._get_target(self.player, self.enemies)
+            if target:
+                damage = self._calculate_damage(self.player, target, is_ranged=True)
+                target.stats.current_health -= damage
+                UI.slow_print(f"You launch a ranged attack at {target.name} for {damage} damage!") #cite: 1
+                if not target.stats.is_alive():
+                    UI.slow_print(f"You defeated {target.name}!") #cite: 1
+                    return True
+        elif choice == "2": # Cast Spell
+            # Simplified spell casting. In a full game, this would involve spell selection, mana cost, etc.
+            if self.player.stats.current_magicka >= 20: # Example cost for a basic spell
+                target = self._get_target(self.player, self.enemies)
+                if target:
+                    spell_damage = random.randint(15, 35) + (self.player.skills.get("destruction", 0) // 5)
+                    target.stats.current_health -= spell_damage
+                    self.player.stats.current_magicka -= 20
+                    UI.slow_print(f"You cast a Destruction spell on {target.name} for {spell_damage} damage!") #cite: 1
+                    if not target.stats.is_alive():
+                        UI.slow_print(f"You defeated {target.name}!") #cite: 1
+                        return True
+            else:
+                UI.slow_print("Not enough magicka!") #cite: 1
+        elif choice == "3": # Use Item
+            if self.player.inventory:
+                UI.slow_print("Your inventory:") #cite: 1
+                usable_items = [item for item in self.player.inventory if item.category in ["potion", "food", "scroll"]]
+                if not usable_items:
+                    UI.slow_print("You have no usable items in your inventory.") #cite: 1
+                    return True # Allow player to choose another action
+                for i, item in enumerate(usable_items):
+                    UI.slow_print(f"[{i+1}] {item.name} ({item.category})") #cite: 1
+                item_choice = input("Which item do you want to use? (Enter number, 0 to cancel): ") #cite: 1
+                try:
+                    item_index = int(item_choice) - 1
+                    if 0 <= item_index < len(usable_items):
+                        item_to_use = usable_items[item_index]
+                        messages = self._handle_player_item_use(item_to_use)
+                        for msg in messages:
+                            UI.slow_print(msg) #cite: 1
+                        # Re-check if target died if item was a damaging scroll
+                        if item_to_use.category == "scroll" and "fireball" in item_to_use.name.lower():
+                            self.enemies = [enemy for enemy in self.enemies if enemy.stats.is_alive()]
+                            if not self.enemies:
+                                UI.slow_print("You defeated all enemies with your scroll!") #cite: 1
+                                return True
+                    elif item_index == -1: # Cancel
+                        UI.slow_print("Item usage cancelled.") #cite: 1
+                        return True
+                    else:
+                        UI.slow_print("Invalid item choice.") #cite: 1
+                except ValueError:
+                    UI.slow_print("Invalid input.") #cite: 1
+            else:
+                UI.slow_print("Your inventory is empty.") #cite: 1
+        elif choice == "4": # Block
+            UI.slow_print("You ready your defenses, preparing to block incoming attacks.") #cite: 1
+            self.player.is_blocking = True # Set a flag for the next enemy turn
+        elif choice == "5": # Dodge
+            UI.slow_print("You prepare to dodge, aiming to evade incoming attacks.") #cite: 1
+            self.player.is_dodging = True # Set a flag for the next enemy turn
+        elif choice == "6": # Flee
+            UI.slow_print("You attempt to flee!") #cite: 1
+            if random.random() < (0.5 + (self.player.stats.agility / 200)): # Agility improves flee chance
+                UI.slow_print("You successfully fled from combat!") #cite: 1
+                return False # Combat ends
+            else:
+                UI.slow_print("You failed to flee!") #cite: 1
+        else:
+            UI.slow_print("Invalid action.") #cite: 1
+        return True # Continue combat
+
+    def npc_turn(self, npc: NPC):
+        """Handles an NPC's combat turn with more varied actions."""
+        if not npc.stats.is_alive():
+            return True # Skip if dead
+
+        UI.slow_print(f"\n{npc.name}'s turn (Health: {npc.stats.current_health}/{npc.stats.max_health})") #cite: 1
+
+        # Reset player's blocking/dodging flags for this turn
+        self.player.is_blocking = False
+        self.player.is_dodging = False
+
+        # NPCs can have different behaviors based on their role or disposition
+        npc_attitude = get_tags(npc).get("attitude", [])
+        npc_class = get_tags(npc).get("class", [])
+
+        if "hostile" in npc_attitude:
+            # Hostile NPCs: Prioritize attack, then spell if mage, then flee if low health
+            if npc.stats.current_health < npc.stats.max_health * 0.3 and random.random() < 0.4: # 40% chance to flee if low
+                UI.slow_print(f"{npc.name} attempts to flee!") #cite: 1
+                if random.random() < 0.6: # NPC flee chance
+                    UI.slow_print(f"{npc.name} successfully fled!") #cite: 1
+                    self.enemies.remove(npc) # Remove fleeing NPC
+                    return True
+                else:
+                    UI.slow_print(f"{npc.name} failed to flee!") #cite: 1
+
+            if "mage" in npc_class and npc.stats.current_magicka >= 15 and random.random() < 0.6: # Mages cast spells
+                spell_damage = random.randint(10, 25)
+                self.player.stats.current_health -= spell_damage
+                npc.stats.current_magicka -= 15
+                UI.slow_print(f"{npc.name} casts a spell on you for {spell_damage} damage!") #cite: 1
+            else: # Default to attack
+                damage = self._calculate_damage(npc, self.player)
+
+                # Check if player blocked or dodged
+                if hasattr(self.player, 'is_blocking') and self.player.is_blocking:
+                    block_reduction = random.randint(damage // 2, damage) # Reduce damage by 50-100%
+                    damage = max(0, damage - block_reduction)
+                    UI.slow_print("You successfully blocked the attack!") #cite: 1
+                elif hasattr(self.player, 'is_dodging') and self.player.is_dodging:
+                    if random.random() < (self.player.stats.agility / 100): # Agility based dodge chance
+                        UI.slow_print("You successfully dodged the attack!") #cite: 1
+                        damage = 0 # No damage taken
+                    else:
+                        UI.slow_print("You failed to dodge the attack!") #cite: 1
+
+                self.player.stats.current_health -= damage
+                UI.slow_print(f"{npc.name} attacks you for {damage} damage!") #cite: 1
+
+            if not self.player.stats.is_alive():
+                UI.slow_print(f"You have been defeated by {npc.name}!") #cite: 1
+                return False # Combat ends
+        else:
+            # Non-hostile NPCs might try to flee or do nothing
+            UI.slow_print(f"{npc.name} seems confused and doesn't attack.") #cite: 1
         return True
 
-    def run(self):  # Added the run method
-        UI.slow_print(f"Entering combat at {self.location['name']}!")
+    def run(self):
+        """Runs the combat encounter until player or all enemies are defeated."""
+        UI.slow_print(f"Entering combat at {self.location['name']}!") #cite: 1
         while self.player.stats.is_alive() and self.enemies:
             self.turn += 1
-            UI.slow_print(f"\n--- Turn {self.turn} ---")
-            # Apply status effects
+            UI.slow_print(f"\n--- Turn {self.turn} ---") #cite: 1
+
+            # Apply status effects to player
             messages = self._apply_status_effects(self.player)
             for msg in messages:
-                UI.slow_print(msg)
+                UI.slow_print(msg) #cite: 1
+
+            # Apply status effects to enemies
             for enemy in self.enemies:
                 messages = self._apply_status_effects(enemy)
                 for msg in messages:
-                    UI.slow_print(msg)
+                    UI.slow_print(msg) #cite: 1
 
             # Player turn
-            if not self.player_turn():
+            if not self.player.stats.is_alive(): # Check if player died from status effects
+                UI.slow_print("You have been defeated by a lingering effect!") #cite: 1
                 break
+            if not self.player_turn():
+                break # Combat ends if player fled
 
-            # Check if any enemies died
+            # Check if any enemies died during player's turn
             self.enemies = [enemy for enemy in self.enemies if enemy.stats.is_alive()]
+            if not self.enemies:
+                UI.slow_print("You have defeated all your enemies!") #cite: 1
+                break
 
             # Enemy turns
-            for enemy in self.enemies[:]:  # Iterate over a copy to allow removal during loop
+            # Iterate over a copy to allow removal during loop (e.g., if an NPC flees)
+            for enemy in self.enemies[:]:
                 if not self.npc_turn(enemy):
-                    break
+                    break # Combat ends if player was defeated by an NPC
 
-            # Check if player died or enemies are all defeated
+            # Re-check if player died or enemies are all defeated after enemy turns
             if not self.player.stats.is_alive():
-                UI.slow_print("You have been defeated!")
+                UI.slow_print("You have been defeated!") #cite: 1
                 break
             if not self.enemies:
-                UI.slow_print("You have defeated all your enemies!")
+                UI.slow_print("You have defeated all your enemies!") #cite: 1
                 break
 
         # Cleanup after combat
-        self.player.combat = None
-        UI.slow_print("Combat ends.")
+        self.player.combat = None # Clear combat instance from player
+        UI.slow_print("Combat ended.") #cite: 1
+
+        # Post-combat rewards/drops
+        if not self.player.stats.is_alive():
+            UI.slow_print("You have fallen in battle...") #cite: 1
+        else:
+            UI.slow_print("\n--- Combat Rewards ---") #cite: 1
+            gold_reward = random.randint(10 * self.player.level, 30 * self.player.level)
+            self.player.stats.gold += gold_reward
+            UI.slow_print(f"You gained {gold_reward} gold!") #cite: 1
+
+            # Chance for item drops from defeated enemies
+            for _ in range(random.randint(0, len(self.enemies))): # Up to one item per defeated enemy
+                if random.random() < 0.4: # 40% chance for an item drop
+                    # Assuming generate_random_item in items.py can take level
+                    dropped_item = generate_random_item("misc", self.player.level) # Specify category as misc or based on enemy
+                    if self.player.add_item(dropped_item):
+                        UI.slow_print(f"You found: {dropped_item.name}!") #cite: 1
+                    else:
+                        UI.slow_print(f"You found {dropped_item.name}, but your inventory is full!") #cite: 1

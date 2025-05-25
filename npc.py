@@ -1,9 +1,10 @@
 import random
-from stats import Stats
+from stats import Stats, RACES # Import RACES directly from stats
 from items import generate_random_item
-from tags import TAGS, RUMOR_POOL, FLAVOR_VIGNETTES
 from ui import UI
 from quests import generate_location_appropriate_quest
+from tags import TAGS, get_tags # Import TAGS and get_tags function
+import flavor
 
 # Define roles that imply noble or commoner status
 NOBLE_ROLES = {"noble", "jarl", "thane", "baron", "lady", "duke", "duchess"}
@@ -26,254 +27,275 @@ NAME_POOLS = {
     },
     "imperial": {
         "noble": {
-            "male": ["Septimus", "Octavian", "Cassius", "Marcellus", "Tiberius"],
-            "female": ["Octavia", "Aurelia", "Cornelia", "Vibia", "Domitia"]
+            "male": ["Titus", "Valerius", "Cassius", "Hadrian", "Septimus"],
+            "female": ["Serana", "Valeria", "Aurelia", "Livia", "Octavia"]
         },
         "commoner": {
-            "male": ["Marcus", "Cassian", "Darius", "Gaius", "Lucius"],
-            "female": ["Livia", "Sabina", "Claudia", "Marina", "Valeria"]
+            "male": ["Gaius", "Marcus", "Tiber", "Lucius", "Rufus"],
+            "female": ["Claudia", "Julia", "Fausta", "Silvia", "Vespasia"]
         }
     },
     "breton": {
         "noble": {
-            "male": ["Darius", "Lucien", "Ademar", "Corbin", "Roland"],
-            "female": ["Brienne", "Fiona", "Isabeau", "Sibylle", "Camille"]
+            "male": ["Gaston", "Didier", "Armand", "Guillaume", "Thierry"],
+            "female": ["Genevieve", "Isabelle", "Marguerite", "Annette", "Elodie"]
         },
         "commoner": {
-            "male": ["Alain", "Benoit", "Claude", "Etienne", "Gaston"],
-            "female": ["Amelie", "Cecile", "Elise", "Marie", "Sabine"]
-        }
-    },
-    "dunmer": {
-        "noble": {
-            "male": ["Nerath", "Voryn", "Ravyn", "Drovas", "Serethi"],
-            "female": ["Aranea", "Brelyna", "Mehra", "Visenya", "Drana"]
-        },
-        "commoner": {
-            "male": ["Adril", "Beryn", "Feryn", "Garyn", "Llevule"],
-            "female": ["Dratha", "Eldrin", "Faryna", "Ienith", "Milore"]
-        }
-    },
-    "altmer": {
-        "noble": {
-            "male": ["Saerendil", "Elenwen", "Therion", "Faelwen", "Adalind"],
-            "female": ["Calia", "Sylendra", "Myrrha", "Ondree", "Thuul"]
-        },
-        "commoner": {
-            "male": ["Ancarion", "Eaigle", "Fathras", "Ilmali", "Lloran"],
-            "female": ["Aevarrel", "Fayeth", "Lunwara", "Ylesius", "Venya"]
-        }
-    },
-    "dwemer": {
-        "noble": {
-            "male": ["Kagrenac", "Dumac", "Nherit", "Vharnan", "Uleran"],
-            "female": ["Modryn", "Siglina", "Eldara", "Thoryn", "Diveth"]
-        },
-        "commoner": {
-            "male": ["Bzukle", "Nchardum", "Imdur", "Vulzun", "Fenram"],
-            "female": ["Trobri", "Lurind", "Solgrun", "Yzgara", "Uthurra"]
-        }
-    },
-    "orc": {
-        "noble": {
-            "male": ["Ghorbash", "Mogrosh", "Dhargosh", "Krahl", "Urzgu"],
-            "female": ["Durga", "Khazgra", "Sharngra", "Yashgra", "Othog"]
-        },
-        "commoner": {
-            "male": ["Lashaj", "Uzgash", "Zoklak", "Shraug", "Ghruv-zok"],
-            "female": ["Bela", "Guldur", "Mogrim", "Krusk", "Nulgra"]
-        }
-    },
-    "khajiit": {
-        "noble": {
-            "male": ["J'zargo", "Ra'zirr", "Ma'randru-jo", "S'rendarr", "K'rajn"],
-            "female": ["Ayrenn", "Zahra", "S'randarr", "Khansha", "Drala"]
-        },
-        "commoner": {
-            "male": ["Kharjo", "J'Khajiit", "J'Zaran", "M'raaj-Dar", "S'rrex"],
-            "female": ["Kerah", "Daro'Vas", "Nivrel", "Ziera", "Ma'shara"]
-        }
-    },
-    "argonian": {
-        "noble": {
-            "male": ["Teezhar", "Shazrune", "Iizashi", "Xhal-Jir", "Rees-Ja"],
-            "female": ["Sa-Sara", "Jasreet", "H'Ra", "Ti'Green", "Mala-Ja"]
-        },
-        "commoner": {
-            "male": ["Ra'zirr", "X-Tso", "Uxith'reth", "Sithis-Tza", "Pelur-Ja"],
-            "female": ["Ti'Step", "Ib-Tet", "Oggra", "Wee-Gas", "Sisithis"]
+            "male": ["Pierre", "Jean", "Louis", "François", "Antoine"],
+            "female": ["Marie", "Sophie", "Jeanne", "Claire", "Nicole"]
         }
     },
     "redguard": {
         "noble": {
-            "male": ["Samid", "Khamir", "Nadir", "Aramir", "Rashid"],
-            "female": ["Amirah", "Layla", "Zafira", "Riyana", "Tahlia"]
+            "male": ["Ahmad", "Jamal", "Khalid", "Rashid", "Zafir"],
+            "female": ["Zafira", "Yasmina", "Samira", "Layla", "Aisha"]
         },
         "commoner": {
-            "male": ["Niruin", "Al-Nir", "Fahir", "Rashad", "Zahir"],
-            "female": ["Salma", "Yamila", "Hafiza", "Laila", "Mina"]
+            "male": ["Cyrus", "Nazir", "Kematu", "Sadir", "Malik"],
+            "female": ["Imani", "Sana", "Nadia", "Zara", "Amina"]
+        }
+    },
+    "dunmer": {
+        "noble": {
+            "male": ["Indoril", "Redoran", "Telvanni", "Dres", "Hlaalu"],
+            "female": ["Morwen", "Fjola", "Jenassa", "Brelyna", "Aranea"]
+        },
+        "commoner": {
+            "male": ["Brand-Shei", "Revyn", "Adril", "Malborn", "M'aiq"],
+            "female": ["Jenassa", "Fethis", "Mogrul", "Nilene", "Revyn"]
+        }
+    },
+    "altmer": {
+        "noble": {
+            "male": ["Ancano", "Ondolemar", "Elenwen", "Rulindil", "Estormo"],
+            "female": ["Elenwen", "Ancano", "Rulindil", "Estormo", "Ondolemar"]
+        },
+        "commoner": {
+            "male": ["Faralda", "Calcelmo", "Entir", "Runil", "Ursa"],
+            "female": ["Faralda", "Calcelmo", "Entir", "Runil", "Ursa"]
         }
     },
     "bosmer": {
         "noble": {
-            "male": ["Rajh", "Miner Gray-Mane", "Faendal", "Fane", "Sharuil"],
-            "female": ["Leshra", "Shaeli", "Sathorys", "Brya", "Laina"]
+            "male": ["Gat", "Faelan", "Niruin", "Borvir", "Maluril"],
+            "female": ["Niruin", "Borvir", "Maluril", "Gat", "Faelan"]
         },
         "commoner": {
-            "male": ["Sanos", "Ilo", "Travo", "Ruil", "Auson"],
-            "female": ["Aeri", "Raen", "Ramil", "Fela", "Cesina"]
+            "male": ["Faendal", "Hadvar", "Ralof", "Sven", "Alvor"],
+            "female": ["Camilla", "Sigrid", "Gerdur", "Hroki", "Idgrod"]
+        }
+    },
+    "orc": {
+        "noble": {
+            "male": ["Ghorbash", "Urag", "Yashnag", "Burguk", "Dushnikh"],
+            "female": ["Urag", "Yashnag", "Burguk", "Dushnikh", "Ghorbash"]
+        },
+        "commoner": {
+            "male": ["Grogmar", "Muzgon", "Shagrol", "Urzoga", "Yamorz"],
+            "female": ["Urzoga", "Yamorz", "Grogmar", "Muzgon", "Shagrol"]
+        }
+    },
+    "argonian": {
+        "noble": {
+            "male": ["J'zargo", "Derkeethus", "Stands-In-Shadows", "Walks-Softly", "Hides-His-Eyes"],
+            "female": ["Shahvee", "Keerava", "From-Deepest-Fathoms", "Scales-of-Steel", "Swims-In-Deep-Waters"]
+        },
+        "commoner": {
+            "male": ["J'zargo", "Derkeethus", "Stands-In-Shadows", "Walks-Softly", "Hides-His-Eyes"],
+            "female": ["Shahvee", "Keerava", "From-Deepest-Fathoms", "Scales-of-Steel", "Swims-In-Deep-Waters"]
+        }
+    },
+    "khajiit": {
+        "noble": {
+            "male": ["J'zargo", "Ma'iq", "Dro'marash", "Ra'virr", "Ri'saad"],
+            "female": ["Ahkari", "Kharjo", "Razhinda", "Zaynabi", "Shavari"]
+        },
+        "commoner": {
+            "male": ["J'zargo", "Ma'iq", "Dro'marash", "Ra'virr", "Ri'saad"],
+            "female": ["Ahkari", "Kharjo", "Razhinda", "Zaynabi", "Shavari"]
         }
     },
 }
 
 
 class NPC:
-    def __init__(self, name=None, level=1, culture_tag="nord", role_tag="commoner", gender=None):
-        self.culture_tag = culture_tag
-        self.role_tag = role_tag
-        # Determine social status by role
-        self.social_status = "Noble" if role_tag in NOBLE_ROLES else "commoner"
-        
+    """
+    Represents a Non-Player Character in the Skyrim Adventure game.
+    NPCs have stats, a role, disposition, and can engage in dialogue.
+    """
+    def __init__(self, name: str, race: str, role: str, level: int, disposition: int = 50, gold: int = 0):
+        # Generate name if not provided
+        if name is None:
+            gender = random.choice(["male", "female"])
+            # Determine if noble or commoner role based on role tag
+            name_type = "noble" if role in NOBLE_ROLES else "commoner"
+            # Get names for the specific race, default to Nord if race not found in NAME_POOLS
+            race_names = NAME_POOLS.get(race.lower(), NAME_POOLS["nord"])
+            name_pool = race_names.get(name_type, race_names["commoner"])
+            self.name = random.choice(name_pool.get(gender, name_pool["male"])) # Default to male if gender pool missing
+        else:
+            self.name = name
+
+        self.race = race
+        self.role = role
         self.level = level
-        self.gender = gender or random.choice(["male", "female"])
-        self.name = name or self.generate_name()
-        self.stats = self.generate_stats()
-        self.skills = self.generate_skills()
-        self.alignment = self.determine_alignment()
-        self.equipment = self.generate_equipment()
-        self.disposition = random.randint(30, 70)
-        self.told_rumor = False
+        self.disposition = disposition # How much they like the player (0-100)
+        self.gold = gold
+
+        # Initialize stats for the NPC
+        self.stats = Stats(
+            strength=random.randint(30, 60),
+            intelligence=random.randint(30, 60),
+            willpower=random.randint(30, 60),
+            agility=random.randint(30, 60),
+            speed=random.randint(30, 60),
+            endurance=random.randint(30, 60),
+            personality=random.randint(30, 60),
+            luck=random.randint(30, 60),
+            level=level,
+            gold=gold
+        )
+        # Apply racial modifiers to NPC stats
+        race_mods = RACES.get(race.lower(), {}) # Correctly access RACES imported from stats
+        self.stats.strength += race_mods.get("strength_mod", 0)
+        self.stats.intelligence += race_mods.get("intelligence_mod", 0)
+        self.stats.willpower += race_mods.get("willpower_mod", 0)
+        self.stats.agility += race_mods.get("agility_mod", 0)
+        self.stats.speed += race_mods.get("speed_mod", 0)
+        self.stats.endurance += race_mods.get("endurance_mod", 0)
+        self.stats.personality += race_mods.get("personality_mod", 0)
+        self.stats.luck += race_mods.get("luck_mod", 0)
+        self.stats.poison_resist += race_mods.get("poison_resist", 0)
+        self.stats.magic_resist += race_mods.get("magic_resist", 0)
+        self.stats.frost_resist += race_mods.get("frost_resist", 0)
+        self.stats.shock_resist += race_mods.get("shock_resist", 0)
+        self.stats.fire_resist += race_mods.get("fire_resist", 0)
+
+        # Update max health/magicka/fatigue based on new attributes
+        self.stats.max_health = 100 + (self.stats.endurance * 2)
+        self.stats.max_magicka = 50 + (self.stats.intelligence * 1.5)
+        self.stats.max_fatigue = 100 + (self.stats.endurance * 1.5)
+        self.stats.current_health = self.stats.max_health
+        self.stats.current_magicka = self.stats.max_magicka
+        self.stats.current_fatigue = self.stats.max_fatigue
+
+        # Skills for NPCs (simplified, can be expanded based on role/class)
+        self.skills = {}
+        # Example: Bandits might have one_handed skill
+        if self.role.lower() == "bandit":
+            self.skills["one_handed"] = random.randint(20, 50)
+            self.skills["light_armor"] = random.randint(15, 40)
+        elif self.role.lower() == "mage":
+            self.skills["destruction"] = random.randint(20, 50)
+            self.skills["restoration"] = random.randint(15, 40)
+        # Add more skill initialization based on NPC roles/classes
+
+        self.inventory = self.stats.inventory # NPC inventory managed by Stats
+        self.equipment = [] # NPCs can have equipment too
+        self.status_effects = [] # List to hold StatusEffect objects
+
+        # Tags for the NPC
+        self.tags = {}
+        self.add_tag("npc", "class", role)
+        self.add_tag("npc", "race", race)
+        self.add_tag("npc", "attitude", "hostile" if role in HOSTILE_ROLES else "friendly")
+        # Add more tags based on NPC properties or randomly generated ones
+
+        # Dialogue properties
         self.greeting = self._generate_greeting()
         self.purpose = self._generate_purpose()
-        self.farewell = self._generate_farewell()
 
-    def determine_alignment(self) -> str:
-        if self.role_tag in HOSTILE_ROLES:
-            return "hostile"
-        if self.role_tag in FRIENDLY_ROLES:
-            return "friendly"
-        return "neutral"
+    def __str__(self):
+        return f"{self.name} ({self.role}, Level {self.level})"
 
-    def generate_name(self) -> str:
-        pool = NAME_POOLS.get(self.culture_tag, {})
-        status_key = "noble" if self.social_status == "Noble" else "commoner"
-        nameset = pool.get(status_key, pool.get("commoner", {}))
-        gender_list = nameset.get(self.gender, ["Unknown"])
-        return random.choice(gender_list)
+    def add_tag(self, category, key, value):
+        """Adds a tag to the NPC."""
+        if category not in self.tags:
+            self.tags[category] = {}
+        self.tags[category][key] = value
 
-    def generate_stats(self) -> Stats:
-        return Stats(
-            strength=random.randint(30, 50), intelligence=random.randint(30, 50),
-            willpower=random.randint(30, 50), agility=random.randint(30, 50),
-            speed=random.randint(30, 50), endurance=random.randint(30, 50),
-            personality=random.randint(30, 50), luck=random.randint(30, 50)
-        )
-
-    def generate_skills(self) -> dict:
-        base = {s:15 for s in ["blade","blunt","hand_to_hand","armorer","block",
-                                 "heavy_armor","athletics","alchemy","alteration",
-                                 "conjuration","destruction","illusion","mysticism",
-                                 "restoration","acrobatics","light_armor","marksman",
-                                 "mercantile","security","sneak","speechcraft"]}
-        if self.role_tag in ["bandit","warrior"]:
-            for sk in ["blade","blunt","heavy_armor"]: base[sk]+=10
-        if self.role_tag in ["mage","necromancer"]:
-            for sk in ["destruction","conjuration","mysticism"]: base[sk]+=10
-        if self.role_tag=="thief":
-            for sk in ["sneak","security","light_armor"]: base[sk]+=10
-        return base
-
-    def generate_equipment(self) -> list:
-        eq=[]
-        if self.alignment=="hostile":
-            eq.append(generate_random_item("weapon",self.level))
-            eq.extend(generate_random_item("armor",self.level) for _ in range(2))
+    def _generate_greeting(self):
+        """Generates a greeting based on disposition and role."""
+        if self.disposition >= 70:
+            return random.choice(["Greetings, friend!", "Well met!", "A pleasure to see you."])
+        elif self.disposition >= 30:
+            return random.choice(["Hello.", "What do you want?", "State your business."])
         else:
-            eq.append(generate_random_item("armor",self.level))
-            if self.role_tag in {"merchant","blacksmith","noble","jarl","thane"}:
-                eq.append(generate_random_item("weapon",self.level))
-        return eq
+            return random.choice(["Stay out of my way.", "You're not welcome here.", "Hmph."])
 
-    def is_alive(self) -> bool:
-        return self.stats.is_alive()
-
-    def __str__(self) -> str:
-        align = "hostile" if self.alignment=="hostile" else "friendly"
-        return f"{self.name}, a {align} {self.culture_tag} {self.role_tag}"
-
-    def _generate_greeting(self) -> str:
-        gm={
-            "merchant":"Hail, traveler! My wares are the finest in the land.",
-            "guard":"State your business, or move along.",
-            "bandit":"Your coin or your life, stranger!",
-            "priest":"The Divines smile upon us this day.",
-            "blacksmith":"Need a blade sharpened or armor mended?",
-            "innkeeper":"Welcome! A warm bed and hearty meal await.",
-            "bard":"A song for your travels, friend?",
-            "noble":"Ah, a person of renown graces me!",
-            "jarl":"By the authority of my hold, state your purpose!"
-        }
-        return gm.get(self.role_tag, "Greetings, wanderer.")
-
-    def _generate_purpose(self) -> str:
-        pm={
-            "merchant":"trade goods across Tamriel.",
-            "healer":"mend the wounded with skill and care.",
-            "blacksmith":"forge steel worthy of heroes.",
-            "innkeeper":"offer respite to weary souls.",
-            "bard":"weave tales that echo through time.",
-            "bandit":"take what I please from the weak.",
-            "thief":"slip through shadows for profit.",
-            "noble":"serve my lineage with honor.",
-            "jarl":"govern these lands with fairness and strength."
-        }
-        return pm.get(self.role_tag, "seek my fortune.")
-
-    def _generate_farewell(self) -> str:
-        fm={
-            "merchant":"May your coin purse stay heavy.",
-            "guard":"Keep the peace, traveler.",
-            "bandit":"Cross my path again, and you’ll regret it.",
-            "priest":"Walk with the Divines’ blessing.",
-            "blacksmith":"May your steel never break.",
-            "innkeeper":"Return when you need rest.",
-            "bard":"Let our paths cross again in song.",
-            "noble":"May your reputation precede you.",
-            "jarl":"Go with the blessings of Skyrim."
-        }
-        return fm.get(self.role_tag, "Safe travels.")
-
-    def share_random_rumor(self, current_location) -> None:
-        if current_location and current_location["tags"]:
-            rumors = RUMOR_POOL.get(current_location["tags"][0], ["A strange tale circulates..."])
+    def _generate_purpose(self):
+        """Generates a purpose based on role."""
+        if self.role.lower() == "merchant":
+            return random.choice(["buy and sell goods.", "trade with travelers.", "find rare wares."])
+        elif self.role.lower() == "guard":
+            return random.choice(["keep the peace.", "protect the city.", "enforce the law."])
+        elif self.role.lower() == "bandit":
+            return random.choice(["take what's mine.", "ambush travelers.", "cause trouble."])
         else:
-            rumors = ["A strange tale circulates..."]
-        rumor = random.choice(rumors)
-        UI.slow_print(f"“Rumor has it: {rumor}”")
+            return random.choice(["do my duties.", "live my life.", "seek adventure."])
+
+    def share_rumor(self, current_location) -> None:
+        """Shares a rumor based on the NPC's disposition and location tags."""
+        if self.disposition < 40:
+            UI.slow_print(f"“I don't have time for idle chatter, adventurer.”") # Changed player_role_tag to adventurer
+            return
+
+        # Get relevant rumor topics from DIALOGUE tags
+        rumor_topics = TAGS["DIALOGUE"]["topic"]
+        available_rumors = [r for r in rumor_topics if r in ["gossip", "rumor", "lore"]]
+
+        if not available_rumors:
+            UI.slow_print("“I’ve heard nothing of interest lately.”")
+            return
+
+        chosen_topic = random.choice(available_rumors)
+        # Use flavor vignettes related to the topic or location
+        vignettes = flavor.DIALOGUE_FLAVORS.get("topic", {}).get(chosen_topic, []) # Corrected access to DIALOGUE_FLAVORS
+        if not vignettes:
+            vignettes = flavor.LOCATION_FLAVORS.get("environment", {}).get(random.choice(current_location.get("tags", ["urban"])), [])
+
+        if vignettes:
+            UI.slow_print(f"“{random.choice(vignettes)}”")
+        else:
+            UI.slow_print("“I’ve heard nothing of interest lately.”")
 
     def dialogue(self, player, current_location) -> None:
+        """Handles dialogue interaction with the player."""
         UI.slow_print(f"You approach {self}. Disposition: {self.disposition}")
         UI.slow_print(f"“{self.greeting} I {self.purpose}”")
-        options=["Rumor","Work","This Place","Quest","Farewell"]
+        options = ["[1] Rumor", "[2] Work", "[3] This Place", "[4] Quest", "[5] Farewell"]
         while True:
-            for i,opt in enumerate(options,1): print(f"[{i}] {opt}")
-            choice=input("Choose: ")
-            if choice=="1":
-                if not self.told_rumor:
-                    self.share_random_rumor(current_location)
-                    self.told_rumor=True
+            for i, opt in enumerate(options, 1):
+                print(f"[{i}] {opt}")
+            choice = input("Choose: ")
+            if choice == "1":
+                self.share_rumor(current_location)
+            elif choice == "2":
+                UI.slow_print(f"“I {self.purpose}”")
+            elif choice == "3":
+                # Get location flavor based on tags
+                location_tags = current_location.get("tags", [])
+                environment_tags = [tag for tag in location_tags if tag in TAGS["LOCATIONS"]["environment"]]
+                if environment_tags:
+                    chosen_env_tag = random.choice(environment_tags)
+                    vignettes = flavor.LOCATION_FLAVORS.get("environment", {}).get(chosen_env_tag, [])
+                    if vignettes:
+                        UI.slow_print(f"“{random.choice(vignettes)}”")
+                    else:
+                        UI.slow_print("“Just another place.”")
                 else:
-                    UI.slow_print("“I’ve shared all I know.”")
-            elif choice=="2": UI.slow_print(f"“I {self.purpose}”")
-            elif choice=="3":
-                vigs=[FLAVOR_VIGNETTES.get(tag) for tag in current_location.get("tags",[])]
-                vigs=[random.choice(v) if isinstance(v,list) else v for v in vigs if v]
-                UI.slow_print(f"“{random.choice(vigs) if vigs else 'Just another place.'}”")
-            elif choice=="4":
-                quest=generate_location_appropriate_quest(player.level,current_location.get("tags",[]))
-                UI.slow_print(f"“{quest.description} Reward: {quest.reward}”")
-                player.quest_log.add_quest(quest)
-            elif choice=="5":
-                UI.slow_print(f"“{self.farewell}”")
+                    UI.slow_print("“Just another place.”")
+            elif choice == "4":
+                quest = generate_location_appropriate_quest(player.level, current_location.get("tags", []))
+                UI.slow_print(f"“{quest.description}”")
+                if hasattr(player, "quest_log") and player.quest_log is not None:
+                    # In a real game, you'd ask the player if they accept the quest
+                    player.quest_log.add_quest(quest) # Add quest directly to player's quest_log object
+                    UI.slow_print("You have accepted a new quest!")
+                else:
+                    UI.slow_print("You have no way to track this quest.")
+            elif choice == "5":
+                UI.slow_print(f"“Farewell, {player.name}.”")
                 break
-            else: UI.slow_print("“Pardon?”")
+            else:
+                UI.slow_print("Your will wavers.")

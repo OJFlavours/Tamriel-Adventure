@@ -1,3 +1,4 @@
+# locations.py
 LOCATIONS = [
     # WHITERUN HOLD
     {
@@ -155,6 +156,12 @@ LOCATIONS = [
                         "name": "The Mortar and Pestle",
                         "desc": "A humble alchemy shop where local brews and potions are concocted.",
                         "tags": ["alchemy", "shop"]
+                    },
+                                        {
+                        "id": 2004,
+                        "name": "The Frozen Tankard",
+                        "desc": "A local tavern known for its strong ales and sea shanties.",
+                        "tags": ["tavern", "social"]
                     }
                 ]
             },
@@ -273,6 +280,12 @@ LOCATIONS = [
                         "name": "Moorside Inn",
                         "desc": "A humble inn providing shelter for travelers daring to brave the murky swamps.",
                         "tags": ["inn", "tavern"]
+                    },
+                                        {
+                        "id": 4003,
+                        "name": "The Foggy Bottle",
+                        "desc": "A dimly lit tavern known for its potent drinks and hushed conversations.",
+                        "tags": ["tavern", "social"]
                     }
                 ]
             },
@@ -600,7 +613,7 @@ LOCATIONS = [
 
     # ADDITIONAL NOTABLE LOCATIONS & DYNAMIC ADVENTURE SITES
     {
-        "id": 10,
+        "id": 100,
         "name": "High Hrothgar",
         "desc": "Perched atop the Throat of the World, High Hrothgar is the sacred fortress of the Greybeards and a pilgrimage site for the Dragonborn.",
         "tags": ["monastery", "mountain", "sacred", "greybeards"],
@@ -611,7 +624,7 @@ LOCATIONS = [
         }
     },
     {
-        "id": 11,
+        "id": 101,
         "name": "Throat of the World",
         "desc": "Tamriel’s highest peak, a snow-clad titan honored by the Nords and Kynareth. Its frozen summit inspires awe and trepidation.",
         "tags": ["mountain", "sacred", "snowy", "divine"],
@@ -622,7 +635,7 @@ LOCATIONS = [
         }
     },
     {
-        "id": 12,
+        "id": 102,
         "name": "Blackreach",
         "desc": "A sprawling, luminous underground cavern teeming with bioluminescent flora, ancient Dwemer relics, and lurking Falmer. Accessible via well-known Dwemer passages.",
         "tags": ["underground", "dwemer", "falmer", "cavern", "ruin"],
@@ -633,7 +646,7 @@ LOCATIONS = [
         }
     },
     {
-        "id": 14,
+        "id": 104,
         "name": "Labyrinthian",
         "desc": "A vast, maze-like ruin once a grand Nord city, now overrun by draugr and cursed with the lingering magic of a forgotten dragon priest.",
         "tags": ["ruin", "nordic", "maze", "undead", "dungeon"],
@@ -644,7 +657,7 @@ LOCATIONS = [
         }
     },
     {
-        "id": 15,
+        "id": 105,
         "name": "Alftand",
         "desc": "A mysterious Dwemer ruin in the frozen wastes near Winterhold, rumored to be a gateway into the depths of Blackreach.",
         "tags": ["dwemer", "ruin", "snowy", "underground", "mechanical"],
@@ -655,7 +668,7 @@ LOCATIONS = [
         }
     },
     {
-        "id": 16,
+        "id": 106,
         "name": "Mzinchaleft",
         "desc": "A sprawling Dwemer ruin in the Pale with bronze corridors and ingenious mechanisms that hint at a lost civilization.",
         "tags": ["dwemer", "ruin", "mechanical", "snowy"],
@@ -666,7 +679,7 @@ LOCATIONS = [
         }
     },
     {
-        "id": 17,
+        "id": 107,
         "name": "Ustengrav",
         "desc": "A vast Nordic tomb in Hjaalmarch's marshes, its dark corridors echo with the clamor of ancient battles and the lure of cursed treasures.",
         "tags": ["barrow", "nordic", "undead", "swamp", "dungeon"],
@@ -677,7 +690,7 @@ LOCATIONS = [
         }
     },
     {
-        "id": 18,
+        "id": 108,
         "name": "Forelhost",
         "desc": "A spectral ruin in the Rift’s high mountains, once a stronghold of the Dragon Cult, now haunted by the remnants of draconic power.",
         "tags": ["ruin", "nordic", "undead", "mountain", "dragon", "cursed"],

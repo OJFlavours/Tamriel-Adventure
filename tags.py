@@ -1,297 +1,223 @@
+import random
+
+# Location Tags
+LOCATIONS = {
+    "environment": ["urban", "rural", "wilderness", "coastal", "underground", "aerial", "aquatic"],
+    "climate": ["temperate", "tropical", "arid", "arctic", "swampy"],
+    "terrain": ["mountainous", "hilly", "plains", "forest", "desert", "island"],
+    "structure": ["natural", "ruined", "fortified", "populated", "abandoned"],
+    "magical": ["enchanted", "cursed", "holy", "arcane", "tainted"],
+}
+
+# Faction Tags
+FACTIONS = {
+    "type": ["military", "religious", "criminal", "political", "mercantile", "tribal", "academic"],
+    "alignment": ["good", "evil", "neutral", "lawful", "chaotic"],
+    "size": ["small", "medium", "large", "massive"],
+    "influence": ["local", "regional", "national", "global"],
+    "status": ["active", "inactive", "growing", "declining", "secret"]
+}
+
+# NPC Tags
+NPCS = {
+    "class": ["warrior", "mage", "thief", "rogue", "priest", "merchant", "bard", "scholar", "peasant", "noble", "monster"],
+    "attitude": ["friendly", "hostile", "neutral", "cautious", "greedy", "honest", "deceitful", "fanatical", "zealous", "eccentric", "mysterious"],
+    "race": ["nord", "imperial", "breton", "redguard", "dunmer", "altmer", "bosmer", "orc", "argonian", "khajiit", "dwemer", "giant", "goblin"],
+    "condition": ["healthy", "injured", "sick", "cursed", "possessed", "wealthy", "poor", "insane", "powerful", "weak"],
+    "personality": ["brave", "cowardly", "intelligent", "foolish", "optimistic", "pessimistic", "ambitious", "lazy", "loyal", "treacherous"]
+}
+
+# Quest Tags
+QUESTS = {
+    "type": ["fetch", "escort", "rescue", "investigate", "hunt", "assassinate", "raid", "defend", "explore", "deliver", "negotiate", "diplomacy", "spy"],
+    "objective": ["item", "person", "location", "information", "artifact"],
+    "reward": ["gold", "item", "knowledge", "favor", "title", "land", "power", "reputation", "experience"],
+    "difficulty": ["easy", "medium", "hard", "dangerous", "impossible", "trivial"],
+    "urgency": ["urgent", "important", "routine", "optional", "trivial", "critical"],
+    "moral": ["ethical", "unethical", "gray"]
+}
+
+# Event Tags
+EVENTS = {
+    "type": ["battle", "festival", "storm", "earthquake", "plague", "fire", "discovery", "invasion", "assassination", "ritual", "election", "migration", "economic"],
+    "scale": ["minor", "major", "global", "regional", "local"],
+    "impact": ["positive", "negative", "neutral", "economic", "social", "political"],
+    "frequency": ["rare", "common", "annual", "unpredictable"],
+    "duration": ["short", "medium", "long", "permanent"]
+}
+
+# Dialogue Tags
+DIALOGUE = {
+    "tone": ["formal", "informal", "aggressive", "friendly", "sarcastic", "humorous", "serious", "mysterious", "threatening", "pleading"],
+    "topic": ["gossip", "rumor", "lore", "quest", "trade", "persuasion", "threat", "flattery", "bargaining", "accusation", "apology", "complaint"],
+    "speaker": ["npc", "player"],
+    "result": ["success", "failure", "partial", "information", "alliance", "enemy", "agreement", "disagreement", "compromise"],
+    "emotional": ["happy", "sad", "angry", "fearful", "surprised", "disgusted"]
+}
+
+# Item Tags
+ITEMS = {
+    "type": ["weapon", "armor", "potion", "scroll", "food", "tool", "artifact", "container", "ingredient"],
+    "material": ["iron", "steel", "silver", "elven", "dwarven", "glass", "ebony", "dragonbone", "daedric", "wood", "leather", "cloth"],
+    "quality": ["common", "uncommon", "rare", "epic", "legendary"],
+    "properties": ["magical", "enchanted", "cursed", "poisoned", "holy", "flammable", "fragile", "durable"],
+    "size": ["small", "medium", "large"]
+}
+
+# World State Tags
+WORLD_STATE = {
+    "faction_relations": ["alliance", "war", "trade", "neutral", "rivalry"],
+    "economic_stability": ["prosperous", "stable", "struggling", "depressed"],
+    "political_climate": ["peaceful", "tense", "unstable", "tyrannical", "democratic"],
+    "magical_influence": ["strong", "weak", "growing", "waning"],
+    "monster_activity": ["low", "medium", "high"]
+}
+
+# Relationship Tags (Between NPCs or Player and NPC)
+RELATIONSHIPS = {
+    "type": ["friend", "enemy", "ally", "rival", "lover", "family", "acquaintance", "stranger"],
+    "trust": ["high", "medium", "low", "none"],
+    "attitude": ["positive", "negative", "neutral"]
+}
+
+# Master TAGS dictionary for universal compatibility
 TAGS = {
-    "location_tags": {
-        "city": "A bustling hub of trade, politics, and culture.",
-        "town": "A busy settlement with local markets and community life.",
-        "village": "A small, rural settlement, close to nature and tradition.",
-        "fort": "A military stronghold guarding strategic locations.",
-        "ruin": "Ancient and crumbling, holding lost secrets and danger.",
-        "barrow": "Sacred or cursed burial grounds of old.",
-        "cave": "Dark, natural or abandoned underground lairs.",
-        "shrine": "Places of worship, magic, or divine reverence.",
-        "camp": "Temporary or nomadic encampments often in wilds.",
-        "mine": "Extraction site for valuable minerals and ores.",
-        "overlook": "High vantage points with expansive views.",
-        "marsh": "Wetlands shrouded in mist and mystery.",
-        "valley": "Lowlands nestled between hills or mountains.",
-        "watchtower": "A sentinel post overlooking key routes or borders.",
-        "port": "A coastal gateway for ships and merchants.",
-        "estate": "A grand manor or noble residence.",
-        "canal": "Waterways winding through a city or region."
-    },
-    "npc_cultures": {
-        "nordic": "Hardy folk steeped in ancient warrior traditions.",
-        "imperial": "Disciplined, politically savvy citizens of the Empire.",
-        "reachmen": "Rebellious tribes holding to old, wild ways.",
-        "forsworn": "Fierce rebels fighting for ancestral lands.",
-        "dwemer": "Ancient mechanical beings or their legacy.",
-        "falmer": "Cursed, subterranean elves twisted by time.",
-        "orcish": "Strong, proud warriors with fierce clan loyalty.",
-        "snow elf": "Elegant and mystical descendants of ancient elves.",
-        "tribal": "Clans and nomads living by old customs.",
-        "mystical": "Wielders of arcane secrets and hidden knowledge.",
-        "arcane": "Masters of magic and scholarly pursuits.",
-        "military": "Soldiers trained in discipline and combat.",
-        "criminal": "Outlaws and rogues operating in shadows.",
-        "merchant": "Traders skilled in negotiation and goods."
-    },
-    "equipment_tags": {
-        "nordic": "Rugged and functional, built for harsh northern climates.",
-        "imperial": "Well-crafted and balanced, reflecting order and discipline.",
-        "reachmen": "Rough-hewn and practical, with tribal markings.",
-        "forsworn": "Primitive and wild, imbued with rebellious spirit.",
-        "dwemer": "Complex, mechanical, and often heavy with metals.",
-        "falmer": "Delicate yet deadly, crafted in shadowy caverns.",
-        "orcish": "Heavy and brutal, designed for devastating power.",
-        "snow elf": "Elegant and refined, with magical properties.",
-        "tribal": "Simple and effective, adorned with natural motifs.",
-        "mystical": "Intricately inscribed with arcane symbols.",
-        "arcane": "Lightweight and imbued with magical energy.",
-        "military": "Standard-issue gear, reliable and sturdy.",
-        "criminal": "Concealable and agile, suited for stealth.",
-        "merchant": "Decorative and finely made, symbolizing status."
-    },
-    "climates": {
-        "temperate": "Mild seasons with moderate rainfall and breezes.",
-        "cold": "Biting winters with snow and frost.",
-        "snowy": "Heavy snowfall and icy winds dominate.",
-        "foggy": "Mist and low visibility often cloak the area.",
-        "mountainous": "Rugged peaks and thin air define the region.",
-        "marshy": "Wetlands with fog, mud, and dense flora.",
-        "alpine": "High altitude with harsh cold and rocky terrain.",
-        "subterranean": "Dark, enclosed underground environments.",
-        "coastal": "Sea breezes and salt air prevail.",
-        "rainy": "Frequent and heavy rainstorms dampen the land.",
-        "dry": "Sparse precipitation and arid conditions."
-    },
-    "cultures": {
-        "nordic": "Traditional, warrior-focused, and hardy mountain folk.",
-        "imperial": "Orderly, sophisticated, and politically influential.",
-        "reachman": "Wilderness dwellers tied to old pagan ways.",
-        "forsworn": "Rebels fighting against empire, rooted in tribal lands.",
-        "dwemer": "Ancient engineers and inventors, now extinct.",
-        "falmer": "Blind subterranean elves, twisted and dangerous.",
-        "orcish": "Strong, honorable clans valuing strength and loyalty.",
-        "snow elf": "Elusive and mystical, fading remnants of old Skyrim.",
-        "tribal": "Various nomadic or clan-based groups with unique customs.",
-        "arcane": "Scholars and mages steeped in magical lore.",
-        "criminal": "Underworld factions focused on stealth and subterfuge.",
-        "merchant": "Traders and entrepreneurs wielding wealth and influence."
-    },
-    "factions": {
-        "Imperial Legion": "The official military force of the Empire.",
-        "Stormcloaks": "Nordic rebels pushing for Skyrim’s independence (seeds only).",
-        "Thieves Guild": "Secretive criminal network specializing in stealth and theft.",
-        "Companions": "Warrior guild upholding ancient Nord martial traditions.",
-        "Forsworn": "Rebellious Reachmen fighting for their ancestral lands.",
-        "Black-Briar Family": "Powerful crime family dominating Riften’s underworld.",
-        "College of Winterhold": "Renowned magical academy and research institution.",
-        "Snow Elves": "Ancient, near-extinct elves with arcane heritage.",
-        "Orc Strongholds": "Isolated orc communities preserving warrior culture.",
-        "Bandits": "Disorganized criminals roaming wilds and roads.",
-        "Goblin Tribes": "Hostile goblinoid clans inhabiting caves and forests.",
-        "Azura Worshippers": "Devotees of the Daedric Prince Azura"
-    },
-    "npc_types": {
-        "merchants": "Dealers in goods, trade, and supplies.",
-        "guards": "Protectors of cities, towns, and forts.",
-        "soldiers": "Trained fighters serving military factions.",
-        "mages": "Practitioners of magic and scholarly arts.",
-        "bandits": "Hostile criminals preying on travelers.",
-        "miners": "Laborers extracting ores and minerals.",
-        "hunters": "Skilled trackers and providers of game.",
-        "thieves": "Stealthy criminals and pickpockets.",
-        "nobles": "High-status individuals with wealth and power.",
-        "farmers": "Agricultural workers sustaining settlements.",
-        "priests": "Religious leaders and spiritual guides.",
-        "adventurers": "Travelers seeking fame and fortune.",
-        "falmer": "Blind subterranean elves, twisted and dangerous.",
-        "draugr": "Undead Nordic warriors guarding ancient tombs.",
-        "automatons": "Mechanical constructs from ancient Dwemer.",
-        "ghosts": "Spirits lingering in haunted places.",
-        "goblins": "Feral humanoid creatures living in tribes."
-    }
+    "LOCATIONS": LOCATIONS,
+    "FACTIONS": FACTIONS,
+    "NPCS": NPCS,
+    "QUESTS": QUESTS,
+    "EVENTS": EVENTS,
+    "DIALOGUE": DIALOGUE,
+    "ITEMS": ITEMS,
+    "WORLD_STATE": WORLD_STATE,
+    "RELATIONSHIPS": RELATIONSHIPS,
 }
 
-# Tag-based flavor vignettes for immersive location descriptions
-FLAVOR_VIGNETTES = {
-    "city": "The hum of voices and clatter of carts fill the air.",
-    "nord": "Nordic songs echo from nearby longhouses.",
-    "trade": "Merchants hawk their wares, promising rare goods.",
-    "plains": "Golden grass sways under the open sky.",
-    "companions": "The clash of steel rings from the Jorrvaskr training yard.",
-    "skyforge": "The Skyforge’s flames roar, casting an ancient glow.",
-    "market": "Stalls brim with furs, mead, and glittering trinkets.",
-    "thieves": "A shadowed figure slips through the crowd, unnoticed.",
-    "canals": "The gentle lap of water echoes along the city’s canals.",
-    "corrupt": "Whispers of bribes and schemes drift through the streets.",
-    "reachmen": "The wind carries the faint chant of old Reach magic.",
-    "mining": "The clink of pickaxes reverberates from nearby mines.",
-    "cliffs": "Rugged cliffs loom, carved with ancient secrets.",
-    "dwemer": "A faint hum of Dwemer machinery pulses beneath the stone.",
-    "forsworn": "Crude totems mark the presence of Forsworn rebels.",
-    "temple": "Soft hymns to Dibella rise from the temple’s halls.",
-    "magic": "The air crackles with arcane energy.",
-    "coastal": "Salt spray and the cry of gulls fill the air.",
-    "college": "Mages murmur spells, their robes fluttering in the snow.",
-    "snowy": "A blanket of snow muffles the world’s sounds.",
-    "arcane": "Strange lights flicker, hinting at forgotten magic.",
-    "imperial": "Legion banners snap in the wind, proclaiming order.",
-    "port": "Ships creak at the docks, laden with exotic cargo.",
-    "capital": "The weight of authority hangs over the grand keep.",
-    "bards": "A bard’s lute strums a tale of heroism.",
-    "military": "Soldiers drill, their boots pounding in unison.",
-    "stormcloak": "Rebel cries for a free Skyrim echo through the streets.",
-    "ancient": "The stones whisper of Ysgramor’s long-lost glory.",
-    "docks": "Sailors shout, unloading crates under the cold sun.",
-    "tense": "Suspicious glances pass between Dunmer and Nord locals.",
-    "darkbrotherhood": "A chill runs through you, as if watched by unseen eyes.",
-    "cemetery": "Gravestones stand silent, honoring fallen heroes.",
-    "lake": "Mist rises from the lake, shrouding the shore in mystery.",
-    "hunting": "The scent of pine and the snap of a twig signal nearby game.",
-    "swamp": "The swamp’s fog clings to your skin, heavy and damp.",
-    "mystical": "Strange visions dance at the edge of your sight.",
-    "foggy": "Shapes loom in the fog, half-seen and unsettling.",
-    "fishing": "Fishermen cast nets, cursing the sluggish catch.",
-    "vampire": "A faint smell of blood lingers in the air.",
-    "river": "The river’s rush drowns out all but the loudest voices.",
-    "logging": "The rhythmic thud of axes bites into fresh timber.",
-    "inn": "Warm light spills from the inn, promising mead and rest.",
-    "peaceful": "A rare calm settles over the village, soft and fleeting.",
-    "mountain": "The peaks tower above, silent and eternal.",
-    "pilgrim": "Pilgrims tread softly, their eyes fixed on the sacred path.",
-    "farming": "The scent of turned earth and ripe crops fills the air.",
-    "haunted": "A cold wind carries whispers of restless spirits.",
-    "conflict": "Tense voices argue over silver and blood.",
-    "silver": "The gleam of silver ore sparks greed in passing eyes.",
-    "bridge": "The ancient bridge creaks underfoot, weathered but strong.",
-    "travel": "Travelers’ boots kick up dust on the well-worn road.",
-    "volcanic": "Ash drifts on the breeze, warm from distant fires.",
-    "sacred": "A holy stillness pervades, as if the gods are near.",
-    "malachite": "Green-flecked stone glints in the miners’ lanterns.",
-    "destroyed": "Charred ruins stand as a grim reminder of dragonfire.",
-    "bandits": "The snap of a twig warns of bandits lurking nearby.",
-    "dragon": "The air hums with the faint echo of a dragon’s roar.",
-    "fertile": "Lush fields promise a bountiful harvest.",
-    "mysterious": "Something unseen stirs, hidden in plain sight.",
-    "ebony": "The deep black of ebony ore catches the torchlight.",
-    "spiders": "Webs quiver, hinting at frostbite spiders in the dark.",
-    "iron": "The clang of iron tools shapes the camp’s rhythm.",
-    "harsh": "Only the toughest survive this bleak place.",
-    "monastery": "Chanting monks invoke the power of the Thu’um.",
-    "greybeards": "The Greybeards know secrets of the Thu’um.",
-    "thu’um": "The mountain trembles with the Voice’s ancient power.",
-    "isolated": "The world feels far away, lost in solitude.",
-    "divine": "A divine presence lingers, serene yet commanding.",
-    "underground": "The caverns hide riches and death in equal measure.",
-    "cavern": "Glowing mushrooms cast eerie shadows on stone walls.",
-    "ruin": "Crumbling stones hint at a forgotten era’s glory.",
-    "eerie": ["The air feels wrong, like eyes are watching."],
-    "mushrooms": ["Nirnroot’s song lures travelers to their doom.", "The mushrooms here are worth a fortune."]}
+def get_random_tag(tag_category):
+    """Returns a random tag from the specified category within the master TAGS dictionary."""
+    category_dict = TAGS.get(tag_category.upper()) # Access from the new TAGS dictionary
+    if category_dict:
+        # If the category is a dictionary (like LOCATIONS, FACTIONS, etc.),
+        # we want to pick a random value from one of its sub-categories.
+        # For example, if tag_category is "LOCATIONS", we might pick a random
+        # environment tag like "urban".
+        if isinstance(category_dict, dict):
+            # Get all possible values from all sub-categories
+            all_values = []
+            for sub_category_list in category_dict.values():
+                all_values.extend(sub_category_list)
+            if all_values:
+                return random.choice(all_values)
+            else:
+                return None
+        # If the category itself is a list (though currently all are dictionaries),
+        # this would handle it.
+        elif isinstance(category_dict, list):
+            return random.choice(category_dict)
+    return None
 
-# Tag-based rumors for immersive NPC dialogue
-RUMOR_POOL = {
-    "city": ["The city’s bustling, but coin’s tight these days.", "They say a new Jarl might shake things up soon."],
-    "nord": ["Nords sing of Ysgramor’s glory in the mead halls.", "Some Nord claims he saw a dragon near the hold."],
-    "trade": ["A Khajiit caravan’s due with rare spices.", "Merchants grumble about bandit tolls on the roads."],
-    "plains": ["The plains are calm, but sabre cats hunt at dusk.", "A hunter saw strange lights in the grasslands."],
-    "companions": ["The Companions seek a new Harbinger, they say.", "Jorrvaskr’s mead flows, but their ranks thin."],
-    "skyforge": ["The Skyforge’s steel is blessed by the gods.", "Eorlund Gray-Mane’s forging a blade for a hero."],
-    "market": ["A trader’s selling Dwemer relics, but are they real?", "The market’s buzzing with talk of a new guild."],
-    "thieves": ["The Thieves Guild’s got eyes on a big score.", "A rogue was seen slipping into the Ratway last night."],
-    "canals": ["Something’s lurking in the canals after dark.", "They say the canals hide a smuggler’s stash."],
-    "corrupt": ["The Jarl’s guards take bribes, no questions asked.", "Someone’s skimming coin from the city’s coffers."],
-    "reachmen": ["Reachmen are gathering in the hills, plotting.", "A Reachman shaman cursed a miner’s family."],
-    "mining": ["The mines are rich, but the work’s deadly.", "Miners found a strange relic in the deep tunnels."],
-    "cliffs": ["The cliffs hide old Nord tombs, full of draugr.", "A climber swears he saw a ghost on the peaks."],
-    "dwemer": ["Dwemer ruins hum with life, or so they say.", "An adventurer vanished in the Dwemer depths."],
-    "forsworn": ["The Forsworn plan to retake Cidhna Mine.", "A briarheart was seen near the city gates."],
-    "temple": ["Dibella’s priestesses seek a new initiate.", "The temple’s relics glow with divine power."],
-    "magic": ["A mage’s spell went wild, scorched half the street.", "They say a new spell’s being taught at the College."],
-    "coastal": ["A ship wrecked off the coast, full of treasure.", "Sailors speak of a sea ghost haunting the waves."],
-    "college": ["The College is hiding a dangerous artifact.", "A mage apprentice vanished during a ritual."],
-    "snowy": ["Blizzards are coming, worse than last year.", "A yeti was spotted in the high snowfields."],
-    "arcane": ["Strange runes glow in the ruins at night.", "A wizard’s experimenting with forbidden magic."],
-    "imperial": ["The Legion’s recruiting, offering good coin.", "Imperial spies are watching the Jarl’s court."],
-    "port": ["Pirates hit a merchant ship off the docks.", "A Nord captain’s planning a voyage to Atmora."],
-    "capital": ["The High King’s court is rife with intrigue.", "They say the Blue Palace hides a secret vault."],
-    "bards": ["A bard’s song insulted the Jarl, caused a stir.", "The Bards College is holding a grand festival."],
-    "military": ["Soldiers are training for a big push soon.", "A deserter’s hiding in the nearby woods."],
-    "stormcloak": ["Ulfric’s rebels are planning a bold strike.", "Stormcloaks seek recruits for Skyrim’s freedom."],
-    "ancient": ["Old Nord ruins hold secrets of the First Era.", "They say Ysgramor’s ghost walks the ancient halls."],
-    "docks": ["A Dunmer sailor claims he saw a kraken.", "Smugglers are working the docks at midnight."],
-    "tense": ["Dunmer and Nords clashed in the Gray Quarter.", "The city’s on edge, waiting for trouble."],
-    "darkbrotherhood": ["The Dark Brotherhood’s taken a contract here.", "A shadow moved in the night, silent as death."],
-    "cemetery": ["They say the dead walk in the graveyard at night.", "A mourner saw a ghost by the old tombs."],
-    "lake": ["A nix-hound was seen by the lake’s edge.", "Fishermen found a sunken chest in the lake."],
-    "hunting": ["A great bear roams the woods, a true trophy.", "Hunters speak of a cursed beast in the forest."],
-    "swamp": ["The swamp’s lights lead travelers to their doom.", "A hagraven’s lair was found in the marshes."],
-    "mystical": ["Visions plague those who linger here too long.", "A seer foretold a hero’s rise in the swamps."],
-    "foggy": ["The fog hides more than just the path ahead.", "A traveler vanished in the fog, never seen again."],
-    "fishing": ["The fish are scarce, cursed by some spell.", "A giant mudcrab was caught downriver."],
-    "vampire": ["Vampires are hunting in the shadows nearby.", "A villager went missing, drained of blood."],
-    "river": ["Bandits are taxing river travelers upstream.", "A rare fish was spotted in the river’s depths."],
-    "logging": ["Loggers found an old Nord shrine in the woods.", "A tree fell, revealing a hidden cave."],
-    "inn": ["The inn’s mead is the best in Skyrim, they say.", "A bard at the inn knows dangerous secrets."],
-    "peaceful": ["This village is a rare calm settles over the village, soft and fleeting."],
-    "mountain": ["A dragon was seen circling the high peaks.", "The mountains hide ancient Nord strongholds."],
-    "pilgrim": ["Pilgrims speak of miracles at High Hrothgar.", "A pilgrim lost their way on the 7,000 Steps."],
-    "farming": ["The harvest is bountiful, but bandits eye it.", "A farmer dug up an old Nord relic in the fields."],
-    "haunted": ["Spirits moan in the barrows at midnight.", "A ghost appeared to a traveler, warning of doom."],
-    "conflict": ["Miners and Reachmen are at each other’s throats.", "Blood was spilled over the mine’s silver."],
-    "silver": ["Silver from the mines draws greedy eyes.", "A silver vein was found, but it’s cursed."],
-    "bridge": ["Bandits hold the bridge, demanding tolls.", "The bridge is said to be older than Skyrim itself."],
-    "travel": ["A caravan was ambushed on the road nearby.", "Travelers speak of a hidden path to riches."],
-    "volcanic": ["Ashfall’s choking the crops this year.", "A volcanic cave hides Dwemer secrets."],
-    "sacred": ["The gods watch this place, or so the priests say.", "A shrine here grants blessings to the worthy."],
-    "malachite": ["Malachite’s rare, but the mine’s deadly glints in the miners’ lanterns."],
-    "destroyed": ["Helgen’s ruins still smolder from dragonfire.", "Scavengers pick through the wreckage of Helgen."],
-    "bandits": ["Bandits have a camp just beyond the ruins.", "A bandit leader’s bounty is rising fast."],
-    "dragon": ["A dragon’s roar was heard in the distance.", "They say a dragon’s lair is hidden nearby."],
-    "fertile": ["The fields here yield crops like no other.", "A farmer’s prosperity draws jealous eyes."],
-    "mysterious": ["No one knows what lies in the village’s heart.", "A strange figure was seen at dusk, then gone."],
-    "ebony": ["Ebony’s worth a fortune, but the mine’s cursed.", "They say Shor guards the ebony veins."],
-    "spiders": ["Frostbite spiders infest the mine’s tunnels.", "A giant spider’s web blocks the mine’s exit."],
-    "iron": ["Iron’s plentiful, but the work’s grueling.", "An iron vein led to a hidden crypt."],
-    "harsh": ["Only the toughest survive this bleak place.", "The wind here cuts like a dagger."],
-    "monastery": ["The Greybeards train a new Voice, they say.", "High Hrothgar’s peace hides great power."],
-    "greybeards": ["The Greybeards know secrets of the Thu’um.", "A Greybeard was seen, a rare sight indeed."],
-    "thu’um": ["The mountain shakes with the Voice’s power.", "They say a new Dragonborn walks among us."],
-    "isolated": ["Few venture to this lonely place.", "The silence here is both refuge and threat."],
-    "divine": ["The gods’ favor rests on this sacred ground.", "A divine vision was seen by a wanderer."],
-    "underground": ["The caverns hide riches and death in equal measure.", "A strange hum echoes in the deep caves."],
-    "cavern": ["Glowing fungi light the way, but danger lurks.", "Blackreach’s secrets draw foolish explorers."],
-    "ruin": ["The ruins are old as Tamriel, full of peril.", "Adventurers seek glory in the crumbling halls."],
-    "eerie": ["The air feels wrong, like eyes are watching."],
-    "mushrooms": ["Nirnroot’s song lures travelers to their doom.", "The mushrooms here are worth a fortune."],
-    "glacial": ["Ice sparkles, cold and unyielding underfoot."],
-    "undead": ["Draugr guard their tombs with deathless zeal.", "A necromancer’s been seen near the barrow."],
-    "maze": ["Labyrinthian’s maze traps all but the cleverest."],
-    "mechanical": ["Dwemer traps still claim careless thieves."],
-    "trapped": ["The ruins are a deathtrap, rigged with snares."],
-    "warlord": ["A warlord’s spirit haunts the tomb, vengeful."],
-    "cursed": ["A curse on this place claims all who linger."],
-    "orcish": ["Orcish drums pound, a call to Malacath’s faithful."],
-    "forge": ["The forge’s heat rivals Oblivion’s fires."],
-    "warrior": ["Warriors hone their blades, ready for blood."],
-    "malacath": ["Malacath’s gaze judges all who tread here."],
-    "shrine": ["A crude shrine to the Daedra hums with power."],
-    "camp": ["Tents sway, home to rebels and outcasts."],
-    "canyon": ["Narrow canyons echo with the wind’s mournful howl."],
-    "rebel": ["Defiant voices plot against distant rulers."],
-    "akaviri": ["Ancient Akaviri carvings tell of dragon-slaying heroes."],
-    "blades": ["The Blades’ legacy endures in these hallowed halls."],
-    "necromancy": ["The stench of death and dark magic chokes the air."],
-    "royal": ["Royal spirits guard their crypt with unyielding pride."],
-    "spectral": ["Ghostly forms flicker, bound to Atmoran oaths."],
-    "atmoran": ["The legacy of Atmora lingers in these ancient stones."],
-    "contested": ["The fort’s a battlefield, claimed by none."],
-    "gothic": ["Gothic spires loom, steeped in vampiric dread."],
-    "blood": ["The scent of blood is thick, almost tangible."],
-    "afterlife": ["Sovngarde calls to all true Nords."],
-    "heroic": ["The air thrums with the valor of Nord heroes."],
-    "misty": ["Mist swirls, veiling the path to the Hall of Valor."],
-    "portal": ["A glowing portal pulses, a gate to the divine."],
-    "treasure": ["Glints of treasure beckon, guarded by death."],
-    "temporary": ["Tents flap in the wind, a camp ready to move."],
-    "strategic": ["Scouts watch the horizon, wary of enemy blades."]
-}
+def add_tag(entity, tag_category, tag_type, tag_value): # Modified to accept tag_type and tag_value
+    """Adds a tag to the specified entity (e.g., NPC, Location, Quest) with a nested structure."""
+    if not hasattr(entity, "tags"):
+        entity.tags = {}
+    if tag_category not in entity.tags:
+        entity.tags[tag_category] = {} # Initialize as a dictionary for nested tags
+    entity.tags[tag_category][tag_type] = tag_value # Assign the tag_value to the specific type
+
+def get_tags(entity):
+    """returns all tags from an entity"""
+    if hasattr(entity, "tags"):
+        return entity.tags
+    else:
+        return {}
+
+def get_flavor(entity, flavor_file):
+    """Returns the flavor text for the entity"""
+    # This function would typically interact with the flavor module
+    # to get flavor text based on the entity's tags.
+    # Assuming flavor_file has a get_flavor method.
+    return flavor_file.get_flavor(entity)
+
+
+def filter_entities_by_tags(entity_list, tag_criteria):
+    """Filters a list of entities based on tag criteria."""
+    filtered_entities = []
+    for entity in entity_list:
+        match = True
+        for category, criteria in tag_criteria.items():
+            entity_tags = get_tags(entity)
+            if category not in entity_tags:
+                match = False
+                break
+            if isinstance(criteria, dict):
+                for sub_category, sub_criteria in criteria.items():
+                    if sub_category not in entity_tags[category] or entity_tags[category][sub_category] != sub_criteria:
+                        match = False
+                        break
+                if not match:
+                    break
+            elif entity_tags[category] != criteria:
+                match = False
+                break
+        if match:
+            filtered_entities.append(entity)
+    return filtered_entities
+
+def generate_quest_from_tags(quest_giver, quest_location, quest_type, quest_difficulty):
+    """Generates a quest based on specified tags."""
+    quest = {}  # Replace with your Quest object creation
+    # Call add_tag with tag_type and tag_value
+    add_tag(quest, "quest", "giver", quest_giver)
+    add_tag(quest, "quest", "location", quest_location)
+    add_tag(quest, "quest", "type", quest_type)
+    add_tag(quest, "quest", "difficulty", quest_difficulty)
+    return quest
+
+def generate_event_from_tags(event_location, event_type, event_scale):
+    """Generates an event based on specified tags."""
+    event = {}  # Replace with your Event object creation
+    # Call add_tag with tag_type and tag_value
+    add_tag(event, "event", "location", event_location)
+    add_tag(event, "event", "type", event_type)
+    add_tag(event, "event", "scale", event_scale)
+    return event
+
+def get_dialogue_options(npc, player_relationship):
+    """Generates dialogue options based on NPC tags and player relationship."""
+    options = []  # Replace with your dialogue option generation logic
+    # This is a placeholder - you'll need to define how dialogue options
+    # are generated based on the tags and relationship.  This might
+    # involve looking up dialogue snippets in a database.
+    npc_tags = get_tags(npc)
+    # Access DIALOGUE from the new TAGS dictionary
+    # Example adjusted to new tag structure assuming 'location' is a tag category
+    # options.append(f"Ask about rumors in the {npc_tags.get('location', {}).get('environment', 'area')}")
+    options.append(f"Ask about rumors in the area") # Simplified, as specific location tags are complex here
+    options.append(f"Attempt to {TAGS['DIALOGUE'].get('persuasion')}")
+    return options
+
+def get_all_tags_by_category(category):
+    """Returns a list of all valid tags within a specified category from the master TAGS dictionary."""
+    category_dict = TAGS.get(category.upper()) # Access from the new TAGS dictionary
+    if category_dict:
+        # If it's a dictionary of lists (like LOCATIONS), return all values from all sub-categories
+        if isinstance(category_dict, dict):
+            all_tags = []
+            for sub_category_list in category_dict.values():
+                all_tags.extend(sub_category_list)
+            return all_tags
+        # If it's a direct list (not currently the case for top-level categories, but for completeness)
+        elif isinstance(category_dict, list):
+            return category_dict
+    else:
+        return []
+
+def remove_tag(entity, tag_category, tag_type): # Modified to accept tag_type
+    """Removes a tag from a specific entity."""
+    if hasattr(entity, "tags") and tag_category in entity.tags:
+        if tag_type in entity.tags[tag_category]:
+            del entity.tags[tag_category][tag_type]
+            # Optionally remove the category if it becomes empty
+            if not entity.tags[tag_category]:
+                del entity.tags[tag_category]
+

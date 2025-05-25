@@ -1,260 +1,201 @@
 import time
 import sys
-import os
-import random
+import textwrap
+from colorama import Fore, Back, Style, init
+
+# Initialize colorama for cross-platform ANSI escape codes
+init(autoreset=True)
+
+# --- Configuration ---
+LINE_WIDTH = 70
+SLOW_PRINT_SPEED = 0.005  # Adjust for faster/slower text crawl
+HEADING_COLOR = Fore.CYAN + Style.BRIGHT
+SUBHEADING_COLOR = Fore.GREEN + Style.BRIGHT
+PROMPT_COLOR = Fore.YELLOW + Style.BRIGHT
+INFO_COLOR = Fore.WHITE
+SUCCESS_COLOR = Fore.GREEN
+FAILURE_COLOR = Fore.RED
+MENU_COLOR = Fore.MAGENTA
+HIGHLIGHT_COLOR = Fore.YELLOW
+COMBAT_TEXT_COLOR = Fore.RED
+SYSTEM_MESSAGE_COLOR = Fore.BLUE + Style.BRIGHT
 
 class UI:
-    @staticmethod
-    def top_border(width=50):
-        """Generates a thick top border."""
-        try:
-            pattern = "════╦════"
-            repeat = width // 8
-            remainder = width % 8
-            return "╔" + pattern * repeat + "═" * remainder + "╗"
-        except Exception as e:
-            print(f"Error in top_border: {e}")
-            return "=" * width
+    """
+    Provides static methods for all user interface interactions,
+    including formatted text output, prompts, and screen clearing.
+    """
 
     @staticmethod
-    def bottom_border(width=50):
-        """Generates a thick bottom border."""
-        try:
-            pattern = "════╩════"
-            repeat = width // 8
-            remainder = width % 8
-            return "╚" + pattern * repeat + "═" * remainder + "╝"
-        except Exception as e:
-            print(f"Error in bottom_border: {e}")
-            return "=" * width
-
-    @staticmethod
-    def middle_border(width=50):
-        """Generates a thick middle border."""
-        try:
-            pattern = "════╬════"
-            repeat = width // 8
-            remainder = width % 8
-            return "╠" + pattern * repeat + "═" * remainder + "╣"
-        except Exception as e:
-            print(f"Error in middle_border: {e}")
-            return "=" * width
-
-    @staticmethod
-    def slow_print(text, delay=0.015):
-        """Prints text character by character with a delay for dramatic effect."""
-        try:
-            for char in text:
-                sys.stdout.write(char)
-                sys.stdout.flush()
-                time.sleep(delay)
-            print()  # Newline at the end
-        except Exception as e:
-            print(f"Error in slow_print: {e}")
-            print(text)
-
-    @staticmethod
-    def clear():
-        """Clears the console screen (works on Windows and Unix-based systems)."""
+    def clear_screen():
+        """Clears the console screen."""
+        import os
         os.system('cls' if os.name == 'nt' else 'clear')
 
     @staticmethod
-    def header(text):
-        """Displays a header with a thick border."""
-        try:
-            width = 50
-            print("\n" + UI.top_border(width))
-            padded_text = f"  {text.center(width - 4)}  "
-            print(f"║{padded_text}║")
-            print(UI.bottom_border(width))
-        except Exception as e:
-            print(f"Error in header: {e}")
-            print(f"\n===== {text} =====")
+    def print_line(char='-', width=LINE_WIDTH):
+        """Prints a horizontal line."""
+        print(char * width)
 
     @staticmethod
-    def divider():
-        """Prints a single-line thick divider."""
-        try:
-            width = 50
-            print(UI.middle_border(width))
-        except Exception as e:
-            print(f"Error in divider: {e}")
-            print("=" * 50)
+    def slow_print(text, speed=SLOW_PRINT_SPEED, end='\n'):
+        """Prints text character by character with a delay for dramatic effect."""
+        for char in text:
+            sys.stdout.write(char)
+            sys.stdout.flush()
+            time.sleep(speed)
+        # Ensure a newline is printed at the end, but avoid double newlines
+        if not text.endswith('\n'):
+            sys.stdout.write(end)
+            sys.stdout.flush()
 
     @staticmethod
-    def stylized(text):
-        """Displays text with a stylized border."""
-        try:
-            width = 50
-            text_width = len(text) + 4
-            if text_width > width - 2:
-                text = text[:width - 6]  # Truncate if too long
-                text_width = width - 2
-            padding = (width - text_width) // 2
-            print(f"\n{UI.top_border(width)}")
-            print(f"║{' ' * padding}~ {text} ~{' ' * (width - text_width - padding)}║")
-            print(UI.bottom_border(width))
-        except Exception as e:
-            print(f"Error in stylized: {e}")
-            print(f"\n~ {text} ~")
+    def wrap_text(text, width=LINE_WIDTH):
+        """Wraps text to a specified width."""
+        return textwrap.fill(text, width=width)
 
     @staticmethod
-    def format_npc_entry(index, npc):
-        """Formats an NPC entry for display with borders."""
-        try:
-            alignment = npc.alignment.capitalize()
-            entry = f"[{index:>2}] {npc.name:<20} — {npc.culture_tag.capitalize()} {npc.role_tag.capitalize()} ({alignment})"
-            width = 50
-            if len(entry) > width - 4:
-                entry = entry[:width - 7] + "..."  # Truncate if too long
-            padded_entry = f"  {entry:<{width - 4}}  "
-            return f"║{padded_entry}║"
-        except Exception as e:
-            print(f"Error in format_npc_entry: {e}")
-            return f"[{index}] {npc.name} ({npc.role_tag})"
+    def print_heading(text):
+        """Prints a formatted heading."""
+        print()
+        UI.print_line()
+        print(f"{HEADING_COLOR}{UI.wrap_text(text.upper())}{Style.RESET_ALL}")
+        UI.print_line()
+        print()
 
     @staticmethod
-    def show_stats(player):
-        """Displays player stats with borders."""
-        try:
-            width = 50
-            print("\n" + UI.top_border(width))
-            print(f"║{'Thy Spirit\'s Essence'.center(width - 2)}║")
-            print(UI.middle_border(width))
-            stats_lines = [
-                f"Name: {player.name}",
-                f"Race: {player.race}",
-                f"Class: {player.character_class}",
-                f"Level: {player.level}",
-                f"Attributes: {player.attributes}",
-                f"Skills: {player.skills}",
-                f"Stats: {player.stats}" # Show the new stats
-            ]
-            for line in stats_lines:
-                padded_line = f"  {line:<{width - 4}}  "
-                print(f"║{padded_line}║")
-            print(UI.bottom_border(width))
-            input("Press Enter to continue...")
-        except Exception as e:
-            print(f"Error in show_stats: {e}")
-            UI.slow_print("Thy essence remains unseen by mortal eyes.")
+    def print_subheading(text):
+        """Prints a formatted subheading."""
+        print(f"\n{SUBHEADING_COLOR}{UI.wrap_text(text)}{Style.RESET_ALL}")
 
     @staticmethod
-    def show_inventory(player):
-        """Displays player inventory with borders."""
-        try:
-            width = 50
-            print("\n" + UI.top_border(width))
-            print(f"║{'Thy Possessions'.center(width - 2)}║")
-            print(UI.middle_border(width))
-            print(f"║  Carry Weight: {player.stats.carry_weight:.2f} / {player.stats.max_carry_weight:.2f} ║")
-            if not player.inventory:
-                padded_line = f"  {'Thy pack is empty, as barren as the tundra.':<{width - 4}}  "
-                print(f"║{padded_line}║")
-            else:
-                for i, item in enumerate(player.inventory, 1):
-                    item_str = f"[{i:>2}] - {item} (Weight: {item.weight:.2f}, Value: {item.value})"
-                    if len(item_str) > width - 4:
-                        item_str = item_str[:width - 7] + "..."  # Truncate if too long
-                    padded_line = f"  {item_str:<{width - 4}}  "
-                    print(f"║{padded_line}║")
-            print(UI.bottom_border(width))
-            input("Press Enter to continue...")
-        except Exception as e:
-            print(f"Error in show_inventory: {e}")
-            UI.slow_print("Thy possessions fade into the mists of fate.")
+    def print_prompt(text):
+        """Prints a formatted prompt for user input."""
+        return input(f"{PROMPT_COLOR}{UI.wrap_text(text)}: {Style.RESET_ALL}")
 
     @staticmethod
-    def themed_tip():
-        """Displays a random tip or rumor with borders."""
-        try:
-            from tags import RUMOR_POOL
-            available_rumors = []
-            for tag in RUMOR_POOL:
-                available_rumors.extend(RUMOR_POOL[tag])
-            width = 50
-            print("\n" + UI.top_border(width))
-            print(f"║{'A Whispered Rumor'.center(width - 2)}║")
-            print(UI.middle_border(width))
-            if available_rumors:
-                rumor = random.choice(available_rumors)
-                while len(rumor) > width - 4:
-                    rumor = rumor[:width - 7] + "..."  # Truncate if too long
-                padded_rumor = f"  {rumor:<{width - 4}}  "
-                print(f"║{padded_rumor}║")
-            else:
-                padded_line = f"  {'The winds carry no whispers this day.':<{width - 4}}  "
-                print(f"║{padded_line}║")
-            print(UI.bottom_border(width))
-        except Exception as e:
-            print(f"Error in themed_tip: {e}")
-            UI.slow_print("A whisper of forgotten lore fades into silence.")
+    def print_info(text):
+        """Prints informational text."""
+        print(f"{INFO_COLOR}{UI.wrap_text(text)}{Style.RESET_ALL}")
+
+    @staticmethod
+    def print_success(text):
+        """Prints a success message."""
+        print(f"{SUCCESS_COLOR}{UI.wrap_text(text)}{Style.RESET_ALL}")
+
+    @staticmethod
+    def print_failure(text):
+        """Prints a failure message."""
+        print(f"{FAILURE_COLOR}{UI.wrap_text(text)}{Style.RESET_ALL}")
+
+    @staticmethod
+    def print_menu(options):
+        """Prints a formatted menu of options."""
+        print(MENU_COLOR)
+        for i, option in enumerate(options):
+            print(f"  [{i + 1}] {UI.wrap_text(option)}")
+        print(Style.RESET_ALL)
+
+    @staticmethod
+    def print_highlight(text):
+        """Prints text with highlighting."""
+        print(f"{HIGHLIGHT_COLOR}{UI.wrap_text(text)}{Style.RESET_ALL}")
+
+    @staticmethod
+    def print_combat_text(text):
+        """Prints text specifically for combat events."""
+        print(f"{COMBAT_TEXT_COLOR}{UI.wrap_text(text)}{Style.RESET_ALL}")
+
+    @staticmethod
+    def print_system_message(text):
+        """Prints important system messages."""
+        print(f"{SYSTEM_MESSAGE_COLOR}{UI.wrap_text(text)}{Style.RESET_ALL}")
+
+    @staticmethod
+    def display_player_stats(player):
+        """Displays the player's current stats in a formatted way."""
+        UI.print_subheading("Player Stats")
+        UI.print_info(f"Name: {player.name}, Level: {player.level} {player.race} {player.character_class}")
+        UI.print_info(f"Health: {player.stats.current_health}/{player.stats.max_health}")
+        UI.print_info(f"Magicka: {player.stats.current_magicka}/{player.stats.max_magicka}")
+        UI.print_info(f"Fatigue: {player.stats.current_fatigue}/{player.stats.max_fatigue}")
+        UI.print_info(f"Gold: {player.stats.gold}")
+        UI.print_info(f"Encumbrance: {player.stats.current_encumbrance}/{player.stats.encumbrance_limit}")
+        if player.equipment:
+            equipped_items = ", ".join([item.name for item in player.equipment])
+            UI.print_info(f"Equipped: {equipped_items}")
+        else:
+            UI.print_info("Equipped: Nothing")
+        print()
+
+    @staticmethod
+    def display_location_info(location):
+        """Displays information about the current location."""
+        UI.print_subheading(f"Current Location: {location['name']}")
+        UI.print_info(UI.wrap_text(location['description']))
+        if 'exits' in location and location['exits']:
+            exit_names = ", ".join(location['exits'].keys())
+            UI.print_info(f"Available Exits: {exit_names}")
+        print()
+
+    @staticmethod
+    def display_inventory(player):
+        """Displays the player's inventory."""
+        UI.print_subheading("Inventory")
+        if player.inventory:
+            for i, item in enumerate(player.inventory):
+                UI.print_info(f"[{i + 1}] {item.name} ({item.weight} lbs, Value: {item.value} gold)")
+        else:
+            UI.print_info("Your inventory is empty.")
+        print()
+
+    @staticmethod
+    def display_quest_log(player):
+        """Displays the player's current quest log."""
+        UI.print_subheading("Quest Log")
+        if hasattr(player, 'quest_log') and player.quest_log:
+            for i, quest in enumerate(player.quest_log):
+                UI.print_info(f"[{i + 1}] {quest.title}: {UI.wrap_text(quest.description, width=LINE_WIDTH - 4)}")
+        else:
+            UI.print_info("You have no active quests.")
+        print()
 
     @staticmethod
     def press_enter():
-        """Prompts the user to press Enter."""
-        input("Press Enter to continue...")
+        """Prompts the user to press Enter to continue."""
+        input(f"{PROMPT_COLOR}Press Enter to continue...{Style.RESET_ALL}")
 
-    @staticmethod
-    def npc_greeting(npc):
-        """Displays a greeting from the NPC."""
-        try:
-            width = 50
-            print("\n" + UI.top_border(width))
-            greeting = f"{npc.name} says: \"{npc.greeting}\""
-            if len(greeting) > width - 4:
-                greeting = greeting[:width - 7] + "..."
-            padded_greeting = f"  {greeting:<{width - 4}}  "
-            print(f"║{padded_greeting}║")
-            print(UI.bottom_border(width))
-        except Exception as e:
-            print(f"Error in npc_greeting: {e}")
-            UI.slow_print(f"{npc.name} nods in your direction.")
+# --- Example Usage (can be removed later) ---
+if __name__ == "__main__":
+    UI.clear_screen()
+    UI.print_heading("Welcome to Tamriel Adventure!")
 
-    @staticmethod
-    def local_information(location):
-        """Provides information about the current location."""
-        try:
-            width = 50
-            print("\n" + UI.top_border(width))
-            info = f"Local lore suggests: {location['desc']}"
-            if len(info) > width - 4:
-                info = info[:width - 7] + "..."
-            padded_info = f"  {info:<{width - 4}}  "
-            print(f"║{padded_info}║")
-            print(UI.bottom_border(width))
-        except Exception as e:
-            print(f"Error in local_information: {e}")
-            UI.slow_print("The area is silent, its secrets closely guarded.")
+    UI.slow_print("A land of mystery and danger awaits you...")
+    time.sleep(0.5)
 
-    @staticmethod
-    def npc_purpose(npc):
-        """Explains the NPC's purpose or role."""
-        try:
-            width = 50
-            print("\n" + UI.top_border(width))
-            purpose = f"{npc.name} says: \"I am a {npc.role_tag}, here to {npc.purpose}\""
-            if len(purpose) > width - 4:
-                purpose = purpose[:width - 7] + "..."
-            padded_purpose = f"  {purpose:<{width - 4}}  "
-            print(f"║{padded_purpose}║")
-            print(UI.bottom_border(width))
-        except Exception as e:
-            print(f"Error in npc_purpose: {e}")
-            UI.slow_print(f"{npc.name} remains silent about their intentions.")
+    UI.print_subheading("A New Day Dawns")
+    UI.print_info("The crisp morning air fills your lungs as you awaken. The sounds of a nearby town drift towards you.")
 
-    @staticmethod
-    def farewell(npc):
-        """Displays a farewell message from the NPC."""
-        try:
-            width = 50
-            print("\n" + UI.top_border(width))
-            farewell_msg = f"{npc.name} says: \"{npc.farewell}\""
-            if len(farewell_msg) > width - 4:
-                farewell_msg = farewell_msg[:width - 7] + "..."
-            padded_farewell = f"  {farewell_msg:<{width - 4}}  "
-            print(f"║{padded_farewell}║")
-            print(UI.bottom_border(width))
-        except Exception as e:
-            print(f"Error in farewell: {e}")
-            UI.slow_print(f"{npc.name} gives you a curt nod.")
+    player_name = UI.print_prompt("Enter your name")
+    UI.print_info(f"Greetings, {player_name}!")
+
+    UI.print_menu(["Explore the town", "Check your inventory", "View quest log", "Quit"])
+    action = UI.print_prompt("What will you do")
+
+    if action == "1":
+        UI.print_highlight("You decide to explore the town.")
+    elif action == "2":
+        UI.print_failure("Your inventory is currently empty.")
+    elif action == "3":
+        UI.print_info("You have no active quests.")
+    elif action == "4":
+        UI.print_system_message("Exiting game.")
+    else:
+        UI.print_failure("Invalid choice.")
+
+    UI.print_combat_text("\nA ferocious wolf attacks!")
+    UI.print_success("You strike the wolf with your sword!")
+    UI.print_failure("The wolf bites you!")
+
+    UI.print_system_message("\n--- End of Example ---")
+    UI.press_enter() # Added for example flow
