@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import time
 import random
 import traceback
@@ -33,6 +32,19 @@ random_encounters = {}
 game_start_time = None
 
 ALL_LOCATIONS = LOCATIONS
+
+ENCOUNTER_NAMES = {
+    "city": [
+        {"name": "Street Urchin", "desc": "A nimble child attempts to pickpocket you.", "type": "thieves"},
+        {"name": "Drunkard", "desc": "A staggering drunkard accosts you for coin.", "type": "social"},
+    ],
+    "forest": [
+        {"name": "Wolf Pack", "desc": "A pack of wolves circles, seeking prey.", "type": "hostile"},
+        {"name": "Lost Traveler", "desc": "A lost traveler asks for directions.", "type": "social"},
+    ],
+    # Add more locations and encounters as needed
+}
+
 
 def clear_screen():
     """Clear the terminal screen."""
@@ -92,7 +104,7 @@ def list_locations():
         slow_print("Your map remains blank, awaiting discovery.")
         UI.divider()
         return
-    
+
     for loc in [l for l in ALL_LOCATIONS if l["id"] in known_locations]:
         brief_desc = loc['desc'].split('.')[0] + '.'
         print(f"[{loc['id']:>2}] {loc['name']:<30} — {brief_desc}")
@@ -146,7 +158,7 @@ def handle_encounter_selection(sel, player):
         encounter_index = int(sel[1:]) - 1
         if (current_location and 
             current_location["id"] in random_encounters and 
-            0 <= encounter_index < len(random_encounters[current_location["id"]])):
+            0 <= encounter_index < len(random_encounters[current_location["id"]])):\
             
             encounter = random_encounters[current_location["id"]][encounter_index]
             current_location = encounter
