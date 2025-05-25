@@ -5,21 +5,20 @@ from datetime import datetime, timezone
 
 try:
     from locations import LOCATIONS
-    from stats import Player, Stats, RACES, CLASSES  # Import RACES and CLASSES directly from stats
-    from npc import NPC, FRIENDLY_ROLES, HOSTILE_ROLES, NAME_POOLS
+    from stats import Player, Stats, RACES, CLASSES
+    from npc import NPC, FRIENDLY_ROLES, HOSTILE_ROLES
     from combat import Combat
     from ui import UI
-    from items import generate_random_item, Item, generate_item_from_key  # Import generate_item_from_key
+    from items import generate_random_item, Item, generate_item_from_key
     from events import trigger_random_event, explore_location
     from quests import (
         list_player_quests,
-        QuestLog,  # Import QuestLog directly
+        QuestLog,
         generate_location_appropriate_quest,
-        generate_reward  # Now used for generating quest rewards
+        generate_reward
     )
     import tags
     import flavor
-
 except ImportError as e:
     print(f"Error importing modules: {e}")
     input("Press Enter to exit...")
@@ -28,112 +27,109 @@ except ImportError as e:
 # Globals
 known_locations = set()
 npc_registry = {}
-current_location = None  # This global will be updated by being returned from functions
 random_encounters = {}
 game_start_time = None
+current_location = None
 
 ALL_LOCATIONS = LOCATIONS
 
+# Build lookups for fast name/id resolution
+def _build_location_maps(loc_list):
+    by_id = {}
+    by_name = {}
+    def recurse(loc):
+        by_id[loc["id"]] = loc
+        by_name[loc["name"]] = loc
+        for sub in loc.get("sub_locations", []):
+            recurse(sub)
+    for top in loc_list:
+        recurse(top)
+    return by_id, by_name
+
+LOCATION_BY_ID, LOCATION_BY_NAME = _build_location_maps(ALL_LOCATIONS)
+
+# Encounter definitions
 ENCOUNTER_NAMES = {
     "city": [
         {"name": "Street Urchin", "desc": "A nimble child attempts to pickpocket you.", "type": "thieves"},
-        {"name": "Drunkard", "desc": "A staggering drunkard accosts you for coin.", "type": "social"},
+        {"name": "Drunkard",    "desc": "A staggering drunkard accosts you for coin.", "type": "social"},
     ],
     "forest": [
-        {"name": "Wolf Pack", "desc": "A pack of wolves circles, seeking prey.", "type": "hostile"},
+        {"name": "Wolf Pack",     "desc": "A pack of wolves circles, seeking prey.", "type": "hostile"},
         {"name": "Lost Traveler", "desc": "A lost traveler asks for directions.", "type": "social"},
     ],
 }
 
-
-# Utility functions
+# Utility
 def clear_screen():
     UI.clear_screen()
-
 
 def slow_print(text, delay=0.03):
     UI.slow_print(text, speed=delay)
 
-
-def get_flavor_text(tags_list_param, category, ensure_vignette=False):  # Renamed tags_list to tags_list_param
-    """Gets flavor text from the flavor module based on a list of tags."""
+def get_flavor_text(tags_list_param, category, ensure_vignette=False):
     if not tags_list_param:
         return ""
-
-    # Ensure tags_list_param is a list of strings
-    tags_filtered = [tag for tag in tags_list_param if isinstance(tag, str)]
-    
+    tags_filtered = [t for t in tags_list_param if isinstance(t, str)]
     class DummyEntity:
-        def __init__(self, tags_list_for_dummy, category_for_dummy):
+        def __init__(self, tags_list, category_):
             self.tags = {}
-            if category_for_dummy == "location_tags":
-                # Map general tags to specific flavor categories if possible
-                # This is a heuristic; a more robust system would categorize tags
-                # before passing them to flavor.get_flavor.
-                environment_tags = [t for t in tags_list_for_dummy if t in tags.LOCATIONS["environment"]]
-                climate_tags = [t for t in tags_list_for_dummy if t in tags.LOCATIONS["climate"]]
-                terrain_tags = [t for t in tags_list_for_dummy if t in tags.LOCATIONS["terrain"]]
-                structure_tags = [t for t in tags_list_for_dummy if t in tags.LOCATIONS["structure"]]
-                magical_tags = [t for t in tags_list_for_dummy if t in tags.LOCATIONS["magical"]]
-
-                if environment_tags: self.tags.setdefault("location", {})["environment"] = environment_tags
-                if climate_tags: self.tags.setdefault("location", {})["climate"] = climate_tags
-                if terrain_tags: self.tags.setdefault("location", {})["terrain"] = terrain_tags
-                if structure_tags: self.tags.setdefault("location", {})["structure"] = structure_tags
-                if magical_tags: self.tags.setdefault("location", {})["magical"] = magical_tags
+            if category_ == "location_tags":
+                env = [t for t in tags_list if t in tags.LOCATIONS["environment"]]
+                cli = [t for t in tags_list if t in tags.LOCATIONS["climate"]]
+                ter = [t for t in tags_list if t in tags.LOCATIONS["terrain"]]
+                struc = [t for t in tags_list if t in tags.LOCATIONS["structure"]]
+                mag = [t for t in tags_list if t in tags.LOCATIONS["magical"]]
+                if env:    self.tags.setdefault("location", {})["environment"] = env
+                if cli:    self.tags.setdefault("location", {})["climate"]     = cli
+                if ter:    self.tags.setdefault("location", {})["terrain"]     = ter
+                if struc:  self.tags.setdefault("location", {})["structure"]   = struc
+                if mag:    self.tags.setdefault("location", {})["magical"]     = mag
             else:
-                self.tags[category_for_dummy] = tags_list_for_dummy 
-
-    dummy_entity = DummyEntity(tags_filtered, category)
-    flavor_vignettes = flavor.get_flavor(dummy_entity)
-
-    # Check if any available_text exists in flavor_vignettes
-    if not flavor_vignettes and ensure_vignette:
+                self.tags[category_] = tags_list
+    entity = DummyEntity(tags_filtered, category)
+    vignettes = flavor.get_flavor(entity)
+    if not vignettes and ensure_vignette:
         return "The air is thick with untold stories."
-
-    # Select a random flavor from the available vignettes
-    if flavor_vignettes:
-        return random.choice(flavor_vignettes)
-    else:
-        return ""
-
+    return random.choice(vignettes) if vignettes else ""
 
 def discover_connected_locations(location):
     global known_locations
-    if "travel" in location:
-        for path_type in ["roads", "paths"]:
-            if path_type in location["travel"]:
-                for dest in location["travel"][path_type]:
-                    dest_loc = next(
-                        (loc for loc in ALL_LOCATIONS if loc["name"] == dest), None
-                    )
-                    if dest_loc:
-                        known_locations.add(dest_loc["id"])
-
+    for mode in ("roads", "paths"):
+        for dest in location.get("travel", {}).get(mode, []):
+            dest_loc = LOCATION_BY_NAME.get(dest)
+            if dest_loc:
+                known_locations.add(dest_loc["id"])
 
 def generate_random_encounter(tags_list):
-    """Generates a random encounter based on tags."""
     if not tags_list:
         return None
+    tags_only = [t for t in tags_list if isinstance(t, str)]
+    pool = [enc for t in tags_only if t in ENCOUNTER_NAMES for enc in ENCOUNTER_NAMES[t]]
+    if not pool:
+        return None
+    enc = random.choice(pool)
+    return {
+        "id":   random.randint(10000, 99999),
+        "name": enc["name"],
+        "desc": enc["desc"],
+        "tags": tags_only + [enc["type"]],
+    }
 
-    # Ensure tags_list is a list of strings
-    tags = [tag for tag in tags_list if isinstance(tag, str)]
+# Hierarchy finder
+def _find_hierarchy(loc_id):
+    for hold in ALL_LOCATIONS:
+        if hold["id"] == loc_id:
+            return hold, None
+        for city in hold.get("sub_locations", []):
+            if city["id"] == loc_id:
+                return hold, city
+            for venue in city.get("sub_locations", []):
+                if venue["id"] == loc_id:
+                    return hold, city
+    return None, None
 
-    available_encounters = [
-        enc for tag in tags if tag in ENCOUNTER_NAMES for enc in ENCOUNTER_NAMES[tag]
-    ]
-    if available_encounters:
-        encounter = random.choice(available_encounters)
-        return {
-            "id": random.randint(10000, 99999),
-            "name": encounter["name"],
-            "desc": encounter["desc"],
-            "tags": tags + [encounter["type"]],
-        }
-    return None
-
-
-# Game logic functions
+# List known realms
 def list_locations():
     clear_screen()
     UI.print_heading("Known Realms")
@@ -142,205 +138,176 @@ def list_locations():
         UI.print_line()
         return
 
-    # Sort locations to display them consistently
-    sorted_known_locations = sorted(
-        [l for l in ALL_LOCATIONS if l["id"] in known_locations],
-        key=lambda x: x["name"]
+    sorted_known = sorted(
+        (L for L in LOCATION_BY_ID.values() if L["id"] in known_locations),
+        key=lambda L: L["name"]
     )
-
-    displayed_ids = set()
-    for loc in sorted_known_locations:
-        # Avoid re-displaying sub-locations that are already listed under their parent
-        if loc["id"] in displayed_ids:
+    shown = set()
+    for L in sorted_known:
+        if L["id"] in shown:
             continue
-        
-        brief_desc = loc["desc"].split(".")[0] + "."
-        UI.print_info(f"[{loc['id']:>2}] {loc['name']:<30} — {brief_desc}")
-        displayed_ids.add(loc["id"])
-
-        # Display sub-locations if any
-        if "sub_locations" in loc:
-            for sub_loc in sorted(loc["sub_locations"], key=lambda x: x["name"]):
-                if sub_loc["id"] in known_locations and sub_loc["id"] not in displayed_ids:
-                    sub_brief_desc = sub_loc["desc"].split(".")[0] + "."
-                    UI.print_info(f"   [{sub_loc['id']:>2}] {sub_loc['name']:<28} — {sub_brief_desc}")
-                    displayed_ids.add(sub_loc["id"])
+        brief = L["desc"].split(".")[0] + "."
+        UI.print_info(f"[{L['id']:>2}] {L['name']:<30} — {brief}")
+        shown.add(L["id"])
+        for sub in sorted(L.get("sub_locations", []), key=lambda x: x["name"]):
+            if sub["id"] in known_locations and sub["id"] not in shown:
+                brief2 = sub["desc"].split(".")[0] + "."
+                UI.print_info(f"   [{sub['id']:>2}] {sub['name']:<28} — {brief2}")
+                shown.add(sub["id"])
     UI.print_line()
 
-
-def travel_menu(player, current_location_param):  # current_location passed as parameter
+# Travel menu with temporary numeric index
+def travel_menu(player, current_location):
     try:
         clear_screen()
         UI.print_heading("Chart a Course")
-        
-        reachable_locations = []
-        travel_options_map = {}  # Map input choice to location object
 
-        # Determine if current_location_param is a sub-location
-        is_sub_location = False
-        parent_loc_obj = None
-        for hold_or_city in ALL_LOCATIONS:  # Iterate through top-level holds/cities
-            if "sub_locations" in hold_or_city:
-                for sub_l in hold_or_city["sub_locations"]:
-                    if sub_l["id"] == current_location_param["id"]:
-                        is_sub_location = True
-                        parent_loc_obj = hold_or_city  # This is the parent hold or city
-                        break
-                if is_sub_location:
-                    break
-        
-        # Option to go up to parent location if currently in a sub-location
-        if is_sub_location and parent_loc_obj and parent_loc_obj["id"] in known_locations:
-            reachable_locations.append({"id": parent_loc_obj["id"], "name": f"Up to {parent_loc_obj['name']}", "desc": parent_loc_obj["desc"], "type": "parent"})
-            travel_options_map[str(parent_loc_obj["id"])] = parent_loc_obj
-        
-        # Add sub-locations of the current city/hold
-        if "sub_locations" in current_location_param:
-            for sub_loc in current_location_param["sub_locations"]:
-                if sub_loc["id"] in known_locations and sub_loc["id"] != current_location_param["id"]:
-                    reachable_locations.append(sub_loc)
-                    travel_options_map[str(sub_loc["id"])] = sub_loc
-        
-        # Add direct travel connections (roads/paths) from current_location or its parent if in sub-location
-        effective_location_for_travel = parent_loc_obj if is_sub_location and parent_loc_obj else current_location_param
+        hold, city = _find_hierarchy(current_location["id"])
+        options = []
+        # Build option list
+        if city:
+            options.append({"loc": city, "type": "parent"})
+            for sib in city.get("sub_locations", []):
+                if sib["id"] != current_location["id"]:
+                    options.append({"loc": sib, "type": "sibling"})
+        elif hold and hold["id"] == current_location["id"]:
+            for c in hold.get("sub_locations", []):
+                options.append({"loc": c, "type": "city"})
 
-        if "travel" in effective_location_for_travel:
-            for path_type in ["roads", "paths"]:
-                if path_type in effective_location_for_travel["travel"]:
-                    for dest_name in effective_location_for_travel["travel"][path_type]:
-                        dest_loc = next((loc for loc in ALL_LOCATIONS if loc["name"] == dest_name), None)
-                        if dest_loc and dest_loc["id"] in known_locations and dest_loc["id"] != current_location_param["id"]:
-                            # Avoid adding if it's already a sub_location of the current hold, or the parent itself
-                            if not any(loc_item.get("id") == dest_loc["id"] for loc_item in reachable_locations):
-                                reachable_locations.append(dest_loc)
-                                travel_options_map[str(dest_loc["id"])] = dest_loc
-        
-        # Sort reachable locations for consistent display: Parents first, then by name
-        reachable_locations.sort(key=lambda x: (x.get("type") != "parent", x["name"]))
+        # Connected holds/cities
+        base = hold if hold else current_location
+        for mode in ("roads", "paths"):
+            for name in base.get("travel", {}).get(mode, []):
+                dest = LOCATION_BY_NAME.get(name)
+                if dest and dest["id"] != current_location["id"]:
+                    if all(opt["loc"]["id"] != dest["id"] for opt in options):
+                        options.append({"loc": dest, "type": "connected"})
 
-        if not reachable_locations:
+        if not options:
             UI.slow_print("There are no immediate destinations known from here.")
             UI.print_line()
-            return current_location_param  # Return current_location_param unchanged
+            return current_location
 
-        for loc_option in reachable_locations:
-            brief_desc = loc_option["desc"].split(".")[0] + "."
-            UI.print_info(f"[{loc_option['id']:>2}] {loc_option['name']:<30} — {brief_desc}")
-            # travel_options_map is already correctly populated above
+        # Display options with 1-based index
+        option_map = {}
+        for idx, entry in enumerate(options, start=1):
+            loc = entry["loc"]
+            brief = loc["desc"].split(".")[0] + "."
+            UI.print_info(f"[{idx}] {loc['name']:<30} — {brief}")
+            option_map[str(idx)] = loc
 
-        if current_location_param and current_location_param["id"] in random_encounters:
+        # Nearby encounters
+        if current_location["id"] in random_encounters:
             UI.print_subheading("\n-- Nearby Encounters --")
-            for i, encounter in enumerate(
-                random_encounters[current_location_param["id"]], 1
-            ):
-                UI.print_info(
-                    f"[R{i:>1}] {encounter['name']:<30} — {encounter['desc'].split('.')[0]}."
-                )
+            for i, enc in enumerate(random_encounters[current_location["id"]], start=1):
+                UI.print_info(f"[R{i}] {enc['name']:<30} — {enc['desc'].split('.')[0]}.")
         UI.print_line()
 
         sel = UI.print_prompt("Whither do you journey? (0 to remain)").strip()
-
         if sel == "0":
-            return current_location_param  # Return current_location_param unchanged
-
+            return current_location
         if sel.startswith("R"):
-            return handle_encounter_selection(sel, player, current_location_param)  # Pass current_location_param
+            return handle_encounter_selection(sel, player, current_location)
 
-        try:
-            loc_id = int(sel)
-            if str(loc_id) in travel_options_map:
-                selected_loc_obj = travel_options_map[str(loc_id)]
-                if selected_loc_obj.get("type") == "parent":
-                    # If "Up to Parent" was selected, return the actual parent object
-                    return parent_loc_obj  # Return the parent object
-                else:
-                    # For all other valid selections, pass to handle_location_selection
-                    # This now handles both direct travel to a non-hold/city location
-                    # and selection of a sub-location from the current hold/city's menu.
-                    return handle_location_selection(loc_id, player, selected_loc_obj)  # Pass the selected_loc_obj
-            else:
-                UI.slow_print("That destination is not currently reachable or known.")
-                return current_location_param  # Return current_location_param unchanged
-        except ValueError:
-            UI.slow_print("Your intent is unclear.")
-            return current_location_param  # Return current_location_param unchanged
+        # Numeric selection
+        if sel in option_map:
+            chosen = option_map[sel]
+            return handle_location_selection(chosen["id"], player, chosen)
+
+        UI.slow_print("Your intent is unclear.")
+        return current_location
 
     except Exception as e:
         UI.print_failure(f"Error in travel_menu: {e}")
         traceback.print_exc()
-        return current_location_param  # Always return current_location_param
+        return current_location
 
-
-def handle_encounter_selection(sel, player, current_location_param):  # current_location passed as parameter
+# Handle random encounter travel
+def handle_encounter_selection(sel, player, current_location):
     try:
-        encounter_index = int(sel[1:]) - 1
-        if (
-            current_location_param
-            and current_location_param["id"] in random_encounters
-            and 0 <= encounter_index < len(random_encounters[current_location_param["id"]])
-        ):
-            encounter = random_encounters[current_location_param["id"]][encounter_index]
-            # current_location is updated locally and returned
-            new_current_location = encounter
-            known_locations.add(new_current_location["id"])
-
-            UI.slow_print(f"You have ventured to {new_current_location['name']}.\n")
-            UI.slow_print(
-                get_flavor_text(new_current_location["tags"], "location_tags", ensure_vignette=True)
-            )
-            trigger_random_event(new_current_location["tags"], player, UI, new_current_location)
-            generate_npcs_for_location(new_current_location)
-            return new_current_location
-        else:
-            UI.slow_print("That place remains shrouded in mystery or lies beyond your reach.")
-            return current_location_param  # Return current_location_param unchanged
-    except ValueError:
+        idx = int(sel[1:]) - 1
+        enc_list = random_encounters.get(current_location["id"], [])
+        if 0 <= idx < len(enc_list):
+            enc = enc_list[idx]
+            known_locations.add(enc["id"])
+            # Arrival description
+            UI.slow_print(f"You arrive at {enc['name']}.")
+            UI.slow_print(enc["desc"])
+            UI.slow_print(get_flavor_text(enc["tags"], "location_tags", ensure_vignette=True))
+            trigger_random_event(enc["tags"], player, UI, enc)
+            generate_npcs_for_location(enc)
+            return enc
+        UI.slow_print("That place remains beyond your reach.")
+        return current_location
+    except Exception:
         UI.slow_print("Invalid encounter selection.")
-        return current_location_param  # Return current_location_param unchanged
+        return current_location
 
+# Handle numbered location travel
+def handle_location_selection(loc_id, player, selected_loc):
+    loc = LOCATION_BY_ID.get(loc_id)
+    if not loc:
+        return selected_loc
 
-def handle_location_selection(loc_id, player, current_location_param):  # current_location passed as parameter
-    # current_location is not declared global here, it's passed as a parameter
-    # and the new value will be returned.
+    # If diving into same hold/city
+    if loc.get("sub_locations") and loc["id"] == selected_loc["id"]:
+        return handle_sublocation_selection(loc, player, selected_loc)
 
-    if loc_id not in known_locations:
-        UI.slow_print("That land is unknown to you, adventurer.")
-        return current_location_param  # Return current_location_param unchanged
+    # If selecting new hold/city
+    if loc.get("sub_locations") and loc["id"] != selected_loc["id"]:
+        known_locations.add(loc["id"])
+        discover_connected_locations(loc)
+        UI.slow_print(f"You travel to {loc['name']}.")
+        UI.slow_print(loc["desc"])
+        UI.slow_print(get_flavor_text(loc["tags"], "location_tags", ensure_vignette=True))
+        return handle_sublocation_selection(loc, player, loc)
 
-    # The selected 'loc_obj' is now passed directly as current_location_param if it's already a known object.
-    # If loc_id was passed from travel_menu that selected a non-parent/non-sublocation, find it:
-    loc = next((l for l in ALL_LOCATIONS if l["id"] == loc_id), None)
-    if not loc:  # Fallback if loc_id somehow invalid
-        return current_location_param
+    # Normal location arrival
+    known_locations.add(loc["id"])
+    discover_connected_locations(loc)
+    UI.slow_print(f"You travel to {loc['name']}.")
+    UI.slow_print(loc["desc"])
+    UI.slow_print(get_flavor_text(loc["tags"], "location_tags", ensure_vignette=True))
+    trigger_random_event(loc["tags"], player, UI, loc)
+    generate_npcs_for_location(loc)
+    return loc
 
-    # If the selected location is the current location, and it's a hold/city, offer sub-locations.
-    if loc["id"] == current_location_param["id"] and "sub_locations" in loc:
-        return handle_sublocation_selection(loc, player, current_location_param)
+# Handle sub-location dive
+def handle_sublocation_selection(parent_loc, player, current_loc):
+    known_subs = [s for s in parent_loc.get("sub_locations", []) if s["id"] in known_locations]
+    if not known_subs:
+        UI.slow_print(f"No known sub-locations in {parent_loc['name']}.")
+        UI.print_line()
+        return current_loc
 
-    # If the selected location is a HOLD (has sub_locations), and it's *not* the current location,
-    # set it as current and then offer its sub-locations.
-    # This path is typically taken when selecting a new Hold from the travel_menu.
-    if "sub_locations" in loc and loc["sub_locations"] and loc["id"] != current_location_param["id"]:
-        new_current_location = loc
-        known_locations.add(new_current_location["id"])
-        discover_connected_locations(new_current_location)  # Discover connections of the hold itself
+    UI.print_heading(f"Realms Within {parent_loc['name']}")
+    for idx, sub in enumerate(sorted(known_subs, key=lambda x: x["name"]), start=1):
+        brief = sub["desc"].split(".")[0] + "."
+        UI.print_info(f"[{idx}] {sub['name']:<30} — {brief}")
+    UI.print_line()
 
-        UI.slow_print(f"You have ventured to {new_current_location['name']}.")
-        UI.slow_print(get_flavor_text(new_current_location["tags"], "location_tags", ensure_vignette=True))
+    sel = UI.print_prompt("Which haven within? (0 to linger)").strip()
+    if sel == "0":
+        return current_loc
+    try:
+        idx = int(sel) - 1
+        if 0 <= idx < len(known_subs):
+            sub = known_subs[idx]
+            UI.slow_print(f"You travel deep into {sub['name']}.")
+            UI.slow_print(sub["desc"])
+            inheritable = {"nordic","imperial","stormcloak","thieves","corrupt","military","bards","city","town","village"}
+            comb = sub.get("tags", []) + [t for t in parent_loc["tags"] if t in inheritable]
+            UI.slow_print(get_flavor_text(comb, "location_tags", ensure_vignette=True))
+            trigger_random_event(comb, player, UI, sub)
+            generate_npcs_for_location(sub)
+            return sub
+    except ValueError:
+        pass
 
-        # Now, present the sub-locations for selection
-        return handle_sublocation_selection(new_current_location, player, new_current_location)  # Pass new_current_location
-    
-    # Normal travel to a non-hold location, or a sub-location directly selected
-    new_current_location = loc
-    known_locations.add(new_current_location["id"])
-    discover_connected_locations(new_current_location)
-    UI.slow_print(f"You have ventured to {new_current_location['name']}.\n")
-    UI.slow_print(get_flavor_text(new_current_location["tags"], "location_tags", ensure_vignette=True))
-    trigger_random_event(new_current_location["tags"], player, UI, new_current_location)
-    generate_npcs_for_location(new_current_location)
-    return new_current_location
+    UI.slow_print("Your path is obscured.")
+    return current_loc
 
+# Remaining NPC generation, initialization, and main loop unchanged...
 
 def handle_sublocation_selection(parent_loc, player, current_location_param):  # current_location passed as parameter
     # current_location is not declared global here, it's passed as a parameter
