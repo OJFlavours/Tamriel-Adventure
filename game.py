@@ -5,17 +5,17 @@ from datetime import datetime, timezone
 
 try:
     from locations import LOCATIONS
-    from stats import Player, Stats, RACES, CLASSES # Import RACES and CLASSES directly from stats
+    from stats import Player, Stats, RACES, CLASSES  # Import RACES and CLASSES directly from stats
     from npc import NPC, FRIENDLY_ROLES, HOSTILE_ROLES, NAME_POOLS
     from combat import Combat
     from ui import UI
-    from items import generate_random_item, Item, generate_item_from_key # Import generate_item_from_key
+    from items import generate_random_item, Item, generate_item_from_key  # Import generate_item_from_key
     from events import trigger_random_event, explore_location
     from quests import (
         list_player_quests,
-        QuestLog, # Import QuestLog directly
+        QuestLog,  # Import QuestLog directly
         generate_location_appropriate_quest,
-        generate_reward # Now used for generating quest rewards
+        generate_reward  # Now used for generating quest rewards
     )
     import tags
     import flavor
@@ -28,7 +28,7 @@ except ImportError as e:
 # Globals
 known_locations = set()
 npc_registry = {}
-current_location = None # This global will be updated by being returned from functions
+current_location = None  # This global will be updated by being returned from functions
 random_encounters = {}
 game_start_time = None
 
@@ -55,7 +55,7 @@ def slow_print(text, delay=0.03):
     UI.slow_print(text, speed=delay)
 
 
-def get_flavor_text(tags_list_param, category, ensure_vignette=False): # Renamed tags_list to tags_list_param
+def get_flavor_text(tags_list_param, category, ensure_vignette=False):  # Renamed tags_list to tags_list_param
     """Gets flavor text from the flavor module based on a list of tags."""
     if not tags_list_param:
         return ""
@@ -86,7 +86,6 @@ def get_flavor_text(tags_list_param, category, ensure_vignette=False): # Renamed
 
     dummy_entity = DummyEntity(tags_filtered, category)
     flavor_vignettes = flavor.get_flavor(dummy_entity)
-
 
     # Check if any available_text exists in flavor_vignettes
     if not flavor_vignettes and ensure_vignette:
@@ -169,23 +168,23 @@ def list_locations():
     UI.print_line()
 
 
-def travel_menu(player, current_location_param): # current_location passed as parameter
+def travel_menu(player, current_location_param):  # current_location passed as parameter
     try:
         clear_screen()
         UI.print_heading("Chart a Course")
         
         reachable_locations = []
-        travel_options_map = {} # Map input choice to location object
+        travel_options_map = {}  # Map input choice to location object
 
         # Determine if current_location_param is a sub-location
         is_sub_location = False
         parent_loc_obj = None
-        for hold_or_city in ALL_LOCATIONS: # Iterate through top-level holds/cities
+        for hold_or_city in ALL_LOCATIONS:  # Iterate through top-level holds/cities
             if "sub_locations" in hold_or_city:
                 for sub_l in hold_or_city["sub_locations"]:
                     if sub_l["id"] == current_location_param["id"]:
                         is_sub_location = True
-                        parent_loc_obj = hold_or_city # This is the parent hold or city
+                        parent_loc_obj = hold_or_city  # This is the parent hold or city
                         break
                 if is_sub_location:
                     break
@@ -210,7 +209,7 @@ def travel_menu(player, current_location_param): # current_location passed as pa
                 if path_type in effective_location_for_travel["travel"]:
                     for dest_name in effective_location_for_travel["travel"][path_type]:
                         dest_loc = next((loc for loc in ALL_LOCATIONS if loc["name"] == dest_name), None)
-                        if dest_loc and dest_loc["id"] in known_locations and dest_loc["id"] != current_location_param["id"]: # Don't list current location as travel option
+                        if dest_loc and dest_loc["id"] in known_locations and dest_loc["id"] != current_location_param["id"]:
                             # Avoid adding if it's already a sub_location of the current hold, or the parent itself
                             if not any(loc_item.get("id") == dest_loc["id"] for loc_item in reachable_locations):
                                 reachable_locations.append(dest_loc)
@@ -222,7 +221,7 @@ def travel_menu(player, current_location_param): # current_location passed as pa
         if not reachable_locations:
             UI.slow_print("There are no immediate destinations known from here.")
             UI.print_line()
-            return current_location_param # Return current_location_param unchanged
+            return current_location_param  # Return current_location_param unchanged
 
         for loc_option in reachable_locations:
             brief_desc = loc_option["desc"].split(".")[0] + "."
@@ -242,10 +241,10 @@ def travel_menu(player, current_location_param): # current_location passed as pa
         sel = UI.print_prompt("Whither do you journey? (0 to remain)").strip()
 
         if sel == "0":
-            return current_location_param # Return current_location_param unchanged
+            return current_location_param  # Return current_location_param unchanged
 
         if sel.startswith("R"):
-            return handle_encounter_selection(sel, player, current_location_param) # Pass current_location_param
+            return handle_encounter_selection(sel, player, current_location_param)  # Pass current_location_param
 
         try:
             loc_id = int(sel)
@@ -253,26 +252,26 @@ def travel_menu(player, current_location_param): # current_location passed as pa
                 selected_loc_obj = travel_options_map[str(loc_id)]
                 if selected_loc_obj.get("type") == "parent":
                     # If "Up to Parent" was selected, return the actual parent object
-                    return parent_loc_obj # Return the parent object
+                    return parent_loc_obj  # Return the parent object
                 else:
                     # For all other valid selections, pass to handle_location_selection
                     # This now handles both direct travel to a non-hold/city location
                     # and selection of a sub-location from the current hold/city's menu.
-                    return handle_location_selection(loc_id, player, selected_loc_obj) # Pass the selected_loc_obj
+                    return handle_location_selection(loc_id, player, selected_loc_obj)  # Pass the selected_loc_obj
             else:
                 UI.slow_print("That destination is not currently reachable or known.")
-                return current_location_param # Return current_location_param unchanged
+                return current_location_param  # Return current_location_param unchanged
         except ValueError:
             UI.slow_print("Your intent is unclear.")
-            return current_location_param # Return current_location_param unchanged
+            return current_location_param  # Return current_location_param unchanged
 
     except Exception as e:
         UI.print_failure(f"Error in travel_menu: {e}")
         traceback.print_exc()
-        return current_location_param # Always return current_location_param
+        return current_location_param  # Always return current_location_param
 
 
-def handle_encounter_selection(sel, player, current_location_param): # current_location passed as parameter
+def handle_encounter_selection(sel, player, current_location_param):  # current_location passed as parameter
     try:
         encounter_index = int(sel[1:]) - 1
         if (
@@ -294,24 +293,24 @@ def handle_encounter_selection(sel, player, current_location_param): # current_l
             return new_current_location
         else:
             UI.slow_print("That place remains shrouded in mystery or lies beyond your reach.")
-            return current_location_param # Return current_location_param unchanged
+            return current_location_param  # Return current_location_param unchanged
     except ValueError:
         UI.slow_print("Invalid encounter selection.")
-        return current_location_param # Return current_location_param unchanged
+        return current_location_param  # Return current_location_param unchanged
 
 
-def handle_location_selection(loc_id, player, current_location_param): # current_location passed as parameter
+def handle_location_selection(loc_id, player, current_location_param):  # current_location passed as parameter
     # current_location is not declared global here, it's passed as a parameter
     # and the new value will be returned.
 
     if loc_id not in known_locations:
         UI.slow_print("That land is unknown to you, adventurer.")
-        return current_location_param # Return current_location_param unchanged
+        return current_location_param  # Return current_location_param unchanged
 
     # The selected 'loc_obj' is now passed directly as current_location_param if it's already a known object.
     # If loc_id was passed from travel_menu that selected a non-parent/non-sublocation, find it:
     loc = next((l for l in ALL_LOCATIONS if l["id"] == loc_id), None)
-    if not loc: # Fallback if loc_id somehow invalid
+    if not loc:  # Fallback if loc_id somehow invalid
         return current_location_param
 
     # If the selected location is the current location, and it's a hold/city, offer sub-locations.
@@ -324,13 +323,13 @@ def handle_location_selection(loc_id, player, current_location_param): # current
     if "sub_locations" in loc and loc["sub_locations"] and loc["id"] != current_location_param["id"]:
         new_current_location = loc
         known_locations.add(new_current_location["id"])
-        discover_connected_locations(new_current_location) # Discover connections of the hold itself
+        discover_connected_locations(new_current_location)  # Discover connections of the hold itself
 
         UI.slow_print(f"You have ventured to {new_current_location['name']}.")
         UI.slow_print(get_flavor_text(new_current_location["tags"], "location_tags", ensure_vignette=True))
 
         # Now, present the sub-locations for selection
-        return handle_sublocation_selection(new_current_location, player, new_current_location) # Pass new_current_location
+        return handle_sublocation_selection(new_current_location, player, new_current_location)  # Pass new_current_location
     
     # Normal travel to a non-hold location, or a sub-location directly selected
     new_current_location = loc
@@ -343,7 +342,7 @@ def handle_location_selection(loc_id, player, current_location_param): # current
     return new_current_location
 
 
-def handle_sublocation_selection(parent_loc, player, current_location_param): # current_location passed as parameter
+def handle_sublocation_selection(parent_loc, player, current_location_param):  # current_location passed as parameter
     # current_location is not declared global here, it's passed as a parameter
     # and the new value will be returned.
 
@@ -354,11 +353,11 @@ def handle_sublocation_selection(parent_loc, player, current_location_param): # 
     if not known_sub_locs:
         UI.slow_print(f"There are no known sub-locations within {parent_loc['name']} to explore further.")
         UI.print_line()
-        return current_location_param # Return current_location_param unchanged
+        return current_location_param  # Return current_location_param unchanged
 
     # Prompt for selection within the current parent location (if current_location is a hold)
     UI.print_heading(f"Realms Within {parent_loc['name']}")
-    for sub_loc in sorted(known_sub_locs, key=lambda x: x["name"]): # Display known sub-locations only
+    for sub_loc in sorted(known_sub_locs, key=lambda x: x["name"]):  # Display known sub-locations only
         brief_desc = sub_loc["desc"].split(".")[0] + "."
         UI.print_info(f"[{sub_loc['id']:>2}] {sub_loc['name']:<30} — {brief_desc}")
     UI.print_line()
@@ -366,12 +365,12 @@ def handle_sublocation_selection(parent_loc, player, current_location_param): # 
     try:
         sub_id = int(UI.print_prompt("Which haven within do you seek? (0 to linger)"))
         if sub_id == 0:
-            return current_location_param # Return current_location_param unchanged
+            return current_location_param  # Return current_location_param unchanged
     except ValueError:
         UI.slow_print("Your path is obscured.")
-        return current_location_param # Return current_location_param unchanged
+        return current_location_param  # Return current_location_param unchanged
 
-    sub_loc = next((sl for sl in known_sub_locs if sl["id"] == sub_id), None) # Check against known_sub_locs
+    sub_loc = next((sl for sl in known_sub_locs if sl["id"] == sub_id), None)  # Check against known_sub_locs
     if sub_loc:
         new_current_location = sub_loc
         UI.slow_print(f"You have ventured to {new_current_location['name']} in {parent_loc['name']}.\n")
@@ -391,7 +390,7 @@ def handle_sublocation_selection(parent_loc, player, current_location_param): # 
         return new_current_location
     else:
         UI.slow_print("That place holds no welcome for you.")
-        return current_location_param # Return current_location_param unchanged
+        return current_location_param  # Return current_location_param unchanged
 
 
 # NPC generation functions
@@ -455,16 +454,16 @@ def determine_npc_count(tags_list):
 
 
 def generate_tavern_npcs(location, tags_list):
-    innkeeper = NPC(name="Innkeeper", race="Nord", role="innkeeper", level=random.randint(1,5)) # Added name, race, level
+    innkeeper = NPC(name="Innkeeper", race="Nord", role="innkeeper", level=random.randint(1,5))  # Added name, race, level
     npc_registry[location["id"]].append(innkeeper)
 
     patron_count = random.randint(3, 8)
     patron_roles = ["merchant", "adventurer", "hunter", "farmer"]
     for _ in range(patron_count):
-        patron = NPC(name="Patron", race="Nord", role=random.choice(patron_roles), level=random.randint(1,5)) # Added name, race, level
+        patron = NPC(name="Patron", race="Nord", role=random.choice(patron_roles), level=random.randint(1,5))  # Added name, race, level
         npc_registry[location["id"]].append(patron)
 
-    bard = NPC(name="Bard", race="Nord", role="bard", level=random.randint(1,5)) # Added name, race, level
+    bard = NPC(name="Bard", race="Nord", role="bard", level=random.randint(1,5))  # Added name, race, level
     npc_registry[location["id"]].append(bard)
 
 
@@ -473,7 +472,7 @@ def generate_standard_npcs(location, tags_list, npc_count, role_pool, demographi
         role = determine_npc_role(tags_list, role_pool)
         culture = determine_npc_culture(demographics)
         # NPC names are now generated within the NPC class itself, so we pass None
-        npc = NPC(name=None, race=culture, role=role, level=random.randint(1,5)) # Pass None for name, as NPC class generates it
+        npc = NPC(name=None, race=culture, role=role, level=random.randint(1,5))  # Pass None for name, as NPC class generates it
         npc_registry[location["id"]].append(npc)
 
 
@@ -525,7 +524,7 @@ def list_npcs_at_location(location, player):
 
         UI.print_heading("Kindred Spirits Nearby")
         for i, npc in enumerate(npcs, 1):
-            UI.print_info(f"[{i}] {npc.name} — {npc.role.capitalize()} ({npc.race.capitalize()})") # Improved NPC display
+            UI.print_info(f"[{i}] {npc.name} — {npc.role.capitalize()} ({npc.race.capitalize()})")  # Improved NPC display
         UI.print_line()
 
         sel = UI.print_prompt("With whom do you wish to parley? (0 to pass)").strip()
@@ -533,7 +532,7 @@ def list_npcs_at_location(location, player):
             i = int(sel)
             if 1 <= i <= len(npcs):
                 npc = npcs[i - 1]
-                if npc.tags.get("npc", {}).get("attitude") == "hostile": # Check attitude from tags
+                if npc.tags.get("npc", {}).get("attitude") == "hostile":  # Check attitude from tags
                     UI.slow_print(f"{npc.name} draws steel, their eyes burning with malice!")
                     combat = Combat(player, [npc], location)
                     combat.run()
@@ -546,7 +545,7 @@ def list_npcs_at_location(location, player):
         traceback.print_exc()
 
 
-def share_random_rumor(current_location_param): # current_location passed as parameter
+def share_random_rumor(current_location_param):
     try:
         if not current_location_param:
             return
@@ -557,18 +556,19 @@ def share_random_rumor(current_location_param): # current_location passed as par
         UI.print_failure(f"Error in share_random_rumor: {e}")
 
 
-def combat_demo(player, current_location_param): # current_location passed as parameter
+def combat_demo(player, current_location_param):
     try:
         enemy = NPC(
-            name="Bandit Raider", level=player.level, race="Nord", role="bandit" # Added race
+            name="Bandit Raider", level=player.level, race="Nord", role="bandit"  # Added race
         )
-        combat = Combat(player, [enemy], current_location_param) # Changed npc to enemy, use current_location_param
+        combat = Combat(player, [enemy], current_location_param)  # Changed npc to enemy, use current_location_param
         combat.run()
     except Exception as e:
         UI.print_failure(f"Error in combat_demo: {e}")
         traceback.print_exc()
 
-def look_around_area(player, current_location_param, random_encounters, npc_registry, LOCATIONS, UI): # current_location passed as parameter
+
+def look_around_area(player, current_location_param, random_encounters, npc_registry, LOCATIONS, UI):
     """
     A new function to allow the player to 'look around' their current location.
     This will trigger exploration results and potentially random events/quests.
@@ -578,11 +578,11 @@ def look_around_area(player, current_location_param, random_encounters, npc_regi
     explore_location(player, current_location_param, random_encounters, npc_registry, LOCATIONS, UI)
     
     # After exploring, there's a chance to trigger a quest from the environment
-    if random.random() < 0.3: # 30% chance to find a quest by looking around
+    if random.random() < 0.3:  # 30% chance to find a quest by looking around
         new_quest = generate_location_appropriate_quest(player.level, current_location_param["tags"])
         if new_quest:
             UI.slow_print("\nYou notice something that piques your interest. A new quest appears!")
-            UI.slow_print(f"Quest: {new_quest.title} - {new_quest.description}") # Display title and description
+            UI.slow_print(f"Quest: {new_quest.title} - {new_quest.description}")  # Display title and description
             
             # Format reward display
             reward_parts = []
@@ -594,7 +594,7 @@ def look_around_area(player, current_location_param, random_encounters, npc_regi
             UI.slow_print(f"Reward: {', '.join(reward_parts)}")
             
             player.quest_log.add_quest(new_quest)
-    return current_location_param # Return current_location_param
+    return current_location_param  # Return current_location_param
 
 
 # Initialization functions
@@ -606,7 +606,7 @@ def initialize_player():
         for i, race_name in enumerate(race_options):
             UI.slow_print(f"[{i+1}] {race_name.capitalize()}")
 
-        player_race_str = "nord" # Default to lowercase for consistency with RACES keys
+        player_race_str = "nord"  # Default to lowercase for consistency with RACES keys
         while True:
             race_choice_input = UI.print_prompt("Enter the number of your chosen race")
             try:
@@ -627,8 +627,8 @@ def initialize_player():
             class_data = CLASSES[class_id]
             UI.slow_print(f"[{i+1}] {class_data['name']} - {class_data['desc']}")
 
-        selected_class_data = CLASSES["warrior"] # Default to Warrior data
-        selected_class_name = "Warrior" # Default to Warrior name
+        selected_class_data = CLASSES["warrior"]  # Default to Warrior data
+        selected_class_name = "Warrior"  # Default to Warrior name
         while True:
             class_choice_input = UI.print_prompt("Enter the number of your chosen class")
             try:
@@ -651,8 +651,8 @@ def initialize_player():
             subclass_data = selected_class_data["subclasses"][subclass_id]
             UI.slow_print(f"[{i+1}] {subclass_data['name']}")
 
-        selected_subclass_data = list(selected_class_data["subclasses"].values())[0] # Default to first subclass
-        selected_subclass_name = selected_subclass_data['name'] # Default to first subclass name
+        selected_subclass_data = list(selected_class_data["subclasses"].values())[0]  # Default to first subclass
+        selected_subclass_name = selected_subclass_data['name']  # Default to first subclass name
         while True:
             subclass_choice_input = UI.print_prompt("Enter the number of your chosen subclass")
             try:
@@ -679,21 +679,21 @@ def initialize_player():
 
         player = Player(
             player_name,
-            player_race_str, # Pass the string name of the race
-            selected_class_name, # Pass the string name of the class
+            player_race_str,  # Pass the string name of the race
+            selected_class_name,  # Pass the string name of the class
             selected_subclass_name,
             attributes=selected_subclass_data["attributes"],
             skills=selected_subclass_data["skills"],
         )
 
-        for item_name in selected_subclass_data["inventory"]: # Use selected_subclass_data for initial inventory
+        for item_name in selected_subclass_data["inventory"]:  # Use selected_subclass_data for initial inventory
             # Use generate_item_from_key for specific starting items
             item = generate_item_from_key(item_name.lower().replace(" ", "_"), player.level)
             player.add_item(item)
             if item.category in ["weapon", "armor"]:
                 player.equip_item(item)
 
-        player.quest_log = QuestLog() # Ensure QuestLog is initialized here
+        player.quest_log = QuestLog()  # Ensure QuestLog is initialized here
         return player
 
     except Exception as e:
@@ -725,7 +725,7 @@ def initialize_starting_location():
         known_locations.add(new_current_location["id"])
         discover_connected_locations(new_current_location)
         generate_npcs_for_location(new_current_location)
-        return new_current_location # Return the initialized location
+        return new_current_location  # Return the initialized location
 
     # Find cities within the holds
     city_locations = []
@@ -744,7 +744,7 @@ def initialize_starting_location():
         known_locations.add(new_current_location["id"])
         discover_connected_locations(new_current_location)
         generate_npcs_for_location(new_current_location)
-        return new_current_location # Return the initialized location
+        return new_current_location  # Return the initialized location
 
     start_city = random.choice(city_locations)
     tavern_locations = [
@@ -763,7 +763,7 @@ def initialize_starting_location():
         known_locations.add(new_current_location["id"])
         discover_connected_locations(new_current_location)
         generate_npcs_for_location(new_current_location)
-        return new_current_location # Return the initialized location
+        return new_current_location  # Return the initialized location
 
     new_current_location = random.choice(tavern_locations)
     
@@ -771,10 +771,10 @@ def initialize_starting_location():
     parent_hold = next((hold for hold in ALL_LOCATIONS if start_city in hold.get("sub_locations", [])), None)
     if parent_hold:
         known_locations.add(parent_hold["id"])
-        discover_connected_locations(parent_hold) # Discover from the hold
+        discover_connected_locations(parent_hold)  # Discover from the hold
     
-    known_locations.add(start_city["id"]) # Add the city
-    known_locations.add(new_current_location["id"]) # Add the tavern
+    known_locations.add(start_city["id"])  # Add the city
+    known_locations.add(new_current_location["id"])  # Add the tavern
     
     # Also discover connections directly from the starting city
     discover_connected_locations(start_city)
@@ -783,11 +783,11 @@ def initialize_starting_location():
     UI.slow_print(message.replace("tavernrn", "tavern"))
     
     UI.slow_print("The warm fire crackles as patrons share tales over mugs of mead.")
-    return new_current_location # Return the initialized location
+    return new_current_location  # Return the initialized location
 
 
 def initialize_game_state():
-    global game_start_time, known_locations, npc_registry, random_encounters # Declare all global variables modified here
+    global game_start_time, known_locations, npc_registry, random_encounters  # Declare all global variables modified here
     game_start_time = datetime.now(timezone.utc)
 
     known_locations.clear()
@@ -797,7 +797,7 @@ def initialize_game_state():
 
 # Main game loop
 def start_game():
-    global current_location # Declare global here to modify it based on function returns
+    global current_location  # Declare global here to modify it based on function returns
     try:
         initialize_game_state()
 
@@ -805,7 +805,7 @@ def start_game():
         if not player:
             return
 
-        current_location = initialize_starting_location() # Assign the returned location
+        current_location = initialize_starting_location()  # Assign the returned location
 
         if current_location["id"] not in random_encounters:
             random_encounters[current_location["id"]] = []
@@ -839,7 +839,7 @@ def start_game():
                 "Behold Thy Spirit",
                 "Test Thy Steel",
                 "Inspect Thy Possessions",
-                "Look Around the Area", # Added new menu option
+                "Look Around the Area",  # Added new menu option
                 "Review Quest Log",
                 "Use Item",
                 "Depart This Realm"
@@ -855,7 +855,7 @@ def start_game():
             current_location = handle_player_choice(choice, player, current_location)
 
             # Random event after each action, but only with a chance
-            if current_location and random.random() < 0.25: # 25% chance for a random event each turn
+            if current_location and random.random() < 0.25:  # 25% chance for a random event each turn
                 trigger_random_event(current_location["tags"], player, UI, current_location)
 
 
@@ -866,37 +866,37 @@ def start_game():
         input("Press Enter to exit...")
 
 
-def handle_player_choice(choice, player, current_location_param): # current_location passed as parameter
+def handle_player_choice(choice, player, current_location_param):  # current_location passed as parameter
     # current_location is not declared global here, it's passed as a parameter
     # and the new value will be returned.
     
-    new_current_location = current_location_param # Initialize with current value
+    new_current_location = current_location_param  # Initialize with current value
 
     if choice == "1":
         list_locations()
     elif choice == "2":
-        new_current_location = travel_menu(player, current_location_param) # Pass and receive
+        new_current_location = travel_menu(player, current_location_param)  # Pass and receive
     elif choice == "3":
         if current_location_param:
             list_npcs_at_location(current_location_param, player)
         else:
             UI.slow_print("First, you must tread a path to meet the living.")
     elif choice == "4":
-        UI.display_player_stats(player) # Use UI method
+        UI.display_player_stats(player)  # Use UI method
     elif choice == "5":
-        new_current_location = combat_demo(player, current_location_param) # Pass and receive
+        new_current_location = combat_demo(player, current_location_param)  # Pass and receive
     elif choice == "6":
-        UI.display_inventory(player) # Use UI method
-    elif choice == "7": # Mapped to "Look Around the Area"
-        new_current_location = look_around_area(player, current_location_param, random_encounters, npc_registry, LOCATIONS, UI) # Pass and receive
+        UI.display_inventory(player)  # Use UI method
+    elif choice == "7":  # Mapped to "Look Around the Area"
+        new_current_location = look_around_area(player, current_location_param, random_encounters, npc_registry, LOCATIONS, UI)  # Pass and receive
     elif choice == "8":
-        UI.display_quest_log(player) # Use UI method
+        UI.display_quest_log(player)  # Use UI method
     elif choice == "9":
         handle_item_use(player)
     else:
         UI.slow_print("Your will wavers.")
         
-    return new_current_location # Return the potentially updated location
+    return new_current_location  # Return the potentially updated location
 
 
 def handle_item_use(player):
@@ -906,7 +906,7 @@ def handle_item_use(player):
         return
 
     for i, item in enumerate(player.inventory, 1):
-        UI.slow_print(f"[{i}] {item.get_description()}") # Use get_description for detailed view
+        UI.slow_print(f"[{i}] {item.get_description()}")  # Use get_description for detailed view
 
     item_index = UI.print_prompt(
         "Which item do you want to use? (Enter the item number, 0 to cancel)"

@@ -1,328 +1,540 @@
+# events.py
 import random
 import traceback
 from ui import UI
-from quests import Quest, generate_reward # Import generate_reward instead of QUEST_REWARDS
-from items import Item # Import Item class for reward formatting
+from quests import Quest, generate_reward, generate_location_appropriate_quest # Import Quest and generation functions
+from items import Item, generate_item_from_key, generate_random_item
+from locations import LOCATIONS # Import LOCATIONS to build DUNGEON_NAMES
+from exploration_data import EXPLORATION_RESULTS # Import from the new file
+# Assuming npc.py has a function to generate NPCs based on tags, or we do it conceptually here
+# from npc import generate_npc_from_tags 
 
-# Exploration results
-EXPLORATION_RESULTS = {
-    "city": [
-        "You navigate the bustling streets of the city, the air thick with the scent of roasted meats and exotic spices. A Redguard merchant loudly hawks his wares.",
-        "A shadowy alley reveals a den of thieves and smugglers. Whispers of skooma and stolen artifacts fill the air.",
-        "At the city square, a bard sings a ballad of Talos, his voice echoing through the crowd. A heated debate about the White-Gold Concordat ensues.",
-        "You stumble upon the College of Mages, where arcane energies crackle and the air hums with magical potential.",
-        "A city guard, clad in steel armor, warns you of a Daedric cult operating within the city walls.",
-        "The aroma of sujamma and honeyed bread draws you to a packed tavern, where sailors exchange tales of shipwrecks and krakens.",
-        "You overhear a heated argument about trade routes and Imperial taxes at the gates of the Merchant's Guild.",
-        "A parade of masked revelers celebrates a Daedric festival, their laughter masking a darker purpose.",
-        "In the city's poorest quarter, a priest of Arkay tends to the sick, his face etched with compassion.",
-        "You find a hidden garden where a reclusive alchemist cultivates rare Nirnroot, offering cryptic advice about the Dragonborn."
-    ],
-    "tavern": [
-        "Mead sloshes over wooden tables as a bard sings of the Dragonborn; patrons cheer and clap along, inviting you to join the chorus.",
-        "A Dunmer gambler invites you to a game of chance, his gold septims glinting as he promises riches—if the dice favor you.",
-        "You overhear mercenaries plotting a raid on a nearby bandit camp; their maps are stained with ale and blood.",
-        "The barkeep shares a whispered rumor about a hidden treasure in Bleak Falls Barrow, but demands a favor in return.",
-        "A serving wench hurriedly presses a note into your hand before disappearing into the kitchen. It speaks of a conspiracy.",
-        "A group of traveling minstrels performs a haunting ballad about the Oblivion Crisis.",
-        "You find a wall hung with monster trophies—werewolf pelts, giant spider legs, and a troll's skull—each with a tale.",
-        "A tipsy scholar insists that the local Jarl is a puppet of the Thalmor. His evidence? A strange tattoo seen after too much Honningbrew mead.",
-        "You witness a brawl break out over a game of cards, and the barkeep slips you a healing potion 'just in case.'",
-        "A mysterious traveler in a dark cloak offers to trade Dwemer artifacts for any tales of dragon sightings."
+# --- DYNAMICALLY GENERATED DUNGEON_NAMES ---
+def get_all_dungeon_style_locations(locations_data):
+    dungeon_names = set()
+    def find_dungeons_recursive(location_list):
+        for loc in location_list:
+            loc_tags = loc.get("tags", [])
+            is_settlement = "city" in loc_tags or "town" in loc_tags or "village" in loc_tags or "hold" in loc_tags
+            is_dungeon_type = "dungeon" in loc_tags or \
+                              "dwemer" in loc_tags or \
+                              "barrow" in loc_tags or \
+                              ("ruin" in loc_tags and not is_settlement) or \
+                              ("cave" in loc_tags and not is_settlement) or \
+                              (("mine" in loc_tags and not is_settlement) and ("abandoned" in loc_tags or "infested" in loc_tags or "haunted" in loc_tags))
+
+            if is_dungeon_type:
+                dungeon_names.add(loc["name"])
+            
+            if "sub_locations" in loc:
+                find_dungeons_recursive(loc["sub_locations"])
+    find_dungeons_recursive(locations_data)
+    return list(dungeon_names)
+
+DUNGEON_NAMES = get_all_dungeon_style_locations(LOCATIONS)
+if not DUNGEON_NAMES: # Fallback
+    DUNGEON_NAMES = [
+        "Bleak Falls Barrow", "Quicksilver Mine", "Nightcaller Temple", "Iron-Breaker Mine",
+        "Saarthal", "Hob's Fall Cave", "Yngol Barrow", "Movarth's Lair", "Ustengrav",
+        "Pinewatch", "Halldir's Cairn", "Cidhna Mine", "Druadach Redoubt", "Shroud Hearth Barrow",
+        "Wolfskull Cave", "Lost Prospect Mine", "The Ratway", "Labyrinthian", "Dustman's Cairn",
+        "Alftand", "Mzinchaleft", "Forelhost", "Silent Moons Camp", "Reachwind Eyrie", "Blind Cliff Cave"
+    ]
+
+# --- Define SPECIFIC_LOCATION_TAGS (for prioritizing exploration results) ---
+SPECIFIC_LOCATION_TAGS = [
+    "tavern", "inn", "market", "mine", "camp", "cave", "ruin", "barrow", "dwemer",
+    "keep", "meadhall", "blacksmith", "alchemy_shop", "temple", "college", "palace",
+    "meadery", "brewery", "watchtower", "lighthouse", "wreck", "shop", "port",
+    "government", "guild", "prison", "graveyard", "sanctuary", "monastery",
+    "fort", "fortified", "city", "town", "village", "dragon_lair",
+    "enchanted_forest", "cursed_swamp", "volcanic_caldera", "glacial_cave", "ashland_waste"
+]
+
+# --- EXPANDED RANDOM_EVENTS (with tangible effects) ---
+RANDOM_EVENTS = {
+    "generic_travel": [
+        {"description": "You spot a Shrine of Akatosh by the roadside, its eternal flame burning brightly. You feel a sense of timelessness and renewed purpose.", 
+         "type": "flavor_and_buff", "details": {"god_mention": "Akatosh", "minor_buff_debuff":{"stat":"magicka_regen_rate", "amount":0.1, "duration_turns":180, "is_buff":True, "buff_name":"Akatosh's Endurance"}}},
+        {"description": "A rickety cart has broken an axle. Its merchant owner, a weary Dunmer named Drevis, sighs. 'Azura's curse! My shipment of ash yams for Windhelm will spoil!'", 
+         "type": "npc_interaction_and_quest_lead", "details": {"npc_tags": {"role": "merchant_ashlander_goods_stranded", "name":"Drevis", "attitude": "distressed_resigned", "race":"dunmer"}, "dialogue_lead": "'Greetings, muthsera. Perhaps you can assist a struggling trader? I can offer some coin or a few samples of my goods.'", "quest_offer_chance": 0.7, "skill_challenge_to_fix": {"skill": "crafting_repair_or_strength", "dc": 13, "success_reward": {"gold_amount_range": (20,50), "item_key": "ash_yam_sample_pouch"}}}},
+        {"description": "You find a scorched note on a dead Imperial courier. It details an imminent Stormcloak ambush on a strategic bridge [DynamicNearbyLandmark - e.g., Dragon Bridge].", 
+         "type": "quest_lead_and_item", "details": {"lead_description": "Imperial courier carries warning of Stormcloak ambush at a bridge. A chance to influence the war.", "related_tags": ["civil_war_intelligence", "stormcloak_imperial_battle", "strategic_bridge_defense"], "urgency": "critical", "item_found_on_body":"imperial_dispatch_scorched", "dynamic_landmark_needed": True, "faction_choice_involved": ["imperial_legion", "stormcloaks"]}},
+        {"description": "A group of stern-faced Vigilants of Stendarr are interrogating a frightened Khajiit traveler on the road. Their leader, a zealous Breton, glares at you.", 
+         "type": "npc_interaction", "details": {"npc_tags": {"role": "vigilant_of_stendarr_interrogator_zealous", "attitude": "hostile_suspicious"}, "dialogue_lead": "'Stendarr's Light expose the unclean! This one consorts with Daedra, I feel it! What say you, traveler? Do you harbor heretics?'", "faction_interaction_lead": {"faction_tags": ["vigilants_of_stendarr", "daedra_worship_accusation"], "situation": "Vigilants interrogating a Khajiit, player can intervene.", "moral_choice": True}}},
+        {"description": "A sudden, unnatural earthquake shakes the ground violently! Loose rocks tumble from nearby cliffs, and the air fills with dust.", 
+         "type": "environmental_hazard", "details": {"hazard_type": "magical_earthquake", "effect_desc": "The world shudders! You must keep your footing or risk injury from falling debris.", "skill_to_navigate": "agility_or_perception_dodge", "dc": 16, "damage_if_failed": 15, "damage_type": "blunt_force", "status_effect_if_failed": {"type":"disoriented", "duration_turns":2}}}
     ],
     "forest": [
-        "Sunlight dapples the mossy earth as you follow elk tracks past ancient pines and babbling streams.",
-        "A sudden hush falls; you spot a circle of standing stones and recall tales of mischievous Spriggans.",
-        "You hear faint chanting and discover a coven of witches, their hands raised to the sky in a dark ritual.",
-        "A fox darts by, chased by a child with a flower crown—her laughter echoing through the trees.",
-        "You find a toppled shrine to Kyne, covered in runes and half-swallowed by the roots of an ancient tree.",
-        "A hunter invites you to share his fire and tells of a legendary white stag sacred to Hircine.",
-        "You stumble on a ruined cottage, its chimney overgrown with nightshade and its hearth still faintly warm.",
-        "Will-o'-the-wisps flicker in a sunlit glade, swirling in intricate patterns as if spelling out a warning.",
-        "A sudden rain pelts the canopy, sending you scrambling for shelter under a fallen log.",
-        "You follow a songbird to a nest of rare songfinch eggs—a prize for apothecaries, but sacred to local villagers."
+        {"description": "The air grows cold, and you hear the snap of a twig. A Spriggan Matriarch, its form ancient and wreathed in glowing moss, materializes, its eyes burning with primal fury!", "type": "combat_encounter", "details": {"enemy_tags": [["spriggan_matriarch_ancient"], ["bear_cave_charmed", "chance_0.5"], ["wolf_timber_charmed", "chance_0.5"]], "count_range": (1, 1), "flavor_text": "The Spriggan Matriarch roars, a sound like cracking trees, 'You trespass in the heartwood, mortal! The Green will consume you!'", "ambush": True, "special_ability_hint": "Matriarchs are powerful healers, can summon multiple animals, and have a potent poison spray.", "boss_fight_indicator": True, "loot_drop_hint":"taproot_spriggan_heartwood_or_unique_nature_staff"}},
+        {"description": "You discover a hidden grove with a small, moss-covered shrine to Kyne, Goddess of the Storm and the Hunt. Offerings of hawk feathers and antlers lie before it. Praying here, you feel your aim steady and your connection to the wilds deepen.", "type": "flavor_and_buff", "details": {"temporary_buff": {"stat": "archery_skill_bonus", "amount": 10, "duration_turns": 600}, "god_mention": "Kyne", "lore_hint": "Kyne is revered by Nords as the mother of men and beasts, and her shrines grant boons to hunters and warriors of the wild."}},
+        {"description": "A reclusive Bosmer alchemist, Elara Meadowlight, has a cleverly hidden treehouse dwelling. She's initially wary but might trade rare forest ingredients or offer a quest to find a sprig of the legendary 'Gildergreen Sapling' from a dangerous, corrupted grove.", "type": "npc_interaction_and_quest_lead", "details": {"npc_tags": {"role": "alchemist_master_bosmer_treehouse", "name":"Elara Meadowlight", "attitude": "neutral_reclusive_wise", "race": "bosmer"}, "dialogue_lead": "'Few find their way to my sanctuary. The forest provides for those who respect it. Do you come with knowledge of rare flora, or do you seek it?'", "quest_offer_chance": 0.6, "quest_type_hint": "fetch_rare_plant_sacred_corrupted_grove", "item_target":"gildergreen_sapling_pure", "trade_opportunity": {"sell_player": ["rare_flowers_forest", "monster_parts_spriggan"], "buy_player": ["potion_resist_poison_superior", "recipe_elaras_forest_balm", "arrows_bosmer_enchanted_paralysis"]}}},
+        {"description": "You find a patch of glowing blue Nirnroot by a moonlit stream, its characteristic chime filling the air, alongside some potent Nightshade and a cluster of Deathbell flowers. A deadly but valuable find.", "type": "item", "details": {"item_keys": ["nirnroot_glowing_moonlit", "nightshade_berries_potent", "deathbell_flower_cluster"], "quantity_range_nirnroot_glowing_moonlit": (2,3), "quantity_range_nightshade_berries_potent": (3,5), "quantity_range_deathbell_flower_cluster": (2,4) }},
+        {"description": "You find a crudely scrawled note pinned to an ancient oak: 'The Hagravens of [DynamicNearbyLandmark - e.g., Witchmist Grove] have taken my sister for their dark rituals! Reward for her safe return!' Signed, a desperate woodsman.", "type": "quest_lead", "details": {"lead_description": "Hagravens have kidnapped a woodsman's sister. A dangerous rescue mission into their lair.", "related_tags": ["hagraven_coven_ritual", "kidnapped_rescue_mission", "dark_magic_threat"], "urgency": "high", "dynamic_landmark_needed": True, "target_npc_to_rescue":"woodsman_sister_name_unknown"}},
+        {"description": "Ancient, moss-covered stones are arranged in a circle. Runes glow faintly. In the center, a pedestal has three indentations shaped like the claw of a bear, the feather of a hawk, and the scale of a fish. A riddle is carved below: 'Tributes of the wild, offered with respect, awaken the forest's sleeping aspect.'", "type": "puzzle_hint", "details": {"hint_text": "Placing corresponding animal parts (e.g., a bear claw, hawk feather, fish scale) in the indentations might activate the stones and summon a guardian or grant a boon.", "related_tags": ["magic_nature_ritual_animal_spirits", "druidic_puzzle_forest", "summoning_lore_ancient"], "puzzle_id": "forest_animal_spirit_stones", "potential_reward": "Summon Familiar spell scroll or Amulet of Animal Allegiance."}}
     ],
-    "plains": [
-        "Tall grass sways in endless waves, hiding hares and nesting larks. The sky seems impossibly wide over the Whiterun plains.",
-        "You spot a lone mammoth, its massive form outlined against the sunset as it grasps near a stream.",
-        "A shepherd greets you, his flock spread over the hills, and shares news of giants sighted near the Pale.",
-        "You stumble upon a circle of standing stones, carved with symbols of the Divines and offerings of grain and mead.",
-        "A sudden dust devil whirls across your path, and with it, a scrap of a lost Imperial missive bearing the Emperor's seal.",
-        "You find an abandoned camp, its fire pit cold and a single septim left behind.",
-        "A column of ants carries away crumbs from a sweetroll, a reminder of a recent traveler.",
-        "The distant howl of wolves rises on the wind, mingling with the calls of circling hawks.",
-        "Wild horses thunder past, their manes streaming and hooves churning up the soft earth.",
-        "You find a patch of mountain flowers—rare and said to grant luck if woven into a garland."
-    ],
-    "cave": [
-        "You squeeze through a narrow crevice and emerge into a chamber glittering with amethyst and strange fungi.",
-        "A trickle of water echoes, leading you to a pool where blind cavefish dart away from your shadow.",
-        "You spot a faded mural painted by ancient Falmer hands, depicting snow elves and forgotten gods.",
-        "A cold draft warns of a deeper tunnel where the air hums with an unnatural Dwemer energy.",
-        "Scattered bones crunch underfoot—recent, and gnawed as if by something larger than a wolf, perhaps a troll.",
-        "A nest of bats stirs, and you duck as they swirl past, their wings beating a frantic rhythm.",
-        "You find a pile of discarded mining equipment; among them, a rusted iron sword and a journal describing a doomed expedition for ebony ore.",
-        "A tiny, luminescent beetle crawls onto your boot, its shell reflecting shifting colors – a Torchbug.",
-        "You hear distant Draugr voices, but when you call out, only the echo answers.",
-        "A side passage is blocked by a rockfall, but you glimpse a glint of gold beyond—a lost cache of septims, perhaps?"
-    ],
-    "ruin": [
-        "Crumbling arches frame a courtyard where wildflowers bloom among toppled statues of ancient heroes.",
-        "You find a mosaic floor, its tiles faded but still depicting a long-forgotten battle between Nords and Elves.",
-        "A hidden alcove contains offerings: septims, dried lavender, and a child’s wooden toy horse.",
-        "You hear faint music—a lute's melody drifting from somewhere deeper in the ruins, perhaps a lingering spirit.",
-        "An owl blinks at you from a shattered window, feathers dusted with ancient mortar.",
-        "You discover a library, its shelves collapsed but a single scroll still intact and sealed with dragon claws.",
-        "A spiral staircase leads down into darkness, the air heavy with the scent of damp parchment and decay.",
-        "You spot a ghostly warrior who vanishes when you blink, leaving behind only a chill and the whisper of steel.",
-        "A sudden breeze scatters leaves across a sunbeam, illuminating faded runes on the wall—a Dragon Shout, perhaps?",
-        "You find a silver chalice set atop a stone altar, crusted with dried berries—an offering to a long-forgotten god."
+    "dwemer_ruin": [
+        {"description": "The air hums with ancient, barely contained power. A massive Dwarven Centurion Master, its aetherium core glowing ominously, activates from its alcove, steam hissing from its ancient joints!", "type": "combat_encounter", "details": {"enemy_tags": [["automaton_dwemer_centurion_master_steam"]], "count_range": (1,1), "flavor_text": "The ground trembles as the ultimate Dwemer war machine activates, its massive fists and steam cannons ready to obliterate intruders!", "ambush": True, "boss_fight_indicator": True, "loot_drop_hint":"Aetherium_Crest_or_Unique_Dwemer_Core"}},
+        {"description": "You find a complex Dwemer Astrolabe on a pedestal. Its interlocking rings are misaligned. Solving this celestial puzzle might reveal a hidden chamber or activate a nearby mechanism.", "type": "puzzle_hint", "details": {"hint_text": "The symbols on the rings correspond to constellations visible only from within Blackreach or during specific alignments. A nearby Dwemer star chart or observation log might hold the key sequence.", "related_puzzle_id": "dwemer_ruin_astrolabe_celestial", "related_tags": ["dwemer_puzzle_astronomical", "lore_dwemer_cosmology", "blackreach_connection_hint"], "potential_reward": "Access to a hidden observatory or a unique Dwemer artifact."}},
+        {"description": "A hidden pressure plate, almost invisible on the metallic floor, triggers a section of the wall to slide open with a grinding sound. Inside, a small alcove contains several flawless Dwemer Cogs, a Grand Soul Gem filled with a powerful soul, and a detailed schematic for constructing an Enhanced Dwarven Sphere companion.", "type": "item", "details": {"item_keys": ["dwemer_cog_flawless_set", "soul_gem_grand_filled_atronach", "schematic_dwemer_enhanced_sphere_companion"], "quantity_range_dwemer_cog_flawless_set": (3,6)}},
+        {"description": "You find the final, rambling journal of a long-dead Mages Guild scholar, Sulla Trebatius. It details their descent into the ruin, their obsession with Dwemer 'tonal architecture', their discovery of a 'Resonance Crystal', and their growing paranoia about 'the silent watchers that guard the heart of the mountain, their forms like living brass'.", "type": "quest_lead_and_item", "details": {"lead_description": "The journal speaks of a powerful Dwemer artifact, a 'Resonance Crystal', capable of untold power, but guarded by the ruin's deepest defenses and the madness it induced in Sulla. The 'silent watchers' could be unique, powerful Centurions or a new type of automaton.", "related_tags": ["dwemer_artifact_tonal_crystal", "guardian_constructs_unique_brass", "scholar_madness_lore", "tonal_architecture_mystery"], "urgency": "high", "item_found_with_journal": "sulla_research_notes_tonal_architecture", "potential_boss_hint":"Guardian_of_the_Resonance_Crystal"}}
     ],
     "barrow": [
-        "The air is cold and thick with the scent of old stone and death. Rows of Draugr sarcophagi line the walls.",
-        "You brush past cobwebs to find a mural of armored Nordic warriors ascending to Sovngarde.",
-        "A faint blue glow emanates from a crack in the floor—wisp lights, said to guard the slumbering Draugr.",
-        "You hear the clatter of bone on bone and freeze; the sound fades, but your heart pounds with dread.",
-        "A weathered shield leans against a tomb, inscribed with a family crest you recognize from a local legend of a fallen hero.",
-        "You find a rusted lockbox—inside, a faded love letter and a ring of braided silver.",
-        "A cold wind extinguishes your torch for a moment, and you sense unseen eyes watching from the darkness.",
-        "You spot a tiny door at ankle height, perhaps for offerings to the ancient dead.",
-        "You come across a pile of grave goods: septims, carved figurines of the Divines, and a bowl of petrified mammoth cheese.",
-        "The ceiling is painted with constellations, some familiar, others lost to the Dragon Cult."
+        {"description": "A chilling wind sweeps through the burial chamber as you disturb an ancient seal. Draugr Scourges, their eyes burning with cold fire, and Draugr Death Overlords, wielding enchanted ancient Nordic battleaxes that crackle with frost, rise from their sarcophagi!", "type": "combat_encounter", "details": {"enemy_tags": [["undead_draugr_scourge_frost_aura"], ["undead_draugr_death_overlord_battleaxe_frost"]], "count_range": (2,4), "flavor_text": "The most powerful guardians of the ancient dead awaken, their chilling battle cries echoing through the tomb, vowing to protect their slumbering master and the treasures within!", "ambush": False, "loot_drop_hint":"Ancient_Nordic_Enchanted_Weapons_or_Armor"}},
+        {"description": "Behind a loose stone in a sarcophagus of a noble warrior, you find a finely crafted Amulet of Stendarr, surprisingly well-preserved, alongside a handful of potent Bone Meal and a dragon's scale offering.", "type": "item", "details": {"item_keys": ["amulet_of_stendarr_blessed", "bone_meal_superior", "dragon_scale_offering_ancient"]}},
+        {"description": "A series of Nordic burial urns line a shelf. Most are empty or contain only dust, but one, heavier than the others and sealed with wax, holds a small hoard of ancient Nordic coins, a few flawless gems, and a Potion of Ultimate Stamina.", "type": "item", "details": {"item_keys": ["potion_of_stamina_ultimate", "nordic_coins_ancient_hoard_large", "gem_flawless_sapphire", "gem_flawless_emerald"], "quantity_range_nordic_coins_ancient_hoard_large": (40,80)}},
+        {"description": "A Dragon Priest's sarcophagus, intricately carved with draconic motifs and glowing with faint magical wards, dominates the central chamber. Before it is a pedestal with three empty slots, each shaped like a different animal: the cunning Wolf, the wise Moth, and the mighty Dragon. A nearby inscription reads: 'Three aspects of Akatosh's dominion must align for the slumbering one to heed your call.'", "type": "puzzle_hint", "details": {"hint_text": "The carving suggests a powerful Dragon Priest rests here. The empty slots on the pedestal likely require specific animal-shaped keystones or amulets found within the barrow's deeper, trapped sections – perhaps guarded by lesser Draugr champions. Finding these and placing them correctly might awaken the Priest or reveal a path to their inner sanctum.", "related_puzzle_id": "barrow_dragon_priest_akatosh_keystones", "related_tags": ["dragon_cult_high_magic_akatosh", "undead_dragon_priest_powerful", "artifact_keystones_animal_divine", "sealed_tomb_high_danger_puzzle"], "potential_reward": "Dragon_Priest_Mask_Unique or unique_enchanted_staff_time_alteration."}}
     ],
-    "hold": [
-        "From a rocky outcrop, you survey the valley—herds of elk, distant lakes, and the glint of snow on the Throat of the World.",
-        "A band of Stormcloaks practices swordplay beneath fluttering blue banners, preparing for war against the Empire.",
-        "You help a traveler whose cart wheel broke, and she rewards you with a pouch of Elsweyr Fondue.",
-        "A local Thane greets you at his campfire and shares news of a giant's recent rampage through a nearby village.",
-        "You pass a field of snowberries, their white fruit glistening in the sun.",
-        "A pack of wolves circles a lone bull elk, and you watch the drama unfold from a safe distance.",
-        "You find a cairn with fresh snowdrops—a memorial to a hero lost in the Great War.",
-        "A shepherd’s flute music drifts up the hillside, mingling with the calls of snow hawks.",
-        "A sudden blizzard sweeps in, forcing you to seek shelter beneath a rocky overhang.",
-        "You discover a hot spring hidden in a hollow, steam rising into the frigid air—a blessing from Mara."
+    "ashland_waste": [
+        {"description": "The air is thick with choking ash. You find a half-buried skeleton, its hand clutching a small, heat-resistant pouch containing a few Fire Salts and a charred piece of paper with a barely legible map fragment.", 
+         "type": "item_and_quest_lead", "details": {"item_keys": ["fire_salts_impure", "map_fragment_ashlands_charred"], "lead_description": "The map fragment seems to point towards a hidden ruin or cave within these wastes, possibly untouched by the worst of Red Mountain's fury.", "related_tags": ["ashland_exploration", "hidden_ruin_map", "survival_challenge"], "urgency": "low"}},
+        {"description": "A wild Netch, its gas-filled body drifting eerily through the ashfall, floats by. They are usually docile unless provoked, but their leather is valuable.", 
+         "type": "npc_encounter_hint", "details": {"npc_tags":{"role":"creature_netch_bull_or_betty", "attitude":"neutral_unless_attacked"}, "situation": "Potential source of Netch Leather if hunted, but they might have calves nearby.", "item_if_killed": "netch_leather_pelt"}},
+        {"description": "You discover a small, hidden shrine to Azura, somehow preserved amidst the desolation. Praying here grants you a brief moment of clarity and magical fortitude.", 
+         "type": "flavor_and_buff", "details": {"god_mention": "Azura", "lore_hint":"Azura's influence persists even in the most blighted lands, offering hope to her Dunmer followers.", "minor_buff_debuff":{"stat":"magic_resist", "amount":15, "duration_turns":300, "is_buff":True, "buff_name":"Azura's Warding"}}},
+        {"description": "A sudden tremor shakes the ground, and a fissure opens nearby, venting noxious sulfurous gas. You must move quickly to avoid being overcome.", 
+         "type": "environmental_hazard", "details": {"hazard_type": "ashland_fissure_gas_vent", "effect_desc": "The sulfurous gas stings your eyes and lungs, making it hard to breathe.", "avoid_skill": "endurance_or_speed", "avoid_dc": 14, "failure_penalty": {"status_effect": {"type":"poison_ash_fumes", "potency":5, "duration_turns":10, "affected_stats":["stamina_regen_rate"]}}}}
     ],
-    "tundra": [
-        "The wind howls over the endless snow, and you spot a herd of mammoths lumbering past, their thick fur covered in frost.",
-        "A lone sabre cat prowls a frozen riverbank, pausing to drink from a hole in the ice.",
-        "You find a cluster of hardy snowdrops poking up through the snow, defying the bitter cold.",
-        "A distant aurora shimmers green and violet across the night sky—a sign of magic in the air.",
-        "You come across an abandoned hunter's camp, its fire pit choked with snow and its tent collapsed.",
-        "The air is so cold your breath crystallizes instantly; you pull your fur cloak tighter around you.",
-        "You see a frost troll's tracks and wisely choose another path—the beast is known to be territorial.",
-        "A lost Imperial courier stumbles into your camp, desperate for warmth and news of the war.",
-        "You discover a half-buried Dragon Mound, its entrance marked with ancient dragon runes.",
-        "A flight of snow hawks circles overhead, hunting for unseen prey in the frozen waste."
-    ],
-    "market": [
-        "The air is thick with the scent of spices from Morrowind, roasting meats, and the clamor of merchants hawking their wares.",
-        "A juggler performs for a crowd of children, his balls painted with the symbols of the Nine Divines.",
-        "A Dunmer merchant offers you a mysterious amulet said to ward off curses—for a hefty price in septims.",
-        "You hear a heated argument over a shipment of moon sugar; guards are called, but you slip away unnoticed.",
-        "A fortune teller beckons you to her tent, her tarot cards splayed out in patterns foretelling your destiny.",
-        "You taste a candied apple, its sweetness offset by a hint of skooma.",
-        "A skilled pickpocket tries his luck but is caught by an angry mob and dragged away to the dungeons.",
-        "You watch a caged guar from Morrowind on display, its strange cries echoing through the crowd.",
-        "An old woman sells hand-woven tapestries, each depicting a scene from the life of Tiber Septim.",
-        "You spot a rare book dealer displaying a tome bound in dragon hide, its pages glowing faintly with magic."
-    ],
-    "inn": [
-        "A roaring fire warms the common room, where a bard’s lute music draws smiles from weary travelers.",
-        "You sip spiced wine and listen to a Nord warrior recount his battles with the Thalmor.",
-        "A pair of adventurers compare scars earned in ancient ruins, their laughter rising above the clinking of mugs.",
-        "The innkeeper discreetly asks if you’re seeking honest work—or something a little more… lucrative.",
-        "You find a guestbook filled with cryptic signatures and coded messages hinting at a secret society.",
-        "A Khajiit cat naps on the hearthrug, opening one eye to watch your every move with feline suspicion.",
-        "The aroma of fresh bread draws you to the kitchen, where the cook offers you a taste in exchange for gossip about the Jarl.",
-        "You discover a hidden door behind a bookcase, leading to a smuggler’s tunnel.",
-        "A mysterious guest in a velvet cloak asks pointed questions about your knowledge of the Dark Brotherhood.",
-        "You find a lost gauntlet embroidered with the crest of a noble family, tucked beneath a bench."
-    ],
-    "desert": [
-        "Blinding sunlight reflects off endless dunes, and the heat shimmers on the horizon of Elsweyr.",
-        "You find the skeleton of a senche-raht, half-buried by blowing sand and picked clean by carrion birds.",
-        "A Khajiit nomad offers you a sip of cactus juice and shares a story of a lost oasis blessed by Jone and Jode.",
-        "You stumble across an oasis, its date palms heavy with fruit and its waters icy cool—a gift from the moons.",
-        "A sandstorm whips up suddenly, forcing you to seek shelter behind a crumbling statue of a Khajiit god.",
-        "At twilight, the desert comes alive with strange calls—jackals, sand cats, and the whispers of the Anequina spirits.",
-        "You spot a caravan in the distance, its guar laden with moon sugar and shimmering silks.",
-        "A mirage dances before your eyes, promising water and shade that vanish as you approach—a trick of the desert.",
-        "You discover ancient Khajiit petroglyphs carved into a red sandstone cliff, depicting the Mane and his protectors.",
-        "The night sky is a tapestry of stars, brighter and closer than anywhere else you've traveled—a window to Aetherius."
-    ],
-    "river": [
-        "The river’s song is ever-present, its waters sparkling with sunlight on the banks of Skyrim's White River.",
-        "A fisherman waves from his boat and offers you a freshly caught salmon in exchange for a tale of your adventures.",
-        "Dragonflies skim the surface, their wings glittering like polished glass.",
-        "You find a smooth stone covered in ancient runes—perhaps a marker for a sunken Dwemer ruin?",
-        "A family of otters plays in the shallow, sliding over mossy rocks and chasing after silverfish.",
-        "You cross a rickety wooden bridge and feel it sway alarmingly beneath your feet, threatening to plunge you into the icy water.",
-        "A ferryman offers passage downstream to Riften, his price a handful of septims.",
-        "You spot tracks of a giant mudcrab and hear rumors of a monstrous Slaughterfish lurking in the depths.",
-        "A willow tree’s roots create a tangle of hiding places for small fish and lost treasures.",
-        "You fill your waterskin with icy water and find it refreshes you more than any potion—a gift from the river."
-    ],
-    "farm": [
-        "Golden fields of wheat ripple in the breeze, and the air is thick with the scent of freshly cut hay at Pelagia Farm.",
-        "You help a farmer mend a broken fence, earning a wedge of Jarrin Root cheese and a grateful smile.",
-        "A scarecrow with a spriggan perched on its shoulder seems to watch your every move with eerie intelligence.",
-        "Children chase a runaway cluckshroom through rows of cabbages and leeks.",
-        "You stumble on a patch of wild huckleberries, sweet and sun-warmed.",
-        "A barn cat presents you with a vole, proud of its hunting prowess.",
-        "You hear the rhythmic thud of a millstone grinding wheat into flour at the nearby mill.",
-        "The farmer’s wife offers you a cup of warm milk and news of a missing cow.",
-        "A weathered wind vane creaks atop a red-tiled roof, always pointing towards the Throat of the World.",
-        "You find a patch of blue mountain flowers, rumored to keep away evil spirits and bless the harvest."
-    ],
-    "village": [
-        "Thatched cottages cluster around a well where villagers gather to share news and gossip in Riverwood.",
-        "You meet a blacksmith who displays a sword said to be forged from meteoric iron.",
-        "Children play tag among stacks of firewood, their laughter ringing across the village green.",
-        "An old woman offers you a charm to keep away ill fortune, if you’ll listen to her rambling stories.",
-        "You witness a lively harvest festival, with dancers in colorful attire and the scent of roasted pheasant.",
-        "A dog leads you to a hidden garden behind the mill, filled with rare herbs used by the village apothecary.",
-        "The village priest invites you into the local chapel where candles flicker before the shrine of Arkay.",
-        "A group of elders debates the best way to deal with wolves spotted near the sheep pens.",
-        "You find a bundle of love letters hidden in a hollow tree, tied with a ribbon.",
-        "A traveling tinker sharpens your blade for a song and a flagon of ale."
-    ],
-    "mine": [
-        "The air is thick with dust and the clang of pickaxes echoes through the tunnels of Kolskeggr Mine.",
-        "You pass miners singing a Dwarven work song, their faces smudged with soot and grime.",
-        "A cart rumbles past, heaped with glittering gold ore and guarded by a surly foreman.",
-        "You find a rusty miner's helmet, its crest barely visible beneath the grime.",
-        "A small lizard scurries away as you step over a trickle of water flowing through the mine.",
-        "You discover a lantern swinging from a nail, its flame flickering in the damp air.",
-        "A collapsed shaft blocks your way, but a faint draft hints at a hidden passage beyond.",
-        "You overhear a heated argument about someone stealing gold from the mine's cache.",
-        "A miner offers to sell you a chunk of raw malachite crystal said to contain magical energy.",
-        "You glimpse a shadowy figure flitting just out of sight, deeper in the mine—perhaps a ghost or a Falmer?"
-    ],
-    "camp": [
-        "A ring of tents surrounds a crackling campfire where adventurers trade boasts and share dried venison.",
-        "You help pitch a tent and earn a tale about the haunted ruins of Labyrinthian.",
-        "A scout returns with news of a dragon sighted near the Throat of the World.",
-        "You find a forgotten journal filled with maps and coded entries hinting at a lost treasure.",
-        "A healer tends to a sprained ankle and offers you a vial of potent healing salve.",
-        "You listen to a tale of forbidden love and a promise to return home after one last perilous quest.",
-        "The camp’s cook invites you to taste his famous mammoth stew.",
-        "A game of stones and knucklebones draws laughter and friendly wagers around the fire.",
-        "A sentry spots a shooting star and insists it’s a sign of good fortune.",
-        "You find a pouch of ancient Dwemer coins beneath your sleeping mat."
+    "volcanic_caldera": [
+        {"description": "You find a rare Obsidian Shard, still warm from the geothermal heat, embedded in a rock. It pulses with a faint, fiery energy.", 
+         "type": "item", "details": {"item_key": "obsidian_shard_volcanic", "lore_hint":"Obsidian from such active regions is prized for fire enchantments."}},
+        {"description": "A mad Argonian pyromancer, believing this caldera to be a gateway to the Deadlands, is attempting a dangerous ritual to summon a Flame Atronach Monarch. He mistakes you for a rival cultist or a sacrifice.", 
+         "type": "npc_interaction_hostile", "details": {"npc_tags": {"role": "mage_pyromancer_cultist_argonian_mad", "attitude": "hostile_fanatical", "race":"argonian"}, "dialogue_lead": "'More fuel for the Master's pyre! You will burn for the glory of Mehrunes Dagon, interloper!'", "combat_trigger_immediate": True, "item_on_npc_hint": "staff_of_flames_greater", "quest_lead_if_defeated":"notes_on_summoning_flame_monarch"}},
+        {"description": "The ground is unstable here. A section of hardened lava crust crumbles beneath your feet, revealing a small lava tube leading downwards. It's incredibly hot.", 
+         "type": "location_discovery_hint", "details": {"location_name_hint": "Caldera Lava Tube", "related_tags": ["volcanic_cave", "extreme_heat_hazard", "underground_lava_flow"], "mark_on_map_chance": 0.6, "skill_challenge_to_enter":{"skill":"endurance_resist_fire", "dc":17, "failure_penalty":{"damage":10, "damage_type":"fire_continuous"}}}},
+        {"description": "Amidst the scorched rocks, you find a perfectly preserved Fire Fern, an extremely rare alchemical ingredient that thrives in intense heat.", 
+         "type": "item", "details": {"item_key": "fire_fern_pristine", "quantity_range": (1,1), "lore_hint":"Fire Ferns are almost mythical, said to grant unparalleled resistance to flames."}}
     ]
+    # ... (Ensure all other RANDOM_EVENTS categories are similarly detailed)
 }
 
-def explore_location(player, current_location, random_encounters, npc_registry, LOCATIONS, UI):
+
+def explore_location(player, current_location, random_encounters, npc_registry, all_locations_list, ui):
     """Explores the current location and triggers random events based on its tags."""
     try:
-        UI.slow_print(f"You carefully explore {current_location['name']}...")
+        ui.slow_print(f"You carefully explore {current_location['name']}...")
 
-        present_specific_tags = [tag for tag in current_location["tags"] if tag in SPECIFIC_LOCATION_TAGS]
-        available_results = []
+        current_location_tags = current_location.get("tags", [])
+        present_specific_tags = [tag for tag in current_location_tags if tag in SPECIFIC_LOCATION_TAGS]
+        available_results_data = []
 
-        # Prefer results from specific tags (like tavern, inn, market, etc.)
         if present_specific_tags:
             for tag in present_specific_tags:
                 if tag in EXPLORATION_RESULTS:
-                    available_results.extend(EXPLORATION_RESULTS[tag])
+                    available_results_data.extend(EXPLORATION_RESULTS[tag])
+        
+        general_tags_to_check = [tag for tag in current_location_tags if tag not in present_specific_tags and tag in EXPLORATION_RESULTS]
+        if general_tags_to_check:
+            for tag in general_tags_to_check:
+                 available_results_data.extend(EXPLORATION_RESULTS[tag])
+
+        if not available_results_data:
+            broad_fallback_tags = ["wilderness", "urban_area", "ruin_general", "cave_general", "hold_generic"] 
+            for broad_tag_category_key in broad_fallback_tags:
+                for specific_fallback_tag in ["forest", "city", "ruin", "cave", "hold"]: 
+                    if specific_fallback_tag in current_location_tags and specific_fallback_tag in EXPLORATION_RESULTS:
+                        available_results_data.extend(EXPLORATION_RESULTS[specific_fallback_tag])
+                        if available_results_data: break
+                if available_results_data: break
+
+        selected_exploration_outcomes = []
+        if available_results_data:
+            unique_results_data = [dict(t) for t in {tuple(sorted(d.items())) for d in available_results_data}]
+            num_results_to_show = min(random.randint(1, 2), len(unique_results_data)) 
+            selected_exploration_outcomes = random.sample(unique_results_data, num_results_to_show)
+
+        if selected_exploration_outcomes:
+            for outcome in selected_exploration_outcomes:
+                ui.slow_print(outcome["description"])
+                effect_data = outcome.get("effect")
+                if effect_data:
+                    effect_type = effect_data.get("type")
+                    details = effect_data.get("details", {})
+                    
+                    # --- Implemented Game Engine Calls for Exploration Effects ---
+                    if effect_type == "item_find":
+                        if "gold_amount_range" in details:
+                            gold = random.randint(details["gold_amount_range"][0], details["gold_amount_range"][1])
+                            player.stats.gold += gold 
+                            ui.slow_print(f"You found {gold} septims!")
+                        item_keys_to_find = details.get("item_keys", [])
+                        if "item_key" in details and details["item_key"] not in item_keys_to_find:
+                            item_keys_to_find.append(details["item_key"])
+                        
+                        for item_k in item_keys_to_find:
+                            item_template = generate_item_from_key(item_k, player.level)
+                            if item_template:
+                                q_key_specific = f"quantity_range_{item_k}"
+                                q_range = details.get(q_key_specific, details.get("quantity_range", (1,1)))
+                                quantity = random.randint(q_range[0], q_range[1])
+                                added_count = 0
+                                for _ in range(quantity):
+                                    item_instance = generate_item_from_key(item_k, player.level)
+                                    if player.add_item(item_instance): 
+                                        added_count +=1
+                                    else:
+                                        ui.slow_print(f"Your inventory is full, couldn't pick up {item_instance.name}.")
+                                        break
+                                if added_count > 0: ui.slow_print(f"You obtained: {item_template.name}" + (f" (x{added_count})" if added_count > 1 else "") + "!")
+                            else:
+                                ui.slow_print(f"(Could not find item definition for key: {item_k})")
+
+                        if "item_category" in details: 
+                            item = generate_random_item(details["item_category"], player.level)
+                            if player.add_item(item): ui.slow_print(f"You managed to find a {item.name}.")
+                            else: ui.slow_print(f"You found a {item.name}, but your inventory is full.")
+                        
+                        if "item_find_multiple_options" in details: 
+                            for option in details.get("options", []):
+                                if random.random() < option.get("chance", 1.0):
+                                    item_template = generate_item_from_key(option["item_key"], player.level)
+                                    if item_template:
+                                        q_range = option.get("quantity_range", (1,1))
+                                        quantity = random.randint(q_range[0], q_range[1])
+                                        # (Add item logic similar to above)
+                                        ui.slow_print(f"You found some {item_template.name} (x{quantity})!")
+                                    break 
+
+                    elif effect_type == "quest_lead" or effect_type == "quest_lead_and_item":
+                        ui.slow_print(f"[Quest Lead Discovered]: {details.get('lead_description', 'You feel this could lead to something more.')}")
+                        # Generate a quest object based on the lead
+                        # This is a simplified quest generation; your game.py might have a more complex system
+                        if hasattr(player, 'quest_log'):
+                            # Try to use generate_location_appropriate_quest if suitable
+                            # For now, create a basic quest from the lead
+                            quest_title = details.get("quest_title_hint", f"Investigate {details.get('related_tags',[current_location['name']])[0].title()}")
+                            quest_reward = generate_reward(player.level, details.get('related_tags', []))
+                            new_quest = Quest(
+                                title=quest_title,
+                                description=details.get('lead_description'),
+                                reward=quest_reward,
+                                level_requirement=player.level,
+                                location=current_location, # Or a hinted location
+                                completion_condition=f"resolved_{quest_title.replace(' ','_').lower()}"
+                            )
+                            player.quest_log.add_quest(new_quest)
+                            ui.slow_print(f"New quest added to your log: {new_quest.title}")
+                        if "item_found_on_skeleton" in details: # Example for quest_lead_and_item
+                             item_skel = generate_item_from_key(details["item_found_on_skeleton"], player.level)
+                             if item_skel and player.add_item(item_skel): ui.slow_print(f"You also find {item_skel.name} nearby.")
+
+
+                    elif effect_type == "location_discovery_hint":
+                        hinted_loc_name = details.get("location_name_hint", "a mysterious place")
+                        ui.slow_print(f"You learn of a place called '{hinted_loc_name}'. It seems related to {', '.join(details.get('related_tags', ['local legends']))}.")
+                        if random.random() < details.get("mark_on_map_chance", 0.3):
+                            target_loc = next((loc for loc in all_locations_list if loc["name"] == hinted_loc_name), None)
+                            if target_loc:
+                                try:
+                                    from game import known_locations 
+                                    if target_loc["id"] not in known_locations:
+                                        known_locations.add(target_loc["id"])
+                                        ui.slow_print(f"'{hinted_loc_name}' has been marked on your map!")
+                                except ImportError: pass # Game module not available here
+                            else:
+                                ui.slow_print(f"(Though you hear of '{hinted_loc_name}', its exact location isn't clear enough to mark.)")
+                    
+                    elif effect_type == "skill_challenge" or effect_type == "skill_challenge_or_choice":
+                        skill_to_test = details.get("skill", details.get("skill_persuade", details.get("skill_stealth", "perception")))
+                        dc = details.get("dc", details.get("dc_persuade", details.get("dc_stealth", 12)))
+                        player_skill_level = player.skills.get(skill_to_test, 5) # Default to 5 if skill not present
+                        skill_modifier = player_skill_level // 4 # Example modifier
+                        roll = random.randint(1,20)
+                        total_roll = roll + skill_modifier
+                        ui.slow_print(f"You attempt to use your {skill_to_test.replace('_',' ')}... (Rolled {roll} + Mod {skill_modifier} = {total_roll} vs DC {dc})")
+
+                        if total_roll >= dc:
+                            ui.slow_print(details.get("success_desc", "You succeed!"))
+                            if "success_reward" in details:
+                                reward = details["success_reward"]
+                                if "gold_amount_range" in reward:
+                                    player.stats.gold += random.randint(reward["gold_amount_range"][0], reward["gold_amount_range"][1])
+                                    ui.slow_print("You gain some gold.")
+                                if "item_category" in reward:
+                                    item = generate_random_item(reward["item_category"], player.level)
+                                    if player.add_item(item): ui.slow_print(f"You find a {item.name}.")
+                                if "location_access_hint" in reward:
+                                     ui.slow_print(f"This grants access to: {reward['location_access_hint']}")
+                        else:
+                            ui.slow_print(details.get("failure_desc", "You fail."))
+                            if "failure_penalty" in details:
+                                penalty = details["failure_penalty"]
+                                if "damage" in penalty: 
+                                    player.stats.take_damage(penalty["damage"])
+                                    ui.slow_print(f"You take {penalty['damage']} damage!")
+                                if "status_effect" in penalty:
+                                    # Conceptual: player.apply_status_effect(penalty["status_effect"])
+                                    ui.slow_print(f"You feel {penalty['status_effect']['type']}.")
+
+
+                    elif effect_type == "lore_reveal":
+                        ui.slow_print(f"[Lore]: {details.get('information', 'You recall an old tale related to this place.')}")
+                        if "minor_buff_debuff" in details:
+                            buff = details["minor_buff_debuff"]
+                            # Conceptual: player.apply_temporary_effect(buff)
+                            ui.slow_print(f"Recalling this lore makes you feel a surge of {buff.get('stat')} ({'+' if buff.get('is_buff') else '-'}{buff.get('amount')})!")
+                    
+                    elif effect_type == "npc_encounter_hint":
+                        ui.slow_print(f"You get the feeling you might encounter a {details.get('npc_tags',{}).get('role','certain individual')} here: {details.get('situation','They might be nearby.')}")
+
+                    elif effect_type == "item_purchase_opportunity":
+                        item_key_offered = details.get('item_key')
+                        cost = details.get('cost', 50)
+                        ui.slow_print(f"The {details.get('dialogue_npc_role', 'person')} offers to sell you a {item_key_offered} for {cost} gold.")
+                        # Conceptual: if ui.ask_yes_no(f"Purchase {item_key_offered} for {cost} gold?"):
+                        #    if player.stats.gold >= cost:
+                        #        player.stats.gold -= cost
+                        #        item = generate_item_from_key(item_key_offered, player.level)
+                        #        if player.add_item(item): ui.slow_print(f"You purchased {item.name}.")
+                        #        else: player.stats.gold += cost; ui.slow_print("Inventory full.")
+                        #    else: ui.slow_print("Not enough gold.")
+
+                    elif effect_type == "moral_choice_event":
+                        ui.slow_print(f"[Choice]: {details.get('choice_text')}")
+                        # Conceptual: user_choice = ui.get_player_choice(["Option1", "Option2"])
+                        # if user_choice == "Option1": game_engine.apply_effect(player, details.get('option1_reward_or_penalty'))
+
+                    elif effect_type == "interaction_point":
+                        ui.slow_print(f"You notice a {details.get('interaction_name')}. {details.get('action_text', 'Interact?')}")
+                        # Conceptual: if ui.ask_yes_no(f"Interact with {details.get('interaction_name')}?"):
+                        #    if "requires_item_key" in details and not player.inventory_has_item(details["requires_item_key"]):
+                        #        ui.slow_print("You lack the required item.")
+                        #    else:
+                        #        game_engine.apply_interaction_effect(player, details.get('success_effect'))
+
+                    # Check for dungeon name in description for direct discovery
+                    for dn_name in DUNGEON_NAMES:
+                        if dn_name.lower() in outcome["description"].lower():
+                            dungeon_loc_obj = next((loc for loc in all_locations_list if loc["name"] == dn_name), None)
+                            if dungeon_loc_obj:
+                                try:
+                                    from game import known_locations 
+                                    if dungeon_loc_obj["id"] not in known_locations:
+                                        known_locations.add(dungeon_loc_obj["id"])
+                                        ui.slow_print(f"You've pinpointed the location of {dn_name} on your map!")
+                                except ImportError: pass 
+                            break 
         else:
-            # If no specific tags, fall back to general tags
-            for tag in current_location["tags"]:
-                if tag in EXPLORATION_RESULTS:
-                    available_results.extend(EXPLORATION_RESULTS[tag])
-
-        # If still nothing, fall back to city/town/village if possible
-        if not available_results:
-            for fallback_tag in ["city", "town", "village"]:
-                if fallback_tag in current_location["tags"] and fallback_tag in EXPLORATION_RESULTS:
-                    available_results.extend(EXPLORATION_RESULTS[fallback_tag])
-
-        num_results = min(2, len(available_results))
-        if available_results:
-            selected_results = random.sample(available_results, num_results)
-            for result in selected_results:
-                UI.slow_print(result)
-                if "nearby dungeon" in result:
-                    dungeon_name = random.choice(DUNGEON_NAMES)
-                    UI.slow_print(f"You learn about a dungeon called {dungeon_name}.")
-                    dungeon_location = next((loc for loc in LOCATIONS if loc["name"] == dungeon_name), None)
-                    if dungeon_location:
-                        from game import known_locations
-                        known_locations.add(dungeon_location["id"])
-                        UI.slow_print(f"{dungeon_name} has been marked on your map.")
-        else:
-            UI.slow_print("You find nothing out of the ordinary.")
-
-        UI.press_enter()
+            ui.slow_print("You find nothing particularly noteworthy, though the unique atmosphere of the place certainly leaves an impression.")
+        ui.press_enter()
     except Exception as e:
         print(f"Error in explore_location: {e}")
-        import traceback
         traceback.print_exc()
 
-def trigger_random_event(location_tags, player, UI, current_location): # Added current_location as an argument
-    """Triggers a random event based on location tags."""
-    event = None  # Initialize event to None
+
+def trigger_random_event(location_tags, player, ui, current_location):
+    """Triggers a random event based on location tags, with more comprehensive tag use."""
+    event = None
     try:
-        possible_events = []
+        possible_events_for_location = []
+        
         for tag in location_tags:
             if tag in RANDOM_EVENTS:
-                possible_events.extend(RANDOM_EVENTS[tag])
+                possible_events_for_location.extend(RANDOM_EVENTS[tag])
+        
+        if not possible_events_for_location or random.random() < 0.25: 
+            possible_events_for_location.extend(RANDOM_EVENTS.get("generic_travel", []))
 
-        if possible_events and random.random() < 0.6: # Chance to trigger an event, not always
-            event = random.choice(possible_events)
-            UI.slow_print(event["description"])
+        if possible_events_for_location:
+            possible_events_for_location = [dict(t) for t in {tuple(sorted(d.items())) for d in possible_events_for_location}]
 
-            if event["type"] == "item":
-                try:
-                    from items import Item
-                    # Create a placeholder Item object
-                    item = Item(
-                        name=event["item"],
-                        category="misc", # Default category
-                        material="common", # Default material
-                        weight=1.0,  # Default weight
-                        value=10     # Default value
-                    )
-                    UI.slow_print(f"You receive: {item.name}")
-                    if hasattr(player, "inventory") and player.inventory is not None:
-                        player.inventory.append(item)
-                        # No longer need to manually update carry_weight here, Stats handles it
-                    else:
-                        UI.slow_print("You have no place to store this item.")
-                except ImportError:
-                    # Fallback if Item class is unavailable
-                    UI.slow_print(f"You receive: {event['item']} (cannot store due to missing inventory system)")
-            elif event["type"] == "quest":
-                # Generate a quest using the new diversified reward structure
-                # Pass player.level and location_tags to generate_reward
-                quest_reward_dict = generate_reward(player.level, location_tags)
+        if possible_events_for_location and random.random() < 0.8: 
+            event = random.choice(possible_events_for_location)
+            ui.slow_print(f"\n{event['description']}") 
+
+            event_type = event.get("type")
+            details = event.get("details", {})
+            
+            # --- Implemented Game Engine Calls for Random Event Effects ---
+            if event_type == "item" or event_type == "item_and_quest_lead" or event_type == "item_and_skill_challenge" or event_type == "quest_lead_and_item":
+                if "gold_amount_range" in details:
+                    gold = random.randint(details["gold_amount_range"][0], details["gold_amount_range"][1])
+                    player.stats.gold += gold
+                    ui.slow_print(f"You gain {gold} gold!")
+                if "gold_loss_range" in details:
+                    gold_loss = random.randint(details["gold_loss_range"][0], details["gold_loss_range"][1])
+                    actual_loss = min(gold_loss, player.stats.gold)
+                    player.stats.gold -= actual_loss
+                    ui.slow_print(f"You lose {actual_loss} gold! {details.get('flavor_text', '')}")
                 
-                quest = Quest(
-                    title="A Random Opportunity", # Generic title for random quests
-                    description=event["quest"],
-                    reward=quest_reward_dict, # Pass the reward dictionary
-                    level_requirement=player.level,
-                    location={"name": current_location['name'], "tags": location_tags}, # Use the passed current_location argument
-                    completion_condition="random_event_quest" # Generic completion condition
-                )
-                UI.slow_print(f"New quest: {quest.description}")
-                # Format reward display similarly to look_around_area for consistency
-                reward_parts = []
-                for r_type, r_value in quest.reward.items():
-                    if isinstance(r_value, Item):
-                        reward_parts.append(f"{r_value.name} (Item)")
-                    else:
-                        reward_parts.append(f"{r_value} {r_type.capitalize()}")
-                UI.slow_print(f"Reward: {', '.join(reward_parts)}")
+                item_keys_to_grant = details.get("item_keys", [])
+                if "item_key" in details and details["item_key"] not in item_keys_to_grant: 
+                    item_keys_to_grant.append(details["item_key"])
+                for key_type in ["item_found_on_body", "item_found_at_camp"]: # Adding more specific keys
+                    if key_type in details and details[key_type] not in item_keys_to_grant:
+                        item_keys_to_grant.append(details[key_type])
 
-                if hasattr(player, "quest_log") and player.quest_log is not None:
-                    player.quest_log.add_quest(quest)
-                else:
-                    UI.slow_print("You have no way to track this quest.")
-        # Only print "Nothing unusual happens today" if no event was chosen or found
-        elif not event:
-            UI.slow_print("Nothing unusual happens today.")
+                for item_k in item_keys_to_grant:
+                    if not isinstance(item_k, str): continue
+                    item_template = generate_item_from_key(item_k, player.level)
+                    if item_template:
+                        quantity = 1
+                        specific_q_key = f"quantity_range_{item_k}" # e.g. quantity_range_lockpick
+                        if specific_q_key in details and isinstance(details[specific_q_key], tuple):
+                            quantity = random.randint(details[specific_q_key][0], details[specific_q_key][1])
+                        elif "quantity_range" in details and isinstance(details["quantity_range"], tuple): # General quantity
+                             quantity = random.randint(details["quantity_range"][0], details["quantity_range"][1])
+
+                        added_count = 0
+                        for _ in range(quantity):
+                            item_instance = generate_item_from_key(item_k, player.level) 
+                            if player.add_item(item_instance): added_count +=1
+                            else:
+                                ui.slow_print(f"Your inventory is full, couldn't pick up {item_instance.name}.")
+                                break
+                        if added_count > 0: ui.slow_print(f"You found: {item_template.name}" + (f" (x{added_count})" if added_count > 1 else "") + "!")
+                    else: ui.slow_print(f"(Could not define item for key: {item_k})")
+
+                if "item_category" in details: 
+                    item = generate_random_item(details["item_category"], player.level)
+                    if "item_name" in details: item.name = details["item_name"] 
+                    if player.add_item(item): ui.slow_print(f"You acquire: {item.name}!")
+                    else: ui.slow_print(f"You spot {item.name}, but your inventory is full!")
+                
+                if (event_type == "item_and_quest_lead" or event_type == "quest_lead_and_item") and "lead_description" in details:
+                     ui.slow_print(f"Additionally: {details['lead_description']}")
+                     if hasattr(player, 'quest_log'):
+                        quest_title = details.get("quest_title_hint", f"Investigate Clue from {current_location['name']}")
+                        quest_reward = generate_reward(player.level, details.get('related_tags', []))
+                        new_quest = Quest(title=quest_title, description=details.get('lead_description'), reward=quest_reward, level_requirement=player.level, location=current_location, completion_condition=f"clue_investigated_{quest_title.replace(' ','_').lower()}")
+                        player.quest_log.add_quest(new_quest)
+                        ui.slow_print(f"A new lead has been noted in your journal: {new_quest.title}")
+
+
+            elif event_type == "combat_encounter" or event_type == "combat_encounter_ambush":
+                ui.slow_print(details.get("flavor_text", f"Suddenly, you are attacked!"))
+                # Conceptual: game_engine.initiate_combat(player, details.get("enemy_tags", [["mysterious_foe"]]), details.get("count_range",(1,1)), details.get("ambush", False), current_location, boss_fight=details.get("boss_fight_indicator",False), special_ability_hint=details.get("special_ability_hint"), loot_drop_hint=details.get("loot_drop_hint"))
+                # For now, just print the hint if it exists
+                if "special_ability_hint" in details: ui.slow_print(f"(Hint: {details['special_ability_hint']})")
+                if "loot_drop_hint" in details: ui.slow_print(f"(They might drop: {details['loot_drop_hint']})")
+
+
+            elif event_type == "npc_interaction" or event_type == "npc_interaction_and_quest_lead" or event_type == "npc_interaction_hostile":
+                npc_role = details.get("npc_tags", {}).get("role", "stranger").replace('_', ' ')
+                npc_name_from_details = details.get("npc_tags", {}).get("name", f"a {npc_role}")
+                ui.slow_print(f"You encounter {npc_name_from_details}. They say, \"{details.get('dialogue_lead', 'Well met.')}\"")
+                # Conceptual: game_engine.initiate_dialogue_or_interaction(player, details, current_location)
+                if details.get("combat_trigger_immediate"):
+                    # Conceptual: game_engine.initiate_combat(player, [details.get("npc_tags", {"role":"hostile_attacker"})], (1,1), True, current_location)
+                    ui.slow_print(f"{npc_name_from_details} attacks!")
+
+
+            elif event_type == "skill_challenge" or event_type == "item_and_skill_challenge":
+                skill_to_test = details.get("skill", "perception")
+                dc = details.get("dc", 12)
+                player_skill_level = player.skills.get(skill_to_test, 5) 
+                skill_modifier = player_skill_level // 4 
+                roll = random.randint(1,20)
+                total_roll = roll + skill_modifier
+                target_desc = details.get('target_description', 'a task')
+                ui.slow_print(f"You attempt {target_desc} using your {skill_to_test.replace('_',' ')} (Roll: {roll} + Mod: {skill_modifier} = {total_roll} vs DC: {dc})...")
+
+                if total_roll >= dc: 
+                    ui.slow_print(details.get("success_desc", "You succeed!"))
+                    if "success_reward" in details:
+                        reward = details["success_reward"]
+                        if "gold_amount_range" in reward:
+                            gained_gold = random.randint(reward["gold_amount_range"][0], reward["gold_amount_range"][1])
+                            player.stats.gold += gained_gold
+                            ui.slow_print(f"You gain {gained_gold} gold.")
+                        if "item_key" in reward: # Can also be item_keys for multiple
+                            keys = reward.get("item_keys", [reward.get("item_key")])
+                            for r_item_k in keys:
+                                if r_item_k:
+                                    r_item = generate_item_from_key(r_item_k, player.level)
+                                    if r_item and player.add_item(r_item): ui.slow_print(f"You obtained: {r_item.name}.")
+                                    elif r_item: ui.slow_print(f"You found {r_item.name} but are too encumbered.")
+                        if "temp_buff" in reward:
+                            # Conceptual: player.apply_temporary_effect(reward['temp_buff'])
+                            ui.slow_print(f"You feel a temporary boon: {reward['temp_buff'].get('stat')} +{reward['temp_buff'].get('amount')}.")
+                        if "lore_reveal_specific" in reward: ui.slow_print(f"[Lore Uncovered!]: {reward['lore_reveal_specific']}")
+                        if "quest_lead_info" in reward:
+                            ui.slow_print(f"[Quest Clue!]: {reward['quest_lead_info']}")
+                            # Conceptual: player.journal.add_lead_from_string(reward['quest_lead_info'])
+
+                else: # Failure
+                    ui.slow_print(details.get("failure_desc", "You fail."))
+                    if "failure_penalty" in details:
+                        penalty = details["failure_penalty"]
+                        if "damage" in penalty: 
+                            player.stats.take_damage(penalty["damage"])
+                            ui.slow_print(f"You take {penalty['damage']} {penalty.get('damage_type','')} damage!")
+                        if "status_effect" in penalty:
+                            # Conceptual: player.apply_status_effect(penalty["status_effect"])
+                            eff = penalty["status_effect"]
+                            ui.slow_print(f"You are afflicted with {eff.get('type')} (Potency: {eff.get('potency',0)}, Duration: {eff.get('duration_turns',0)} turns)!")
+                        if "item_loss" in penalty and penalty["item_loss"]:
+                            # Conceptual: player.inventory.remove_item_by_name_or_key(penalty['item_loss'])
+                            ui.slow_print(f"In your fumbling, you lose your {penalty['item_loss']}!")
+                
+                if event_type == "item_and_skill_challenge" and "item_key" in details: 
+                    item_obj = generate_item_from_key(details["item_key"], player.level)
+                    if item_obj: ui.slow_print(f"The challenge was related to a {item_obj.name}.")
+
+
+            elif event_type == "quest_lead":
+                ui.slow_print(f"Clue: {details.get('lead_description', 'Something here seems important...')}")
+                if hasattr(player, 'quest_log'):
+                    quest_title = details.get("quest_title_hint", f"Investigate Rumor in {current_location['name']}")
+                    quest_reward = generate_reward(player.level, details.get('related_tags', []))
+                    new_quest = Quest(title=quest_title, description=details.get('lead_description'), reward=quest_reward, level_requirement=player.level, location=current_location, completion_condition=f"rumor_investigated_{quest_title.replace(' ','_').lower()}")
+                    player.quest_log.add_quest(new_quest)
+                    ui.slow_print(f"A new entry has been added to your journal: {new_quest.title}")
+                if "related_tags" in details: ui.slow_print(f"(Related to: {', '.join(details['related_tags'])})")
+
+            elif event_type == "environmental_hazard":
+                ui.slow_print(details.get("effect_desc", "The environment poses a sudden threat!"))
+                if "skill_to_navigate" in details or "avoid_skill" in details:
+                    skill_to_test = details.get("skill_to_navigate", details.get("avoid_skill"))
+                    dc = details.get("dc", details.get("avoid_dc", 13))
+                    player_skill_level = player.skills.get(skill_to_test, 5)
+                    roll = random.randint(1,20) + (player_skill_level // 4)
+                    ui.slow_print(f"You try to navigate the hazard (Roll: {roll} vs DC: {dc})...")
+                    if roll < dc and "damage_if_failed" in details:
+                        player.stats.take_damage(details["damage_if_failed"])
+                        ui.slow_print(f"You couldn't avoid it and take {details['damage_if_failed']} {details.get('damage_type','')} damage!")
+                    elif roll >= dc:
+                        ui.slow_print("You manage to avoid the worst of it!")
+                elif "damage_if_failed" in details: # Immediate damage if no avoidance skill
+                    player.stats.take_damage(details["damage_if_failed"])
+                    ui.slow_print(f"You take {details['damage_if_failed']} {details.get('damage_type','')} damage from the hazard!")
+                if "continuous_debuff_while_in_area" in details:
+                    # Conceptual: player.apply_area_effect_debuff(details["continuous_debuff_while_in_area"])
+                    debuff = details["continuous_debuff_while_in_area"]
+                    ui.slow_print(f"The {debuff.get('buff_name', 'hazard')} affects your {debuff.get('stat')} while you remain here.")
+
+
+            elif event_type == "puzzle_hint":
+                ui.slow_print(f"Hint: {details.get('hint_text', 'A strange mechanism or inscription catches your eye...')}")
+                # Conceptual: player.journal.add_puzzle_hint(details, current_location['name'])
+                if "potential_reward" in details: ui.slow_print(f"(Solving it might yield: {details['potential_reward']})")
+
+            elif event_type == "faction_interaction_lead":
+                ui.slow_print(f"Faction event: {details.get('situation', 'Activity is afoot.')}")
+                ui.slow_print(f"(Involving factions: {', '.join(details.get('faction_tags',[]))})")
+                # Conceptual: game_engine.process_faction_lead(player, details, current_location)
+
+            elif event_type == "flavor" or event_type == "flavor_and_buff":
+                if "temporary_buff" in details:
+                    buff = details['temporary_buff']
+                    # Conceptual: player.apply_temporary_effect(buff) # This method needs to exist on Player or Stats
+                    # Example direct stat modification (needs a system for duration)
+                    target_stat = buff.get('stat')
+                    if target_stat == "personality": player.stats.personality += buff.get('amount',0)
+                    elif target_stat == "alchemy_skill_bonus": player.skills['alchemy'] = player.skills.get('alchemy', 15) + buff.get('amount',0)
+                    # Add more direct stat/skill modifications or implement a proper buff system
+                    ui.slow_print(f"You feel a brief surge of {buff.get('stat')} ({'+' if buff.get('is_buff', True) else '-'}{buff.get('amount')})!")
+                if "weather_change" in details:
+                    # Conceptual: game_engine.world_state.set_weather(details['weather_change'], current_location.get('region_tag'))
+                    ui.slow_print(f"The weather noticeably shifts towards {details['weather_change']}.")
+                pass
+        else: 
+            if not possible_events_for_location: 
+                ui.slow_print("The area seems quiet, with nothing specific of note occurring right now.")
+            else:
+                 ui.slow_print("You sense a potential occurrence, but it passes without incident this time.")
         return event
     except Exception as e:
+        print(f"Error in trigger_random_event: {e}")
         traceback.print_exc()
-        pass
+        return None
