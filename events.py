@@ -55,53 +55,67 @@ SPECIFIC_LOCATION_TAGS = [
 RANDOM_EVENTS = {
     "generic_travel": [
         {"description": "You spot a Shrine of Akatosh by the roadside, its eternal flame burning brightly. You feel a sense of timelessness and renewed purpose.", 
-         "type": "flavor_and_buff", "details": {"god_mention": "Akatosh", "minor_buff_debuff":{"stat":"magicka_regen_rate", "amount":0.1, "duration_turns":180, "is_buff":True, "buff_name":"Akatosh's Endurance"}}},
+         "type": "flavor_and_buff", "details": {"god_mention": "Akatosh", "minor_buff_debuff":{"stat":"magicka_regen_rate", "amount":0.1, "duration_turns":180, "is_buff":True, "buff_name":"Akatosh's Blessing"}}},
         {"description": "A rickety cart has broken an axle. Its merchant owner, a weary Dunmer named Drevis, sighs. 'Azura's curse! My shipment of ash yams for Windhelm will spoil!'", 
-         "type": "npc_interaction_and_quest_lead", "details": {"npc_tags": {"role": "merchant_ashlander_goods_stranded", "name":"Drevis", "attitude": "distressed_resigned", "race":"dunmer"}, "dialogue_lead": "'Greetings, muthsera. Perhaps you can assist a struggling trader? I can offer some coin or a few samples of my goods.'", "quest_offer_chance": 0.7, "skill_challenge_to_fix": {"skill": "crafting_repair_or_strength", "dc": 13, "success_reward": {"gold_amount_range": (20,50), "item_key": "ash_yam_sample_pouch"}}}},
+         "type": "npc_interaction_and_quest_lead", "details": {"npc_tags": {"role": "merchant_ashlander_goods_stranded", "name":"Drevis", "attitude": "distressed_resigned", "race":"dunmer"}, "dialogue_lead": "'Stendarr's Light, can anyone assist a humble merchant?", "lead_description": "Dunmer merchant needs help fixing his cart. He might reward you handsomely for your efforts.", "related_tags": ["merchant", "ashlander", "ash_yams"]}},
         {"description": "You find a scorched note on a dead Imperial courier. It details an imminent Stormcloak ambush on a strategic bridge [DynamicNearbyLandmark - e.g., Dragon Bridge].", 
-         "type": "quest_lead_and_item", "details": {"lead_description": "Imperial courier carries warning of Stormcloak ambush at a bridge. A chance to influence the war.", "related_tags": ["civil_war_intelligence", "stormcloak_imperial_battle", "strategic_bridge_defense"], "urgency": "critical", "item_found_on_body":"imperial_dispatch_scorched", "dynamic_landmark_needed": True, "faction_choice_involved": ["imperial_legion", "stormcloaks"]}},
+         "type": "quest_lead_and_item", "details": {"lead_description": "Imperial courier carries warning of Stormcloak ambush at a bridge. A chance to influence the war.", "related_tags": ["civil_war", "stormcloaks", "imperial_army"], "item_keys": ["imperial_orders_sealed"]}},
         {"description": "A group of stern-faced Vigilants of Stendarr are interrogating a frightened Khajiit traveler on the road. Their leader, a zealous Breton, glares at you.", 
-         "type": "npc_interaction", "details": {"npc_tags": {"role": "vigilant_of_stendarr_interrogator_zealous", "attitude": "hostile_suspicious"}, "dialogue_lead": "'Stendarr's Light expose the unclean! This one consorts with Daedra, I feel it! What say you, traveler? Do you harbor heretics?'", "faction_interaction_lead": {"faction_tags": ["vigilants_of_stendarr", "daedra_worship_accusation"], "situation": "Vigilants interrogating a Khajiit, player can intervene.", "moral_choice": True}}},
+         "type": "npc_interaction", "details": {"npc_tags": {"role": "vigilant_of_stendarr_interrogator_zealous", "attitude": "hostile_suspicious"}, "dialogue_lead": "'Stendarr's Light expose the wicked! You there, traveler, keep moving unless you have business with the righteous.'", "related_tags": ["vigilants_of_stendarr", "khajiit", "religious_zealots"]}},
         {"description": "A sudden, unnatural earthquake shakes the ground violently! Loose rocks tumble from nearby cliffs, and the air fills with dust.", 
-         "type": "environmental_hazard", "details": {"hazard_type": "magical_earthquake", "effect_desc": "The world shudders! You must keep your footing or risk injury from falling debris.", "skill_to_navigate": "agility_or_perception_dodge", "dc": 16, "damage_if_failed": 15, "damage_type": "blunt_force", "status_effect_if_failed": {"type":"disoriented", "duration_turns":2}}}
+         "type": "environmental_hazard", "details": {"hazard_type": "magical_earthquake", "effect_desc": "The world shudders! You must keep your footing or risk injury from falling debris.", "skill_to_navigate": "acrobatics", "dc": 14, "damage_if_failed": 8, "damage_type": "bludgeoning", "flavor_text": "The tremors subside after a few terrifying moments."}}
     ],
     "forest": [
-        {"description": "The air grows cold, and you hear the snap of a twig. A Spriggan Matriarch, its form ancient and wreathed in glowing moss, materializes, its eyes burning with primal fury!", "type": "combat_encounter", "details": {"enemy_tags": [["spriggan_matriarch_ancient"], ["bear_cave_charmed", "chance_0.5"], ["wolf_timber_charmed", "chance_0.5"]], "count_range": (1, 1), "flavor_text": "The Spriggan Matriarch roars, a sound like cracking trees, 'You trespass in the heartwood, mortal! The Green will consume you!'", "ambush": True, "special_ability_hint": "Matriarchs are powerful healers, can summon multiple animals, and have a potent poison spray.", "boss_fight_indicator": True, "loot_drop_hint":"taproot_spriggan_heartwood_or_unique_nature_staff"}},
-        {"description": "You discover a hidden grove with a small, moss-covered shrine to Kyne, Goddess of the Storm and the Hunt. Offerings of hawk feathers and antlers lie before it. Praying here, you feel your aim steady and your connection to the wilds deepen.", "type": "flavor_and_buff", "details": {"temporary_buff": {"stat": "archery_skill_bonus", "amount": 10, "duration_turns": 600}, "god_mention": "Kyne", "lore_hint": "Kyne is revered by Nords as the mother of men and beasts, and her shrines grant boons to hunters and warriors of the wild."}},
-        {"description": "A reclusive Bosmer alchemist, Elara Meadowlight, has a cleverly hidden treehouse dwelling. She's initially wary but might trade rare forest ingredients or offer a quest to find a sprig of the legendary 'Gildergreen Sapling' from a dangerous, corrupted grove.", "type": "npc_interaction_and_quest_lead", "details": {"npc_tags": {"role": "alchemist_master_bosmer_treehouse", "name":"Elara Meadowlight", "attitude": "neutral_reclusive_wise", "race": "bosmer"}, "dialogue_lead": "'Few find their way to my sanctuary. The forest provides for those who respect it. Do you come with knowledge of rare flora, or do you seek it?'", "quest_offer_chance": 0.6, "quest_type_hint": "fetch_rare_plant_sacred_corrupted_grove", "item_target":"gildergreen_sapling_pure", "trade_opportunity": {"sell_player": ["rare_flowers_forest", "monster_parts_spriggan"], "buy_player": ["potion_resist_poison_superior", "recipe_elaras_forest_balm", "arrows_bosmer_enchanted_paralysis"]}}},
-        {"description": "You find a patch of glowing blue Nirnroot by a moonlit stream, its characteristic chime filling the air, alongside some potent Nightshade and a cluster of Deathbell flowers. A deadly but valuable find.", "type": "item", "details": {"item_keys": ["nirnroot_glowing_moonlit", "nightshade_berries_potent", "deathbell_flower_cluster"], "quantity_range_nirnroot_glowing_moonlit": (2,3), "quantity_range_nightshade_berries_potent": (3,5), "quantity_range_deathbell_flower_cluster": (2,4) }},
-        {"description": "You find a crudely scrawled note pinned to an ancient oak: 'The Hagravens of [DynamicNearbyLandmark - e.g., Witchmist Grove] have taken my sister for their dark rituals! Reward for her safe return!' Signed, a desperate woodsman.", "type": "quest_lead", "details": {"lead_description": "Hagravens have kidnapped a woodsman's sister. A dangerous rescue mission into their lair.", "related_tags": ["hagraven_coven_ritual", "kidnapped_rescue_mission", "dark_magic_threat"], "urgency": "high", "dynamic_landmark_needed": True, "target_npc_to_rescue":"woodsman_sister_name_unknown"}},
-        {"description": "Ancient, moss-covered stones are arranged in a circle. Runes glow faintly. In the center, a pedestal has three indentations shaped like the claw of a bear, the feather of a hawk, and the scale of a fish. A riddle is carved below: 'Tributes of the wild, offered with respect, awaken the forest's sleeping aspect.'", "type": "puzzle_hint", "details": {"hint_text": "Placing corresponding animal parts (e.g., a bear claw, hawk feather, fish scale) in the indentations might activate the stones and summon a guardian or grant a boon.", "related_tags": ["magic_nature_ritual_animal_spirits", "druidic_puzzle_forest", "summoning_lore_ancient"], "puzzle_id": "forest_animal_spirit_stones", "potential_reward": "Summon Familiar spell scroll or Amulet of Animal Allegiance."}}
+        {"description": "The air grows cold, and you hear the snap of a twig. A Spriggan Matriarch, its form ancient and wreathed in glowing moss, materializes, its eyes burning with primal fury!", 
+         "type": "combat_encounter", "details": {"enemy_tags": [["spriggan_matriarch"]], "flavor_text": "The Spriggan attacks!", "special_ability_hint": "Spriggans are vulnerable to fire.", "loot_drop_hint": "Spriggan Sap, rare herbs"}},
+        {"description": "You discover a hidden grove with a small, moss-covered shrine to Kyne, Goddess of the Storm and the Hunt. Offerings of hawk feathers and antlers lie before it. Praying here grants you a temporary blessing.", 
+         "type": "flavor_and_buff", "details": {"god_mention": "Kyne", "minor_buff_debuff": {"stat": "archery_skill_bonus", "amount": 5, "duration_turns": 120, "is_buff": True, "buff_name": "Kyne's Blessing"}}},
+        {"description": "A reclusive Bosmer alchemist, Elara Meadowlight, has a cleverly hidden treehouse dwelling. She's initially wary but might trade rare forest ingredients or offer a quest to retrieve a lost artifact.", 
+         "type": "npc_interaction_and_quest_lead", "details": {"npc_tags": {"role": "alchemist_bosmer_reclusive", "name": "Elara Meadowlight", "attitude": "wary_curious", "race": "bosmer"}, "dialogue_lead": "'Who goes there? I don't get many visitors... unless you're here for something.'", "lead_description": "Elara needs someone to retrieve a rare flower from a dangerous cave. She offers a valuable potion as payment.", "related_tags": ["alchemist", "bosmer", "rare_ingredients"]}},
+        {"description": "You find a patch of glowing blue Nirnroot by a moonlit stream, its characteristic chime filling the air, alongside some potent Nightshade and a cluster of Deathbell flowers.", 
+         "type": "item", "details": {"item_keys": ["nirnroot_glowing", "nightshade_potent", "deathbell_flowers"], "quantity_range_nirnroot_glowing": (1, 2), "quantity_range_nightshade_potent": (2, 3), "quantity_range_deathbell_flowers": (3, 5)}},
+        {"description": "You find a crudely scrawled note pinned to an ancient oak: 'The Hagravens of [DynamicNearbyLandmark - e.g., Witchmist Grove] have taken my sister for their dark rituals! Reward offered for her safe return!'", 
+         "type": "quest_lead", "details": {"lead_description": "A desperate plea to rescue a sister from Hagravens. A dangerous but potentially rewarding quest.", "related_tags": ["hagravens", "rescue_mission", "dark_rituals"]}},
+        {"description": "Ancient, moss-covered stones are arranged in a circle. Runes glow faintly. In the center, a pedestal has three indentations shaped like the claw of a bear, the feather of a hawk, and the scale of a snake.", 
+         "type": "puzzle_hint", "details": {"hint_text": "The order of the symbols may be the key to activating the circle. Consider the natural order or dominance of these creatures.", "potential_reward": "Access to a hidden grove or a powerful blessing."}}
     ],
     "dwemer_ruin": [
-        {"description": "The air hums with ancient, barely contained power. A massive Dwarven Centurion Master, its aetherium core glowing ominously, activates from its alcove, steam hissing from its ancient joints!", "type": "combat_encounter", "details": {"enemy_tags": [["automaton_dwemer_centurion_master_steam"]], "count_range": (1,1), "flavor_text": "The ground trembles as the ultimate Dwemer war machine activates, its massive fists and steam cannons ready to obliterate intruders!", "ambush": True, "boss_fight_indicator": True, "loot_drop_hint":"Aetherium_Crest_or_Unique_Dwemer_Core"}},
-        {"description": "You find a complex Dwemer Astrolabe on a pedestal. Its interlocking rings are misaligned. Solving this celestial puzzle might reveal a hidden chamber or activate a nearby mechanism.", "type": "puzzle_hint", "details": {"hint_text": "The symbols on the rings correspond to constellations visible only from within Blackreach or during specific alignments. A nearby Dwemer star chart or observation log might hold the key sequence.", "related_puzzle_id": "dwemer_ruin_astrolabe_celestial", "related_tags": ["dwemer_puzzle_astronomical", "lore_dwemer_cosmology", "blackreach_connection_hint"], "potential_reward": "Access to a hidden observatory or a unique Dwemer artifact."}},
-        {"description": "A hidden pressure plate, almost invisible on the metallic floor, triggers a section of the wall to slide open with a grinding sound. Inside, a small alcove contains several flawless Dwemer Cogs, a Grand Soul Gem filled with a powerful soul, and a detailed schematic for constructing an Enhanced Dwarven Sphere companion.", "type": "item", "details": {"item_keys": ["dwemer_cog_flawless_set", "soul_gem_grand_filled_atronach", "schematic_dwemer_enhanced_sphere_companion"], "quantity_range_dwemer_cog_flawless_set": (3,6)}},
-        {"description": "You find the final, rambling journal of a long-dead Mages Guild scholar, Sulla Trebatius. It details their descent into the ruin, their obsession with Dwemer 'tonal architecture', their discovery of a 'Resonance Crystal', and their growing paranoia about 'the silent watchers that guard the heart of the mountain, their forms like living brass'.", "type": "quest_lead_and_item", "details": {"lead_description": "The journal speaks of a powerful Dwemer artifact, a 'Resonance Crystal', capable of untold power, but guarded by the ruin's deepest defenses and the madness it induced in Sulla. The 'silent watchers' could be unique, powerful Centurions or a new type of automaton.", "related_tags": ["dwemer_artifact_tonal_crystal", "guardian_constructs_unique_brass", "scholar_madness_lore", "tonal_architecture_mystery"], "urgency": "high", "item_found_with_journal": "sulla_research_notes_tonal_architecture", "potential_boss_hint":"Guardian_of_the_Resonance_Crystal"}}
+        {"description": "The air hums with ancient, barely contained power. A massive Dwarven Centurion Master, its aetherium core glowing ominously, activates from its alcove, steam hissing from its joints!", 
+         "type": "combat_encounter", "details": {"enemy_tags": [["dwarven_centurion_master"]], "flavor_text": "The Centurion awakens!", "special_ability_hint": "Its steam attacks are highly damaging, but it's slow to maneuver.", "loot_drop_hint": "Dwarven Metal Ingots, Centurion Dynamo Core"}},
+        {"description": "You find a complex Dwemer Astrolabe on a pedestal. Its interlocking rings are misaligned. Solving this celestial puzzle might reveal a hidden chamber or activate a nearby mechanism.", 
+         "type": "puzzle_hint", "details": {"hint_text": "The rings seem to correspond to constellations. Aligning them correctly might require knowledge of Dwemer astronomy.", "potential_reward": "Access to a hidden vault or control over a defensive system."}},
+        {"description": "A hidden pressure plate, almost invisible on the metallic floor, triggers a section of the wall to slide open with a grinding sound. Inside, a small alcove contains several gleaming Dwemer Gyros and a schematic diagram.", 
+         "type": "item", "details": {"item_keys": ["dwemer_gyro", "schematic_diagram_advanced"], "quantity_range_dwemer_gyro": (2, 4)}},
+        {"description": "You find the final, rambling journal of a long-dead Mages Guild scholar, Sulla Trebatius. It details their descent into the ruin, their obsession with Dwemer 'tonal architecture,' and their descent into madness.", 
+         "type": "lore_reveal", "details": {"information": "Sulla believed Dwemer ruins resonated with magical energies that could be harnessed with sonic manipulation. Their experiments may have unleashed something dangerous.", "related_tags": ["mages_guild", "tonal_architecture", "dwemer_lore"]}}
     ],
     "barrow": [
-        {"description": "A chilling wind sweeps through the burial chamber as you disturb an ancient seal. Draugr Scourges, their eyes burning with cold fire, and Draugr Death Overlords, wielding enchanted ancient Nordic battleaxes that crackle with frost, rise from their sarcophagi!", "type": "combat_encounter", "details": {"enemy_tags": [["undead_draugr_scourge_frost_aura"], ["undead_draugr_death_overlord_battleaxe_frost"]], "count_range": (2,4), "flavor_text": "The most powerful guardians of the ancient dead awaken, their chilling battle cries echoing through the tomb, vowing to protect their slumbering master and the treasures within!", "ambush": False, "loot_drop_hint":"Ancient_Nordic_Enchanted_Weapons_or_Armor"}},
-        {"description": "Behind a loose stone in a sarcophagus of a noble warrior, you find a finely crafted Amulet of Stendarr, surprisingly well-preserved, alongside a handful of potent Bone Meal and a dragon's scale offering.", "type": "item", "details": {"item_keys": ["amulet_of_stendarr_blessed", "bone_meal_superior", "dragon_scale_offering_ancient"]}},
-        {"description": "A series of Nordic burial urns line a shelf. Most are empty or contain only dust, but one, heavier than the others and sealed with wax, holds a small hoard of ancient Nordic coins, a few flawless gems, and a Potion of Ultimate Stamina.", "type": "item", "details": {"item_keys": ["potion_of_stamina_ultimate", "nordic_coins_ancient_hoard_large", "gem_flawless_sapphire", "gem_flawless_emerald"], "quantity_range_nordic_coins_ancient_hoard_large": (40,80)}},
-        {"description": "A Dragon Priest's sarcophagus, intricately carved with draconic motifs and glowing with faint magical wards, dominates the central chamber. Before it is a pedestal with three empty slots, each shaped like a different animal: the cunning Wolf, the wise Moth, and the mighty Dragon. A nearby inscription reads: 'Three aspects of Akatosh's dominion must align for the slumbering one to heed your call.'", "type": "puzzle_hint", "details": {"hint_text": "The carving suggests a powerful Dragon Priest rests here. The empty slots on the pedestal likely require specific animal-shaped keystones or amulets found within the barrow's deeper, trapped sections – perhaps guarded by lesser Draugr champions. Finding these and placing them correctly might awaken the Priest or reveal a path to their inner sanctum.", "related_puzzle_id": "barrow_dragon_priest_akatosh_keystones", "related_tags": ["dragon_cult_high_magic_akatosh", "undead_dragon_priest_powerful", "artifact_keystones_animal_divine", "sealed_tomb_high_danger_puzzle"], "potential_reward": "Dragon_Priest_Mask_Unique or unique_enchanted_staff_time_alteration."}}
+        {"description": "A chilling wind sweeps through the burial chamber as you disturb an ancient seal. Draugr Scourges, their eyes burning with cold fire, and Draugr Death Overlords, wielding ancient Nord weapons, rise from their tombs!", 
+         "type": "combat_encounter", "details": {"enemy_tags": [["draugr_scourge"], ["draugr_death_overlord"]], "count_range": (2, 4), "flavor_text": "The Draugr awaken, hungry for the warmth of the living!", "special_ability_hint": "Draugr are resistant to frost but vulnerable to fire.", "loot_drop_hint": "Ancient Nord Weapons, Draugr Dust"}},
+        {"description": "Behind a loose stone in a sarcophagus of a noble warrior, you find a finely crafted Amulet of Stendarr, surprisingly well-preserved, alongside a handful of potent Bone Meal.", 
+         "type": "item", "details": {"item_keys": ["amulet_stendarr_finely_crafted", "bone_meal_potent"], "quantity_range_bone_meal_potent": (3, 5)}},
+        {"description": "A series of Nordic burial urns line a shelf. Most are empty or contain only dust, but one, heavier than the others and sealed with wax, holds a small hoard of ancient Nord coins and a tarnished silver ring.", 
+         "type": "item", "details": {"item_keys": ["nord_coin_ancient", "silver_ring_tarnished"], "quantity_range_nord_coin_ancient": (15, 30)}},
+        {"description": "A Dragon Priest's sarcophagus, intricately carved with draconic motifs and glowing with faint magical wards, dominates the central chamber. Before it is a pedestal with three strange claw-shaped indentations...", 
+         "type": "puzzle_hint", "details": {"hint_text": "The claws are likely keys. Finding them and placing them in the correct order might unlock the sarcophagus... and unleash its occupant.", "potential_reward": "A powerful Dragon Priest mask or a scroll of immense power."}}
     ],
     "ashland_waste": [
-        {"description": "The air is thick with choking ash. You find a half-buried skeleton, its hand clutching a small, heat-resistant pouch containing a few Fire Salts and a charred piece of paper with a barely legible map fragment.", 
-         "type": "item_and_quest_lead", "details": {"item_keys": ["fire_salts_impure", "map_fragment_ashlands_charred"], "lead_description": "The map fragment seems to point towards a hidden ruin or cave within these wastes, possibly untouched by the worst of Red Mountain's fury.", "related_tags": ["ashland_exploration", "hidden_ruin_map", "survival_challenge"], "urgency": "low"}},
+        {"description": "The air is thick with choking ash. You find a half-buried skeleton, its hand clutching a small, heat-resistant pouch containing a few Fire Salts and a charred piece of paper.", 
+         "type": "item_and_quest_lead", "details": {"item_keys": ["fire_salts_impure", "map_fragment_ashlands_charred"], "quantity_range_fire_salts_impure":(1,2), "lead_description": "The map fragment seems to point towards a hidden ruin or a forgotten Dunmer shrine somewhere in the ashlands.", "related_tags": ["ashlands", "fire_salts", "dunmer_ruin"]}},
         {"description": "A wild Netch, its gas-filled body drifting eerily through the ashfall, floats by. They are usually docile unless provoked, but their leather is valuable.", 
-         "type": "npc_encounter_hint", "details": {"npc_tags":{"role":"creature_netch_bull_or_betty", "attitude":"neutral_unless_attacked"}, "situation": "Potential source of Netch Leather if hunted, but they might have calves nearby.", "item_if_killed": "netch_leather_pelt"}},
+         "type": "npc_encounter_hint", "details": {"npc_tags":{"role":"creature_netch_bull_or_betty", "attitude":"neutral_unless_attacked"}, "situation": "Potential source of Netch Leather if hunted carefully.", "related_tags": ["netch", "ashlands_creature"]}},
         {"description": "You discover a small, hidden shrine to Azura, somehow preserved amidst the desolation. Praying here grants you a brief moment of clarity and magical fortitude.", 
-         "type": "flavor_and_buff", "details": {"god_mention": "Azura", "lore_hint":"Azura's influence persists even in the most blighted lands, offering hope to her Dunmer followers.", "minor_buff_debuff":{"stat":"magic_resist", "amount":15, "duration_turns":300, "is_buff":True, "buff_name":"Azura's Warding"}}},
+         "type": "flavor_and_buff", "details": {"god_mention": "Azura", "lore_hint":"Azura's influence persists even in the most blighted lands, offering hope to her Dunmer followers.", "minor_buff_debuff": {"stat": "resistance_fire", "amount": 0.1, "duration_turns": 120, "is_buff": True, "buff_name": "Azura's Grace"}}},
         {"description": "A sudden tremor shakes the ground, and a fissure opens nearby, venting noxious sulfurous gas. You must move quickly to avoid being overcome.", 
-         "type": "environmental_hazard", "details": {"hazard_type": "ashland_fissure_gas_vent", "effect_desc": "The sulfurous gas stings your eyes and lungs, making it hard to breathe.", "avoid_skill": "endurance_or_speed", "avoid_dc": 14, "failure_penalty": {"status_effect": {"type":"poison_ash_fumes", "potency":5, "duration_turns":10, "affected_stats":["stamina_regen_rate"]}}}}
+         "type": "environmental_hazard", "details": {"hazard_type": "ashland_fissure_gas_vent", "effect_desc": "The sulfurous gas stings your eyes and lungs, making it hard to breathe.", "avoid_skill": "endurance", "avoid_dc": 13, "damage_if_failed": 6, "damage_type": "poison", "flavor_text": "The gas dissipates after a few moments, leaving a lingering stench."}}
     ],
     "volcanic_caldera": [
         {"description": "You find a rare Obsidian Shard, still warm from the geothermal heat, embedded in a rock. It pulses with a faint, fiery energy.", 
          "type": "item", "details": {"item_key": "obsidian_shard_volcanic", "lore_hint":"Obsidian from such active regions is prized for fire enchantments."}},
-        {"description": "A mad Argonian pyromancer, believing this caldera to be a gateway to the Deadlands, is attempting a dangerous ritual to summon a Flame Atronach Monarch. He mistakes you for a rival cultist or a sacrifice.", 
-         "type": "npc_interaction_hostile", "details": {"npc_tags": {"role": "mage_pyromancer_cultist_argonian_mad", "attitude": "hostile_fanatical", "race":"argonian"}, "dialogue_lead": "'More fuel for the Master's pyre! You will burn for the glory of Mehrunes Dagon, interloper!'", "combat_trigger_immediate": True, "item_on_npc_hint": "staff_of_flames_greater", "quest_lead_if_defeated":"notes_on_summoning_flame_monarch"}},
+        {"description": "A mad Argonian pyromancer, believing this caldera to be a gateway to the Deadlands, is attempting a dangerous ritual to summon a Flame Atronach Monarch. He mistakes you for a fellow cultist...", 
+         "type": "npc_interaction_hostile", "details": {"npc_tags": {"role": "mage_pyromancer_cultist_argonian_mad", "attitude": "hostile_fanatical", "race":"argonian"}, "dialogue_lead": "'More followers for the Great Conflagration! Join me, brother, and we shall unleash the fury of Oblivion!'", "related_tags": ["argonian", "pyromancer", "cultist"]}},
         {"description": "The ground is unstable here. A section of hardened lava crust crumbles beneath your feet, revealing a small lava tube leading downwards. It's incredibly hot.", 
-         "type": "location_discovery_hint", "details": {"location_name_hint": "Caldera Lava Tube", "related_tags": ["volcanic_cave", "extreme_heat_hazard", "underground_lava_flow"], "mark_on_map_chance": 0.6, "skill_challenge_to_enter":{"skill":"endurance_resist_fire", "dc":17, "failure_penalty":{"damage":10, "damage_type":"fire_continuous"}}}},
+         "type": "location_discovery_hint", "details": {"location_name_hint": "Caldera Lava Tube", "related_tags": ["volcanic_cave", "extreme_heat_hazard", "underground_lava_flow"], "mark_on_map_chance": 0.4}},
         {"description": "Amidst the scorched rocks, you find a perfectly preserved Fire Fern, an extremely rare alchemical ingredient that thrives in intense heat.", 
          "type": "item", "details": {"item_key": "fire_fern_pristine", "quantity_range": (1,1), "lore_hint":"Fire Ferns are almost mythical, said to grant unparalleled resistance to flames."}}
     ]
@@ -139,7 +153,14 @@ def explore_location(player, current_location, random_encounters, npc_registry, 
 
         selected_exploration_outcomes = []
         if available_results_data:
-            unique_results_data = [dict(t) for t in {tuple(sorted(d.items())) for d in available_results_data}]
+            # Remove duplicates based on "description"
+            unique_descriptions = set()
+            unique_results_data = []
+            for d in available_results_data:
+                if d["description"] not in unique_descriptions:
+                    unique_descriptions.add(d["description"])
+                    unique_results_data.append(d)
+
             num_results_to_show = min(random.randint(1, 2), len(unique_results_data)) 
             selected_exploration_outcomes = random.sample(unique_results_data, num_results_to_show)
 
@@ -275,7 +296,7 @@ def explore_location(player, current_location, random_encounters, npc_registry, 
                             ui.slow_print(f"Recalling this lore makes you feel a surge of {buff.get('stat')} ({'+' if buff.get('is_buff') else '-'}{buff.get('amount')})!")
                     
                     elif effect_type == "npc_encounter_hint":
-                        ui.slow_print(f"You get the feeling you might encounter a {details.get('npc_tags',{}).get('role','certain individual')} here: {details.get('situation','They might be nearby.')}")
+                        ui.slow_print(f"You get the feeling you might encounter a {details.get('npc_tags',{}).get('role','certain individual')} here: {details.get('situation','They might be nearby...')}")
 
                     elif effect_type == "item_purchase_opportunity":
                         item_key_offered = details.get('item_key')
@@ -296,7 +317,7 @@ def explore_location(player, current_location, random_encounters, npc_registry, 
 
                     elif effect_type == "interaction_point":
                         ui.slow_print(f"You notice a {details.get('interaction_name')}. {details.get('action_text', 'Interact?')}")
-                        # Conceptual: if ui.ask_yes_no(f"Interact with {details.get('interaction_name')}?"):
+                        # Conceptual: if ui.ask_yes_no(f"Interact with {details.get('interaction_name')}"):
                         #    if "requires_item_key" in details and not player.inventory_has_item(details["requires_item_key"]):
                         #        ui.slow_print("You lack the required item.")
                         #    else:
@@ -336,7 +357,14 @@ def trigger_random_event(location_tags, player, ui, current_location):
             possible_events_for_location.extend(RANDOM_EVENTS.get("generic_travel", []))
 
         if possible_events_for_location:
-            possible_events_for_location = [dict(t) for t in {tuple(sorted(d.items())) for d in possible_events_for_location}]
+            # Remove duplicates based on "description"
+            unique_descriptions = set()
+            unique_events = []
+            for d in possible_events_for_location:
+                if d["description"] not in unique_descriptions:
+                    unique_descriptions.add(d["description"])
+                    unique_events.append(d)
+            possible_events_for_location = unique_events
 
         if possible_events_for_location and random.random() < 0.8: 
             event = random.choice(possible_events_for_location)
@@ -396,14 +424,14 @@ def trigger_random_event(location_tags, player, ui, current_location):
                      if hasattr(player, 'quest_log'):
                         quest_title = details.get("quest_title_hint", f"Investigate Clue from {current_location['name']}")
                         quest_reward = generate_reward(player.level, details.get('related_tags', []))
-                        new_quest = Quest(title=quest_title, description=details.get('lead_description'), reward=quest_reward, level_requirement=player.level, location=current_location, completion_condition=f"clue_investigated_{quest_title.replace(' ','_').lower()}")
+                        new_quest = Quest(title=quest_title, description=details.get('lead_description'), reward=quest_reward, level_requirement=player.level, location=current_location, completion_condition="unresolved")
                         player.quest_log.add_quest(new_quest)
                         ui.slow_print(f"A new lead has been noted in your journal: {new_quest.title}")
 
 
             elif event_type == "combat_encounter" or event_type == "combat_encounter_ambush":
                 ui.slow_print(details.get("flavor_text", f"Suddenly, you are attacked!"))
-                # Conceptual: game_engine.initiate_combat(player, details.get("enemy_tags", [["mysterious_foe"]]), details.get("count_range",(1,1)), details.get("ambush", False), current_location, boss_fight=details.get("boss_fight_indicator",False), special_ability_hint=details.get("special_ability_hint"), loot_drop_hint=details.get("loot_drop_hint"))
+                # Conceptual: game_engine.initiate_combat(player, details.get("enemy_tags", [["mysterious_foe"]]), details.get("count_range",(1,1)), details.get("ambush", False), current_location)
                 # For now, just print the hint if it exists
                 if "special_ability_hint" in details: ui.slow_print(f"(Hint: {details['special_ability_hint']})")
                 if "loot_drop_hint" in details: ui.slow_print(f"(They might drop: {details['loot_drop_hint']})")
@@ -424,8 +452,7 @@ def trigger_random_event(location_tags, player, ui, current_location):
                 dc = details.get("dc", 12)
                 player_skill_level = player.skills.get(skill_to_test, 5) 
                 skill_modifier = player_skill_level // 4 
-                roll = random.randint(1,20)
-                total_roll = roll + skill_modifier
+                roll = random.randint(1,20) + skill_modifier
                 target_desc = details.get('target_description', 'a task')
                 ui.slow_print(f"You attempt {target_desc} using your {skill_to_test.replace('_',' ')} (Roll: {roll} + Mod: {skill_modifier} = {total_roll} vs DC: {dc})...")
 
@@ -477,7 +504,7 @@ def trigger_random_event(location_tags, player, ui, current_location):
                 if hasattr(player, 'quest_log'):
                     quest_title = details.get("quest_title_hint", f"Investigate Rumor in {current_location['name']}")
                     quest_reward = generate_reward(player.level, details.get('related_tags', []))
-                    new_quest = Quest(title=quest_title, description=details.get('lead_description'), reward=quest_reward, level_requirement=player.level, location=current_location, completion_condition=f"rumor_investigated_{quest_title.replace(' ','_').lower()}")
+                    new_quest = Quest(title=quest_title, description=details.get('lead_description'), reward=quest_reward, level_requirement=player.level, location=current_location, completion_condition="unresolved")
                     player.quest_log.add_quest(new_quest)
                     ui.slow_print(f"A new entry has been added to your journal: {new_quest.title}")
                 if "related_tags" in details: ui.slow_print(f"(Related to: {', '.join(details['related_tags'])})")

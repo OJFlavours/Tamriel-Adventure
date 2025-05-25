@@ -154,7 +154,8 @@ class UI:
         """Displays the player's current quest log."""
         UI.print_subheading("Quest Log")
         if hasattr(player, 'quest_log') and player.quest_log:
-            for i, quest in enumerate(player.quest_log):
+            quests = player.quest_log.list_quests()  # Updated to use list_quests()
+            for i, quest in enumerate(quests):
                 UI.print_info(f"[{i + 1}] {quest.title}: {UI.wrap_text(quest.description, width=LINE_WIDTH - 4)}")
         else:
             UI.print_info("You have no active quests.")
@@ -198,4 +199,4 @@ if __name__ == "__main__":
     UI.print_failure("The wolf bites you!")
 
     UI.print_system_message("\n--- End of Example ---")
-    UI.press_enter() # Added for example flow
+    UI.press_enter()  # Added for example flow
