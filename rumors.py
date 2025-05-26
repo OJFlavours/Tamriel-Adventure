@@ -1,4 +1,3 @@
-# rumors.py
 import random
 from typing import List, Dict, Any
 from locations import LOCATIONS
@@ -104,167 +103,16 @@ def generate_reward(player_level: int, quest_tags: List[str]) -> Dict[str, Any]:
 
     return reward
 
-# Quest class
-class Quest:
-    def __init__(self, title: str, description: str, reward: Dict[str, Any], level_requirement: int, location: Dict[str, Any],
-                 objectives: List[Dict[str, Any]],
-                 quest_id: int | None = None, status: str = "active", turn_in_npc_id: str | None = None):
-        self.quest_id = quest_id or random.randint(1000, 9999)
-        self.title = title
-        self.description = description
-        self.reward = reward
-        self.level_requirement = level_requirement
-        self.location = location
-        self.objectives = objectives
-        self.status = status
-        self.turn_in_npc_id = turn_in_npc_id
-        self.tags: Dict[str, Any] = {}
-        self.add_tag("quest", "type", "generic")
+class DummyRumor:
+    def __init__(self):
+        self.tags = {}
 
     def add_tag(self, tag_category: str, tag_type: str, tag_value: str) -> None:
         if tag_category not in self.tags:
             self.tags[tag_category] = {}
         self.tags[tag_category][tag_type] = tag_value
 
-    def is_objective_met(self, objective: Dict[str, Any], player: Any) -> bool:
-        obj_type = objective["type"]
-        
-        if obj_type == "kill":
-            target_id = objective["target_id"]
-            required_count = objective["count"]
-            current_count = player.defeated_enemies_tracker.get(target_id, 0)
-            objective['current'] = current_count
-            return current_count >= required_count
-        
-        elif obj_type == "collect_item":
-            item_key = objective["item_key"]
-            required_count = objective["count"]
-            current_count = sum(1 for item in player.stats.inventory if item.name.lower().replace(' ', '_') == item_key.lower().replace(' ', '_'))
-            objective['current'] = current_count
-            return current_count >= required_count
-        
-        elif obj_type == "reach_location":
-            location_name = objective["location_name"]
-            return (player.current_location_obj and player.current_location_obj["name"].lower() == location_name.lower()) or \
-                   any(loc_obj["name"].lower() == location_name.lower() for loc_obj in player.known_locations_objects)
-        
-        elif obj_type == "talk_to_npc":
-            npc_id = objective["npc_id"]
-            return npc_id in player.talked_to_npcs
-        
-        return False
-
-    def check_all_objectives_met(self, player: Any) -> bool:
-        if self.status == "completed":
-            return True
-            
-        all_met = True
-        for obj in self.objectives:
-            if not self.is_objective_met(obj, player):
-                all_met = False
-                break
-        
-        if all_met:
-            self.status = "completed"
-            return True
-        return False
-
-    def __str__(self) -> str:
-        reward_str_parts = []
-        for key, value in self.reward.items():
-            if isinstance(value, Item):
-                reward_str_parts.append(f"{value.name} (Item)")
-            else:
-                reward_str_parts.append(f"{value} {key.capitalize()}")
-        reward_display = ", ".join(reward_str_parts)
-
-        objectives_display = []
-        for obj in self.objectives:
-            current_progress_str = f" ({obj.get('current', 0)}/{obj['count']})" if "count" in obj else ""
-            if obj["type"] == "kill":
-                objectives_display.append(f"Defeat {obj['count']} {obj['target_name']}s{current_progress_str}")
-            elif obj["type"] == "collect_item":
-                objectives_display.append(f"Collect {obj['count']} {obj['item_key'].replace('_', ' ').title()}{current_progress_str}")
-            elif obj["type"] == "reach_location":
-                objectives_display.append(f"Reach {obj['location_name']}")
-            elif obj["type"] == "talk_to_npc":
-                objectives_display.append(f"Talk to {obj['npc_name']}")
-        
-        flavor_texts = flavor.get_flavor(self)
-        description_prefix = f"Quest[{self.quest_id}] {self.title} (Lvl {self.level_requirement}) at {self.location.get('name', 'Unknown')} [Status: {self.status.capitalize()}]:"
-        
-        full_description = f"{description_prefix}\n  Objective: {self.description}\n"
-        if objectives_display:
-            full_description += "  Tasks:\n" + "\n".join([f"    - {task}" for task in objectives_display])
-        full_description += f"\n  Reward: {reward_display}"
-        
-        if flavor_texts:
-            full_description += f"\n  Lore: {' '.join(flavor_texts)}"
-            
-        return full_description
-
-# QuestLog class
-class QuestLog:
-    def __init__(self):
-        self.active_quests: List[Quest] = []
-        self.completed_quests: List[Quest] = []
-
-    def add_quest(self, quest: Quest) -> bool:
-        if quest.quest_id not in [q.quest_id for q in self.active_quests] and \
-           quest.quest_id not in [q.quest_id for q in self.completed_quests]:
-            self.active_quests.append(quest)
-            return True
-        return False
-
-    def remove_quest(self, quest_id: int) -> bool:
-        quest_to_remove = next((q for q in self.active_quests if q.quest_id == quest_id), None)
-        if quest_to_remove:
-            self.active_quests.remove(quest_to_remove)
-            if quest_to_remove.status == "completed":
-                self.completed_quests.append(quest_to_remove)
-            return True
-        return False
-
-    def get_quest_by_id(self, quest_id: int) -> Quest | None:
-        for q in self.active_quests:
-            if q.quest_id == quest_id:
-                return q
-        for q in self.completed_quests:
-            if q.quest_id == quest_id:
-                return q
-        return None
-
-    def list_quests(self) -> List[Quest]:
-        return self.active_quests + self.completed_quests
-
-    def get_quests_for_turn_in(self, npc_id: str) -> List[Quest]:
-        return [q for q in self.active_quests if q.status == "completed" and q.turn_in_npc_id == npc_id]
-
-# Utility function
-def list_player_quests_for_display(player: Any) -> List[Quest]:
-    if hasattr(player, 'quest_log') and player.quest_log:
-        return player.quest_log.list_quests()
-    return []
-
-# Helper function
-def find_locations_by_tag(tag: str) -> List[Dict]:
-    matching = []
-    for loc in LOCATIONS:
-        if tag in loc.get("tags", []):
-            matching.append(loc)
-        for sub in loc.get("sub_locations", []):
-            if tag in sub.get("tags", []):
-                sub_copy = sub.copy()
-                sub_copy["parent_name"] = loc["name"]
-                matching.append(sub_copy)
-            for sub2 in sub.get("sub_locations", []):
-                if tag in sub2.get("tags", []):
-                    sub2_copy = sub2.copy()
-                    sub2_copy["parent_name"] = f'{loc["name"]} -> {sub["name"]}'
-                    matching.append(sub2_copy)
-    return matching
-
-def generate_location_appropriate_quest(player_level: int, location_tags: List[str], quest_giver_id: str | None = None) -> Quest | None:
+def generate_location_appropriate_quest(player_level: int, location_tags: List[str], quest_giver_id: str | None = None, rumor_text: str | None = None) -> Any:
     possible_templates = []
     
     for template in QUEST_TEMPLATES:
@@ -277,6 +125,12 @@ def generate_location_appropriate_quest(player_level: int, location_tags: List[s
         
         possible_templates.append(template)
 
+    if rumor_text:
+        rumor = DummyRumor()
+        rumor.add_tag("rumor", "text", rumor_text)
+        rumor_tags = tags.get_tags(rumor)
+        possible_templates = tags.filter_entities_by_tags(possible_templates, rumor_tags)
+
     if not possible_templates:
         # Re-enabled DEBUG message
         UI.print_system_message(f"DEBUG: No specific quest template matched for level {player_level} and tags {location_tags}. Generating generic quest.")
@@ -288,17 +142,15 @@ def generate_location_appropriate_quest(player_level: int, location_tags: List[s
         objectives = [{"type": "reach_location", "location_name": chosen_location["name"]}]
         reward = generate_reward(player_level, location_tags)
         
-        quest = Quest(
-            title=title,
-            description=description,
-            reward=reward,
-            level_requirement=player_level,
-            location=chosen_location,
-            objectives=objectives,
-            status="active",
-            turn_in_npc_id=quest_giver_id
-        )
-        quest.add_tag("quest", "type", "generic")
+        quest = {"title":title,
+                 "description":description,
+                 "reward":reward,
+                 "level_requirement":player_level,
+                 "location":chosen_location,
+                 "objectives":objectives,
+                 "status":"active",
+                 "turn_in_npc_id":quest_giver_id}
+        
         return quest
 
     chosen_template = random.choice(possible_templates)
@@ -353,31 +205,15 @@ def generate_location_appropriate_quest(player_level: int, location_tags: List[s
 
     reward = generate_reward(player_level, chosen_template.get("reward_tags", []))
 
-    quest = Quest(
-        title=title,
-        description=description,
-        reward=reward,
-        level_requirement=player_level,
-        location=final_quest_location,
-        objectives=objectives,
-        status="active",
-        turn_in_npc_id=quest_giver_id
-    )
-    quest.add_tag("quest", "type", chosen_template["id"])
+    quest = {"title":title,
+             "description":description,
+             "reward":reward,
+             "level_requirement":player_level,
+             "location":final_quest_location,
+             "objectives":objectives,
+             "status":"active",
+             "turn_in_npc_id":quest_giver_id}
     
-    if "flavor_tags" in chosen_template:
-        for cat, types_dict in chosen_template["flavor_tags"].items():
-            for t_type, t_value in types_dict.items():
-                if isinstance(t_value, list):
-                    for val in t_value:
-                        quest.add_tag(cat, t_type, val)
-                else:
-                    quest.add_tag(cat, t_type, t_value)
-
-    if not quest.objectives:
-        UI.print_system_message(f"DEBUG: Quest '{quest.title}' generated without objectives. Adding default 'reach_location'.") # Debug message
-        quest.objectives.append({"type": "reach_location", "location_name": final_quest_location["name"]})
-
     return quest
 
 def process_quest_rewards(player: Any, quest: Quest) -> None:
@@ -411,6 +247,16 @@ def generate_rumor(player_level: int, current_location: Dict[str, Any], quest_gi
     It uses the generate_location_appropriate_quest function also within this file.
     """
     # Generate a potential quest using the function already in rumors.py
+    
+    class DummyRumor:
+        def __init__(self):
+            self.tags = {}
+
+        def add_tag(self, tag_category: str, tag_type: str, tag_value: str) -> None:
+            if tag_category not in self.tags:
+                self.tags[tag_category] = {}
+            self.tags[tag_category][tag_type] = tag_value
+    
     quest_data = generate_location_appropriate_quest(player_level, current_location.get("tags", []), quest_giver_id)
     rumor_text = ""
 
@@ -423,21 +269,23 @@ def generate_rumor(player_level: int, current_location: Dict[str, Any], quest_gi
 
     if quest_data:
         # Craft a rumor based on the generated quest
-        if quest_data.location and quest_data.location.get('name'):
-            rumor_text_base = f"I've heard whispers concerning {quest_data.location.get('name', 'a nearby place')}."
+        if quest_data["location"] and quest_data["location"].get('name'):
+            rumor_text_base = f"I've heard whispers concerning {quest_data['location'].get('name', 'a nearby place')}."
         else:
             rumor_text_base = f"Word is there's something stirring in the region."
 
         # Extract quest type for more specific rumor details
         quest_type_tag = ""
-        if quest_data.tags and "quest" in quest_data.tags and "type" in quest_data.tags["quest"]:
-             quest_type_tag = quest_data.tags["quest"]["type"]
+        # if quest_data.tags and "quest" in quest_data.tags and "type" in quest_data.tags["quest"]: # Original
+        #      quest_type_tag = quest_data.tags["quest"]["type"]
+        if quest_data and "quest" in quest_data and "type" in quest_data["quest"]:
+            quest_type_tag = quest_data["quest"]["type"]
 
         if "bandits" in quest_type_tag or "clear_bandit_camp" in quest_type_tag:
             rumor_text_detail = "Bandits are causing trouble, preying on the weak. Someone ought to do something about it."
         elif "fetch" in quest_type_tag or "ancient_relic_retrieval" in quest_type_tag:
             item_name_objective = "an ancient relic"
-            for obj in quest_data.objectives: #
+            for obj in quest_data["objectives"]: #
                 if obj["type"] == "collect_item": #
                     item_name_objective = obj.get("item_key", "an important item").replace("_", " ")
                     break
@@ -450,6 +298,12 @@ def generate_rumor(player_level: int, current_location: Dict[str, Any], quest_gi
         else:
             rumor_text = f"{rumor_text_base} {rumor_text_detail}"
 
+        # Add tags to quest_data
+        dummy_rumor = DummyRumor()
+        dummy_rumor.add_tag("rumor", "text", rumor_text)
+        rumor_tags = tags.get_tags(dummy_rumor) #
+        # quest_data["tags"] = rumor_tags
+        
     else:
         # Generate a generic rumor if no quest is created
         loc_name = current_location.get("name", "these parts")

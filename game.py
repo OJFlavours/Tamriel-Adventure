@@ -22,7 +22,7 @@ try:
     )
     import tags
     import flavor
-    from rumors import generate_rumor # Used for generating rumors in NPC dialogue
+    from quests import generate_rumor # for generating rumors in NPC dialogue
 except ImportError as e:
     print(f"Error importing modules: {e}")
     traceback.print_exc()

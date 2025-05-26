@@ -7,7 +7,7 @@ from quests import generate_location_appropriate_quest, Quest, process_quest_rew
 from tags import TAGS, get_tags
 import flavor
 from exploration_data import EXPLORATION_RESULTS
-from rumors import generate_rumor
+from quests import generate_rumor
 
 # Define roles that imply noble or commoner status
 NOBLE_ROLES = {"noble", "jarl", "thane", "baron", "lady", "duke", "duchess", "court_mage", "advisor"}
