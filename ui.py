@@ -8,7 +8,7 @@ init(autoreset=True)
 
 # --- Configuration ---
 LINE_WIDTH = 70
-SLOW_PRINT_SPEED = 0.005  # Adjust for faster/slower text crawl
+SLOW_PRINT_SPEED = 0.001  # Adjust for faster/slower text crawl
 HEADING_COLOR = Fore.CYAN + Style.BRIGHT
 SUBHEADING_COLOR = Fore.GREEN + Style.BRIGHT
 PROMPT_COLOR = Fore.YELLOW + Style.BRIGHT
