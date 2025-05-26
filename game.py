@@ -722,6 +722,9 @@ def combat_demo(player, current_location_obj):
             UI.print_warning("Cannot initiate demo combat: Player already in combat.")
         
         return current_location_obj
+    except Exception as e:
+        UI.print_failure(f"Error in combat_demo: {e}")
+        return current_location_obj
 
 # --- Inventory & Item Functions ---
 

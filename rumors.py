@@ -565,3 +565,62 @@ def process_quest_rewards(player: Any, quest: Quest) -> None: # Player hinted as
             UI.print_success(f"- A favor {reward_value}.")
     
     UI.press_enter()
+    
+    def generate_rumor(player_level: int, current_location: Dict[str, Any], quest_giver_id: str = None) -> Dict[str, Any]:
+    """
+    Generate a contextual rumor based on player level and current location.
+    Can optionally include quest data.
+    
+    Returns:
+        Dict with 'text' key containing rumor text, and optional 'quest_data' key with Quest object
+    """
+    rumors_general = [
+        "i heard strange sounds coming from the old ruins to the north",
+        "merchants have been avoiding the main roads lately. bandits, they say",
+        "the local mine has been quiet for days. might be trouble down there",
+        "travelers speak of unnatural cold in the mountains, even in summer",
+        "the guards whisper of missing livestock near the old burial grounds"
+    ]
+    
+    rumors_by_location_tag = {
+        "city": [
+            "the jarl has been troubled by reports from the surrounding holds",
+            "word from the capital suggests changes are coming",
+            "the merchant's guild is concerned about increasing bandit activity"
+        ],
+        "tavern": [
+            "the innkeeper mentioned some odd guests who left without paying",
+            "a drunk patron claimed to see lights in the abandoned tower",
+            "someone left a cryptic message carved into the table upstairs"
+        ],
+        "mine": [
+            "the miners refuse to go deeper after what they found last week",
+            "strange echoes have been heard from the lower tunnels",
+            "the foreman is offering extra pay for anyone brave enough to investigate"
+        ],
+        "forest": [
+            "hunters report seeing unnatural creatures in the deep woods",
+            "the old druid circle has been disturbed by something",
+            "travelers avoid the forest path after dark for good reason"
+        ]
+    }
+    
+    # Select appropriate rumor based on location
+    location_tags = current_location.get("tags", [])
+    possible_rumors = rumors_general.copy()
+    
+    for tag in location_tags:
+        if tag in rumors_by_location_tag:
+            possible_rumors.extend(rumors_by_location_tag[tag])
+    
+    chosen_rumor = random.choice(possible_rumors)
+    
+    result = {"text": chosen_rumor}
+    
+    # 30% chance to offer a quest along with the rumor
+    if random.random() < 0.3 and quest_giver_id:
+        quest = generate_location_appropriate_quest(player_level, location_tags, quest_giver_id)
+        if quest:
+            result["quest_data"] = quest
+    
+    return result
