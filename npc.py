@@ -1,11 +1,13 @@
 # npc.py
 import random
-from stats import Stats, RACES # Import RACES directly from stats
-from items import Item, generate_random_item # Added Item for type checking in reward display
-from ui import UI # Import UI
-from quests import generate_location_appropriate_quest 
-from tags import TAGS, get_tags 
-import flavor 
+from stats import Stats, RACES
+from items import Item
+from ui import UI
+from quests import generate_location_appropriate_quest, Quest, process_quest_rewards
+from tags import TAGS, get_tags
+import flavor
+from exploration_data import EXPLORATION_RESULTS
+from rumors import generate_rumor
 
 # Define roles that imply noble or commoner status
 NOBLE_ROLES = {"noble", "jarl", "thane", "baron", "lady", "duke", "duchess", "court_mage", "advisor"}
@@ -22,15 +24,15 @@ COMMONER_ROLES = {
 HOSTILE_ROLES = {
     "bandit", "bandit_raider", "bandit_scout", "bandit_thug", "bandit_archer", "bandit_leader",
     "necromancer", "vampire", "vampire_thrall", "forsworn_raider", "forsworn_shaman", "forsworn_briarheart",
-    "thief_hostile", 
-    "draugr_restless", "skeleton_warrior", "ghost_ancient", 
-    "cave_bear_young", "wolf_alpha", "giant_spider_cave", 
-    "dwarven_sphere_guardian", "falmer_warrior", "chaurus_hunter_small", 
+    "thief_hostile",
+    "draugr_restless", "skeleton_warrior", "ghost_ancient",
+    "cave_bear_young", "wolf_alpha", "giant_spider_cave",
+    "dwarven_sphere_guardian", "falmer_warrior", "chaurus_hunter_small",
     "mage_hostile", "cultist"
 }
 FRIENDLY_ROLES = COMMONER_ROLES.union(NOBLE_ROLES) - HOSTILE_ROLES
 
-# --- NAME_POOLS (Expanded) ---
+# NAME_POOLS (ensure this is complete as per your uploaded npc.py)
 NAME_POOLS = {
     "nord": {
         "noble": {
@@ -143,83 +145,83 @@ NAME_POOLS = {
      "chaurus_creature": {"noble": {}, "commoner": {"male": ["Chaurus Reaper Prime", "Chaurus Hunter Alpha"], "female": ["Chaurus Queen"]}},
 }
 
+# Add a unique ID to each NPC name in NAME_POOLS for tracking purposes
+def assign_unique_npc_ids(name_pools):
+    # This assigns a unique ID to each *predefined* name in the pools.
+    # When creating an NPC, you'd pick a name from here, and its ID would be self.unique_id.
+    # For dynamically generated NPCs (like generic bandits), a generic ID is used.
+    for race_data in name_pools.values():
+        for name_type_data in race_data.values():
+            for gender_name_list in name_type_data.values():
+                for i in range(len(gender_name_list)):
+                    original_name = gender_name_list[i]
+                    # Create a simple unique ID from the name and add a random suffix for more uniqueness
+                    unique_id = f"{original_name.lower().replace(' ', '_')}_{random.randint(100, 999)}"
+                    gender_name_list[i] = unique_id # Store the ID directly in the list
+assign_unique_npc_ids(NAME_POOLS) # Call this once at module load
+
 class NPC:
     def __init__(self, name: str, race: str, role: str, level: int, disposition: int = 50, gold: int = 0):
-        self.race = race.lower() if race else "nord" # Default to nord if race is None
+        self.race = race.lower() if race else "nord"
         self.role = role
-        self.level = max(1, level) 
-        self.disposition = disposition 
+        self.level = max(1, level)
+        self.disposition = disposition
         self.gold = gold
-        self.has_offered_quest = False 
+        self.has_offered_quest = False # Flag to prevent offering the same quest repeatedly
 
+        # Assign unique_id for this NPC instance
+        # If name is provided (e.g., specific NPC), base ID on name+role
+        # If name is None (e.g., generic NPC), pull from NAME_POOLS and use its ID, or generate generic.
         if name is None:
             gender = random.choice(["male", "female"])
             name_type = "noble" if self.role in NOBLE_ROLES else "commoner"
             
-            race_name_pool_data = NAME_POOLS.get(self.race, NAME_POOLS.get("nord")) 
-            if not race_name_pool_data: 
-                race_name_pool_data = {"noble": {"male":["Nobilus"],"female":["Nobilia"]}, "commoner": {"male":["Comminus"],"female":["Commina"]}}
+            race_name_pool_data = NAME_POOLS.get(self.race, NAME_POOLS.get("nord"))
+            if not race_name_pool_data:
+                # Fallback if race not found in NAME_POOLS
+                race_name_pool_data = {"noble": {"male":["nobilus_0"],"female":["nobilia_1"]}, "commoner": {"male":["comminus_2"],"female":["commina_3"]}}
 
-            specific_name_pool = race_name_pool_data.get(name_type, race_name_pool_data.get("commoner", {"male": ["Nameless One"], "female": ["Nameless One"]}))
+            specific_name_pool = race_name_pool_data.get(name_type, race_name_pool_data.get("commoner", {"male": ["nameless_one_4"], "female": ["nameless_one_5"]}))
             
-            # Ensure the gender pool exists, fallback to male if not, then to a generic name.
             gender_specific_pool = specific_name_pool.get(gender, specific_name_pool.get("male"))
-            if not gender_specific_pool: # If "male" pool also missing for some reason
-                 gender_specific_pool = ["Unknown NPC"]
-            self.name = random.choice(gender_specific_pool)
-        else:
-            self.name = name
+            if not gender_specific_pool:
+                 gender_specific_pool = ["unknown_npc_6"]
+            
+            chosen_id_from_pool = random.choice(gender_specific_pool)
+            self.name = chosen_id_from_pool.split('_')[0].capitalize() # Display name is first part of ID
+            self.unique_id = chosen_id_from_pool # Use the full ID from NAME_POOLS
 
-        # --- Stats Initialization (As previously defined, with slight scaling adjustment) ---
-        base_stat = 30 # Average base for attributes
+        else: # If a specific name is provided (e.g., for quest givers)
+            self.name = name
+            # Generate a unique ID for this specific named NPC
+            self.unique_id = f"{self.name.lower().replace(' ', '_')}_{self.role.lower().replace(' ', '_')}_{random.randint(100,999)}"
+
+        base_stat = 30
         self.stats = Stats(
-            strength=random.randint(base_stat -5, base_stat + 10) + self.level, 
+            strength=random.randint(base_stat -5, base_stat + 10) + self.level,
             intelligence=random.randint(base_stat -5, base_stat + 10) + self.level,
             willpower=random.randint(base_stat -5, base_stat + 10) + self.level,
             agility=random.randint(base_stat -5, base_stat + 10) + self.level,
-            speed=random.randint(base_stat -5, base_stat + 10) + self.level, # Speed might be less influenced by level for some NPCs
+            speed=random.randint(base_stat -5, base_stat + 10) + self.level,
             endurance=random.randint(base_stat -5, base_stat + 10) + self.level,
-            personality=random.randint(base_stat, base_stat + 20), 
+            personality=random.randint(base_stat, base_stat + 20),
             luck=random.randint(base_stat - 10, base_stat + 5),
             level=self.level,
             gold=self.gold
         )
-        
-        race_mods = RACES.get(self.race, {}) 
-        for attr, mod_val in race_mods.items():
-            # Handle primary attributes
-            if attr.endswith("_mod") and hasattr(self.stats, attr.replace("_mod","")):
-                 stat_name = attr.replace("_mod","")
-                 setattr(self.stats, stat_name, getattr(self.stats, stat_name) + mod_val)
-            # Handle resistances
-            elif attr.endswith("_resist") and hasattr(self.stats, attr):
-                 setattr(self.stats, attr, getattr(self.stats, attr) + mod_val)
-            # Handle direct magicka bonus (e.g. Altmer)
-            elif attr == "magicka_mod" and hasattr(self.stats, "max_magicka"): # Max Magicka specifically
-                self.stats.max_magicka += mod_val
-            # Handle skill bonuses if NPC skills are detailed enough
-            elif attr.endswith("_skill") and isinstance(self.skills, dict):
-                skill_name = attr.replace("_skill","")
-                self.skills[skill_name] = self.skills.get(skill_name, 10) + mod_val # Add to base or existing
 
+        # Initialize skills dictionary *before* applying racial or role-based skills
+        self.skills = {}
+        base_skill_val = 5
 
-        # Recalculate derived stats after all modifications
-        self.stats.max_health = 75 + (self.stats.endurance * 2) + (self.level * 5) 
-        self.stats.max_magicka = self.stats.max_magicka if race_mods.get("magicka_mod") else (40 + int(self.stats.intelligence * 1.5) + (self.level * 3)) # Apply magicka_mod correctly
-        self.stats.max_fatigue = 80 + int(self.stats.endurance * 1.5) + (self.level * 4)
-        self.stats.current_health = self.stats.max_health
-        self.stats.current_magicka = self.stats.max_magicka
-        self.stats.current_fatigue = self.stats.max_fatigue
-
-        # --- Skills Initialization (As previously defined) ---
-        self.skills = {} 
+        # Assign skills based on ROLE first
         role_l = self.role.lower()
         if any(s_role in role_l for s_role in ["mage", "scholar", "priest", "shaman", "necromancer", "cultist", "healer"]):
             self.skills["destruction"] = random.randint(15, 30) + self.level * 2
             self.skills["restoration"] = random.randint(15, 30) + self.level * 2
             self.skills["alteration"] = random.randint(10, 25) + self.level
-            self.skills["conjuration"] = random.randint(10, 25) + self.level if "mage" in role_l or "necromancer" in role_l else 5
-            self.skills["illusion"] = random.randint(10, 20) + self.level if "mage" in role_l or "illusionist_role" in role_l else 5
+            self.skills["conjuration"] = random.randint(10, 25) + self.level if "mage" in role_l or "necromancer" in role_l else base_skill_val
+            self.skills["illusion"] = random.randint(10, 20) + self.level if "mage" in role_l or "illusionist_role" in role_l else base_skill_val
         elif any(s_role in role_l for s_role in ["warrior", "guard", "bandit", "companion", "forsworn", "soldier", "legionnaire", "thug", "raider", "mercenary"]):
             self.skills["one_handed"] = random.randint(20, 35) + self.level * 2
             self.skills["block"] = random.randint(15, 30) + self.level
@@ -230,30 +232,48 @@ class NPC:
             self.skills["sneak"] = random.randint(20, 35) + self.level * 2
             self.skills["archery"] = random.randint(15, 30) + self.level if "scout" in role_l or "archer" in role_l else random.randint(10,20) + self.level
             self.skills["light_armor"] = random.randint(15, 30) + self.level
-            self.skills["one_handed"] = random.randint(15,25) + self.level # Daggers/short swords
+            self.skills["one_handed"] = random.randint(15,25) + self.level
             if "pickpocket" in role_l : self.skills["pickpocket"] = random.randint(25,40) + self.level * 2
-        else: 
-            self.skills["speech"] = random.randint(10, 30) + self.level 
-            self.skills[random.choice(["one_handed", "archery"])] = random.randint(5,15) + self.level # Basic self-defense
-        # Add racial skill bonuses after general role assignment
-        for skill_key, bonus_value in race_mods.items():
-            if skill_key.endswith("_skill"):
-                actual_skill_name = skill_key.replace("_skill", "")
-                self.skills[actual_skill_name] = self.skills.get(actual_skill_name, 5) + bonus_value # Add to existing or a base of 5
+        else:
+            self.skills["speech"] = random.randint(10, 30) + self.level
+            self.skills[random.choice(["one_handed", "archery"])] = random.randint(5,15) + self.level
 
+        # Apply RACIAL modifiers to stats and skills
+        race_mods = RACES.get(self.race, {})
+        for attr, mod_val in race_mods.items():
+            if attr.endswith("_mod") and hasattr(self.stats, attr.replace("_mod","")):
+                 stat_name = attr.replace("_mod","")
+                 setattr(self.stats, stat_name, getattr(self.stats, stat_name) + mod_val)
+            elif attr.endswith("_resist") and hasattr(self.stats, attr):
+                 setattr(self.stats, attr, getattr(self.stats, attr) + mod_val)
+            elif attr == "magicka_mod" and hasattr(self.stats, "max_magicka"):
+                self.stats.max_magicka += mod_val
+            elif attr.endswith("_skill"): # Apply racial skill bonuses
+                skill_name = attr.replace("_skill","")
+                self.skills[skill_name] = self.skills.get(skill_name, base_skill_val) + mod_val
 
-        self.inventory = self.stats.inventory 
-        self.equipment = [] 
-        self.status_effects = [] 
+        # Recalculate derived stats after all modifications
+        self.stats.max_health = int(75 + (self.stats.endurance * 2) + (self.level * 5))
+        if not race_mods.get("magicka_mod"):
+             self.stats.max_magicka = int(40 + (self.stats.intelligence * 1.5) + (self.level * 3))
+        self.stats.max_fatigue = int(80 + (self.stats.endurance * 1.5) + (self.level * 4))
+
+        self.stats.current_health = self.stats.max_health
+        self.stats.current_magicka = self.stats.max_magicka
+        self.stats.current_fatigue = self.stats.max_fatigue
+
+        self.inventory = self.stats.inventory
+        self.equipment = []
+        self.status_effects = []
 
         self.tags = {}
-        self.add_tag("npc", "role_primary", self.role) # Using "role_primary" to avoid conflict with "class" if used differently
+        self.add_tag("npc", "role_primary", self.role)
         self.add_tag("npc", "race", self.race)
-        initial_attitude = "hostile" if self.role in HOSTILE_ROLES else "neutral" 
-        if self.role in FRIENDLY_ROLES and self.role not in HOSTILE_ROLES: 
+        initial_attitude = "hostile" if self.role in HOSTILE_ROLES else "neutral"
+        if self.role in FRIENDLY_ROLES and self.role not in HOSTILE_ROLES:
             initial_attitude = "friendly"
         self.add_tag("npc", "attitude", initial_attitude)
-        
+
         self.greeting = self._generate_greeting()
         self.purpose = self._generate_purpose()
 
@@ -272,20 +292,38 @@ class NPC:
             "hostile": ["You're not welcome here!", "Lost, little one?", "Another fool come to die!", "You'll regret crossing me!"]
         }
         attitude = self.tags.get("npc", {}).get("attitude", "neutral")
-        
+
+        # Use flavor.py to get more nuanced greetings if available
+        if hasattr(flavor, 'NPC_FLAVORS') and 'attitude' in flavor.NPC_FLAVORS and attitude in flavor.NPC_FLAVORS['attitude']:
+            possible_greetings = flavor.NPC_FLAVORS['attitude'][attitude]
+            if self.race in flavor.NPC_FLAVORS.get('race', {}): # Add race specific greetings
+                possible_greetings.extend(flavor.NPC_FLAVORS['race'][self.race])
+            return random.choice(possible_greetings)
+
+        # Fallback to simpler disposition-based greetings
         if attitude != "hostile":
             if self.disposition >= 70:
                 return random.choice(base_greetings["friendly"] + ["The gods smile upon this meeting!", "May your roads lead you to warm sands."])
             elif self.disposition >= 30:
                 return random.choice(base_greetings["neutral"] + ["Need something?", "Speak if you must."])
-            else: 
+            else:
                 return random.choice(["Hmph.", "Don't waste my time.", "What is it now?"])
-        else: 
+        else:
             return random.choice(base_greetings["hostile"])
 
     def _generate_purpose(self):
         role_lower = self.role.lower()
-        # This can be greatly expanded with more specific flavor text per role
+        # Check flavor.py for role-specific purposes first
+        if hasattr(flavor, 'NPC_FLAVORS') and 'class' in flavor.NPC_FLAVORS: # Assuming 'class' in flavor matches 'role'
+            role_flavor_key = None
+            for key in flavor.NPC_FLAVORS['class'].keys(): # Find a matching key (e.g., "warrior" for "bandit_warrior")
+                if key in role_lower:
+                    role_flavor_key = key
+                    break
+            if role_flavor_key and flavor.NPC_FLAVORS['class'][role_flavor_key]:
+                return random.choice(flavor.NPC_FLAVORS['class'][role_flavor_key])
+
+        # Fallback to existing purpose generation
         if "merchant" in role_lower: return random.choice(["am here to trade fine goods.", "offer the best prices in this hold.", "seek to make a profit, of course."])
         elif "guard" in role_lower: return random.choice(["am keeping the peace.", "protect this place and its people.", "am on duty, move along."])
         elif "farmer" in role_lower or "farm_hand" in role_lower: return random.choice(["tend to my crops.", "work this land from dawn till dusk.", "pray for a good harvest this year."])
@@ -296,57 +334,142 @@ class NPC:
         elif "hunter" in role_lower: return random.choice(["track game in the wilds to provide for my kin.", "know these lands like the back of my hand, every stream and shadow.", "live by the bow and the quiet footfall."])
         elif "miner" in role_lower: return random.choice(["toil in the depths for ore and precious gems.", "seek riches beneath the stone, hoping for a lucky strike.", "earn my keep with the sweat of my brow and the swing of my pickaxe."])
         elif any(s_role in role_lower for s_role in ["adventurer", "warrior", "mercenary", "companion", "explorer"]): return random.choice(["seek fortune and glory wherever they may be found.", "live by my blade and my wits.", "am always ready for a new challenge or a worthy cause."])
-        elif any(s_role in role_lower for s_role in ["bandit", "thief", "forsworn"]): return random.choice(["take what this land owes me.", "believe this world is for the taking.", "survive by my own rules."]) # Usually hostile, but for context
+        elif any(s_role in role_lower for s_role in ["bandit", "thief", "forsworn"]): return random.choice(["take what this land owes me.", "believe this world is for the taking.", "survive by my own rules."])
         else: return random.choice(["live my life as best I can in these trying times.", "am just trying to get by, same as anyone.", "mind my own affairs mostly, if you please.", "have my duties to attend to, like everyone else."])
 
-    def share_rumor(self, current_location) -> None:
+
+    def share_rumor(self, player, current_location) -> None:
+        """
+        Shares a rumor with the player, generated contextually.
+        Can also lead to the offering of a quest.
+        """
         if self.disposition < 35:
             UI.slow_print(f"“{random.choice(['I have no time for idle gossip.', 'Find someone else to bother with your trivial questions.'])}”")
             return
 
-        rumor_flavor_key = random.choice(TAGS.get("DIALOGUE", {}).get("topic", ["gossip"])) 
+        # Call the dedicated rumor generation function, passing NPC's unique ID as quest_giver_id
+        rumor_output = generate_rumor(player.level, current_location, self.unique_id)
+        rumor_text = rumor_output["text"]
+        quest_data = rumor_output.get("quest_data")
+
+        UI.slow_print(f"“{rumor_text.capitalize()}”")
+
+        # Logic for offering quest if rumor generates one
+        if quest_data:
+            # Check if player already has this quest or has completed it
+            if player.quest_log.get_quest_by_id(quest_data.quest_id):
+                UI.slow_print(f"“It seems you're already familiar with that matter, {player.name}.”")
+            else:
+                self._offer_quest(player, quest_data)
+
+
+    def _offer_quest(self, player, quest: Quest) -> None:
+        """Internal method to handle the quest offering dialogue."""
+        UI.slow_print(f"“And speaking of such things... I've heard there's a need for someone to {quest.description.split('.')[0].lower()}.”")
+        UI.print_line('-')
+        UI.print_info(f"Quest: {quest.title}")
+        UI.print_info(f"Objective: {quest.description}") # Quest's main description
+        # Optionally display objectives in more detail here if desired
         
-        rumor_text = None
-        # Prioritize location-specific rumors if flavor.py supports it
-        if hasattr(flavor, 'LOCATION_RUMORS') and isinstance(flavor.LOCATION_RUMORS, dict):
-            loc_tags = current_location.get("tags", [])
-            for tag in loc_tags:
-                if tag in flavor.LOCATION_RUMORS:
-                    possible_rumors = flavor.LOCATION_RUMORS[tag]
-                    if possible_rumors:
-                        rumor_text = random.choice(possible_rumors)
-                        break
+        reward_parts = []
+        if isinstance(quest.reward, dict):
+            for r_type, r_value in quest.reward.items():
+                if isinstance(r_value, Item):
+                    reward_parts.append(f"{r_value.name} (Item)")
+                else:
+                    reward_parts.append(f"{r_value} {r_type.capitalize()}")
+        else:
+            reward_parts.append(str(quest.reward))
+        reward_display_str = ", ".join(reward_parts) if reward_parts else "a token of my gratitude"
+        UI.print_info(f"Reward: {reward_display_str}")
+        UI.print_line('-')
+
+        while True:
+            quest_action_prompt = UI.print_prompt("Your response? [1] Accept [2] Decline [3] Consider it further").strip()
+            if quest_action_prompt == "1":
+                if player.quest_log.add_quest(quest):
+                    UI.slow_print(f"“Excellent! I knew I could count on you, {player.name}. The details are in your journal.”")
+                    self.disposition = min(100, self.disposition + random.randint(3, 7))
+                else:
+                    UI.slow_print("“It seems you already have this task, or your journal is full. A pity.”")
+                self.has_offered_quest = True
+                break
+            elif quest_action_prompt == "2":
+                UI.slow_print(f"“{random.choice(['A pity. I had hoped for assistance.', 'Very well. The task will fall to another, then.', 'Understandable. Not all are suited for such endeavors.'])}”")
+                self.disposition = max(0, self.disposition - random.randint(1, 4))
+                self.has_offered_quest = True
+                break
+            elif quest_action_prompt == "3":
+                UI.slow_print(f"“{random.choice(['As you wish. The opportunity may not last indefinitely.', 'Do not tarry too long if you intend to help.', 'Consider it, then. But time is often a factor.'])}”")
+                break
+            else:
+                UI.slow_print("A clear answer is expected, traveler.")
+
+
+    def _discuss_place(self, current_location) -> None:
+        """Provides a tag/flavor related answer when asked about the location."""
+        loc_name = current_location.get("name", "this place")
+        loc_tags = current_location.get("tags", [])
         
-        # Fallback to general or topic-based rumors
-        if not rumor_text and hasattr(flavor, 'RUMORS') and isinstance(flavor.RUMORS, dict):
-            possible_rumors = flavor.RUMORS.get(rumor_flavor_key, [])
-            if not possible_rumors and rumor_flavor_key != "gossip": 
-                possible_rumors = flavor.RUMORS.get("gossip", [])
-            if possible_rumors:
-                rumor_text = random.choice(possible_rumors)
+        # Create a dummy entity for flavor.get_flavor based on location tags
+        class DummyLocationForFlavor:
+            def __init__(self, tags_list):
+                self.tags = {"location": {}}
+                for tag_type, possible_values in TAGS["LOCATIONS"].items():
+                    found_tags = [t for t in tags_list if t in possible_values]
+                    if found_tags:
+                        self.tags["location"][tag_type] = found_tags
         
-        if rumor_text:
-            prefix = random.choice(["I overheard someone saying that ", "Word around here is ", "Can you believe that ", "They say that ", "Whispers on the wind suggest "])
-            UI.slow_print(f"“{prefix}{rumor_text}”")
-        else: 
-            loc_name = current_location.get('name', 'this area')
-            generic_rumors = [
-                f"something strange is stirring in the {random.choice(['old ruins', 'deep caves', 'dark woods'])} not far from {loc_name}.",
-                f"the Jarl of {random.choice(['a neighboring hold', loc_name if 'city' in current_location.get('tags',[]) else 'the capital'])} is planning some new decree.",
-                f"a new band of {random.choice(['adventurers', 'mercenaries', 'troublemakers'])} just passed through {loc_name}, heading towards the {random.choice(['mountains', 'coast', 'border'])}.",
-                f"the price of {random.choice(['ale', 'iron ingots', 'fresh bread', 'healing potions'])} is {random.choice(['going up again', 'surprisingly fair lately'])} in {loc_name}."
-            ]
-            UI.slow_print(f"“{random.choice(generic_rumors)}”")
+        dummy_loc_entity = DummyLocationForFlavor(loc_tags)
+        flavor_vignettes = flavor.get_flavor(dummy_loc_entity)
+        
+        if flavor_vignettes:
+            chosen_flavor = random.choice(flavor_vignettes)
+            UI.slow_print(f"“Ah, {loc_name}. {chosen_flavor}”")
+        else:
+            # Fallback to general comments if no specific flavor found
+            comments = []
+            if "city" in loc_tags: comments.append("It's a major hub, always something happening, for better or worse.")
+            if "town" in loc_tags: comments.append("A decent enough place. Quieter than the big cities, which suits some folk.")
+            if "village" in loc_tags: comments.append("A small, tight-knit community. We look out for each other here.")
+            if "tavern" in loc_tags or "inn" in loc_tags: comments.append("A good place to rest your feet, share a drink, and hear the latest news... or tall tales.")
+            if "mountain" in loc_tags: comments.append("The air here is thin, and the peaks are unforgiving. Beautiful, but dangerous.")
+            if "forest" in loc_tags: comments.append("The woods are deep and old here. Many secrets, and many dangers, lie within.")
+            if "mine" in loc_tags: comments.append("Many fortunes have been made and lost in these mines. A hard life, but honest work.")
+
+            if comments:
+                UI.slow_print(f"“Ah, {loc_name}. {random.choice(comments)}”")
+            else:
+                UI.slow_print(f"“{loc_name}... It is what it is. Not much else to say about it, really.”")
+
 
     def dialogue(self, player, current_location) -> None:
+        """
+        Handles the dialogue interaction with the player.
+        """
         UI.clear_screen()
+        # Add NPC's unique ID to player's talked-to tracker
+        player.add_talked_to_npc(self.unique_id)
+
         UI.slow_print(f"You approach {self.name} ({self.role.replace('_',' ').capitalize()}). Disposition: {self.disposition}")
         UI.slow_print(f"“{self.greeting} {self.purpose}”")
         
-        options_texts = ["Rumors", "Ask about their work/purpose", "Discuss this place", "Any tasks for me? (Quest)", "Farewell"]
+        # Options for the player dialogue menu
+        options_texts = []
+
+        # Check for quests to turn in FIRST
+        quests_to_turn_in = player.quest_log.get_quests_for_turn_in(self.unique_id)
+        if quests_to_turn_in:
+            options_texts.append("Turn in a completed quest")
+
+        # Now add other standard options
+        options_texts.append("Ask for rumors or work") # Combined option
+        options_texts.append("Ask about your work/purpose") # Still distinct, but less direct quest-ask
+        options_texts.append("Discuss this place")
+        options_texts.append("Farewell")
 
         while True:
-            UI.print_menu(options_texts) 
+            UI.print_menu(options_texts)
             choice_input = UI.print_prompt("Your response? (Enter number)").strip()
 
             if not choice_input.isdigit():
@@ -355,105 +478,73 @@ class NPC:
                 continue
             
             choice_idx = int(choice_input)
-
             action_taken = False
-            if choice_idx == 1:
-                self.share_rumor(current_location)
+
+            chosen_option_text = None
+            if 1 <= choice_idx <= len(options_texts):
+                chosen_option_text = options_texts[choice_idx - 1]
+
+            if chosen_option_text == "Turn in a completed quest":
+                if quests_to_turn_in:
+                    UI.slow_print("Which quest do you wish to turn in?")
+                    for i, quest in enumerate(quests_to_turn_in):
+                        UI.slow_print(f"[{i+1}] {quest.title}")
+                    
+                    turn_in_choice = UI.print_prompt("Enter number: ")
+                    if turn_in_choice.isdigit():
+                        turn_in_idx = int(turn_in_choice) - 1
+                        if 0 <= turn_in_idx < len(quests_to_turn_in):
+                            quest_to_process = quests_to_turn_in[turn_in_idx]
+                            UI.slow_print(f"“Ah, you've completed '{quest_to_process.title}'! Excellent work!”")
+                            process_quest_rewards(player, quest_to_process)
+                            player.quest_log.remove_quest(quest_to_process.quest_id)
+                            UI.slow_print(f"“Thank you, {player.name}. Your efforts are much appreciated.”")
+                            self.disposition = min(100, self.disposition + random.randint(5, 10))
+                            quests_to_turn_in = player.quest_log.get_quests_for_turn_in(self.unique_id)
+                            if not quests_to_turn_in and "Turn in a completed quest" in options_texts:
+                                options_texts.remove("Turn in a completed quest")
+                        else:
+                            UI.slow_print("Invalid choice.")
+                    else:
+                        UI.slow_print("Invalid input.")
+                else:
+                    UI.slow_print("You have no completed quests to turn in to me.")
                 action_taken = True
-            elif choice_idx == 2:
+
+            elif chosen_option_text == "Ask for rumors or work": # New combined option
+                self.share_rumor(player, current_location)
+                action_taken = True
+
+            elif chosen_option_text == "Ask about your work/purpose":
                 UI.slow_print(f"“As I said, I {self.purpose}”")
-                if self.disposition > 60 and "merchant" in self.role.lower() :
+                if self.disposition > 60 and "merchant" in self.role.lower():
                     UI.slow_print(f"“Perhaps you're looking to buy or sell, {player.name}? I have a few things that might interest you, or I might be interested in what you carry.”")
                 elif self.disposition > 55 and "guard" in self.role.lower():
                     UI.slow_print(f"“Just try to stay out of trouble. That makes my job easier.”")
-                action_taken = True
-            elif choice_idx == 3:
-                loc_name = current_location.get("name", "this place")
-                loc_tags = current_location.get("tags", [])
-                place_description = f"Ah, {loc_name}..."
                 
-                comments = []
-                if "city" in loc_tags: comments.append("It's a major hub, always something happening, for better or worse.")
-                if "town" in loc_tags: comments.append("A decent enough place. Quieter than the big cities, which suits some folk.")
-                if "village" in loc_tags: comments.append("A small, tight-knit community. We look out for each other here.")
-                if "capital" in loc_tags: comments.append("The heart of the Hold, you know. All important matters pass through here.")
-                if "port" in loc_tags: comments.append("The sea brings trade and travelers, but also its share of trouble.")
-                if "farm" in loc_tags or "farming" in loc_tags : comments.append("Good, honest work to be done on the land here, if you've the stomach for it.")
-                if "mine" in loc_tags: comments.append("Rich veins around here, if you're not afraid of the dark and a bit of hard work... or what lurks below.")
-                if "forest" in loc_tags: comments.append("The woods are ancient and deep. Beautiful, but they hide their dangers well.")
-                if "mountain" in loc_tags: comments.append("The peaks watch over us. Harsh, but a stark beauty to them.")
-                if "ruin" in loc_tags or "barrow" in loc_tags: comments.append("Best to stay clear of such places. Old stones hide old sorrows... and sometimes worse.")
-                if "tavern" in loc_tags or "inn" in loc_tags: comments.append("A good place to rest your feet, share a drink, and hear the latest news... or tall tales.")
-                if "shop" in loc_tags or "market" in loc_tags: comments.append("You can find most anything you need, if you've the coin.")
-
-                if comments:
-                    place_description += " " + random.choice(comments)
-                else:
-                    place_description += " It is what it is. Not much else to say about it, really."
-                UI.slow_print(f"“{place_description}”")
+                # Chance to offer a quest based on their 'work' if they haven't already offered one
+                if not self.has_offered_quest and random.random() < 0.4: # 40% chance
+                     UI.slow_print(f"“Actually, since you're asking, there is something that's been bothering me about my work...”")
+                     # Generate a quest here (similar to how share_rumor does it)
+                     quest = generate_location_appropriate_quest(player.stats.level, current_location.get("tags", []), self.unique_id)
+                     if quest and not player.quest_log.get_quest_by_id(quest.quest_id): # Ensure not a duplicate
+                         self._offer_quest(player, quest)
+                     else:
+                         UI.slow_print(random.choice(["“But perhaps it's best not to burden you with my troubles.”", "“Nevermind, I'll handle it myself.”"]))
                 action_taken = True
-            elif choice_idx == 4:
-                action_taken = True
-                if self.has_offered_quest:
-                    UI.slow_print(f"“{random.choice(['I have no other tasks for you right now, traveler.', 'Perhaps another time, I have nothing suitable for your skills.'])}”")
-                elif random.random() > 0.7: 
-                    UI.slow_print(f"“{random.choice(['I appreciate the offer, but I have nothing that needs doing at the moment.', 'All is quiet on my end, thankfully.'])}”")
-                    self.has_offered_quest = True 
-                else:
-                    quest = generate_location_appropriate_quest(player.level, current_location.get("tags", []))
-                    if not quest: 
-                        UI.slow_print("“I thought I had something... but it seems to have slipped my mind. Apologies.”")
-                        self.has_offered_quest = True
-                    else:
-                        UI.slow_print(f"“{random.choice(['Indeed, there is something you could assist me with.', 'Hmm, perhaps your skills could be of use...'])}”")
-                        UI.print_line('-')
-                        UI.print_info(f"Quest: {quest.title}")
-                        UI.print_info(f"Objective: {quest.description}")
-                        
-                        reward_parts = []
-                        if isinstance(quest.reward, dict):
-                            for r_type, r_value in quest.reward.items():
-                                if isinstance(r_value, Item): 
-                                    reward_parts.append(f"{r_value.name} ({r_value.category.capitalize()})")
-                                else:
-                                    reward_parts.append(f"{r_value} {r_type.capitalize()}")
-                        else: 
-                            reward_parts.append(str(quest.reward))
-                        reward_display_str = ", ".join(reward_parts) if reward_parts else "a token of my gratitude"
-                        UI.print_info(f"Reward: {reward_display_str}")
-                        UI.print_line('-')
 
-                        while True:
-                            quest_action_prompt = UI.print_prompt("Your response? [1] Accept [2] Decline [3] Consider it further").strip()
-                            if quest_action_prompt == "1": 
-                                if hasattr(player, 'quest_log') and player.quest_log is not None:
-                                    player.quest_log.add_quest(quest)
-                                    UI.slow_print(f"“Excellent! I knew I could count on you, {player.name}. The details are in your journal.”")
-                                    self.disposition = min(100, self.disposition + random.randint(3, 7)) 
-                                else: 
-                                    UI.slow_print("“I would give you the task, but it seems you have no way to record it. A pity.”")
-                                self.has_offered_quest = True 
-                                break
-                            elif quest_action_prompt == "2": 
-                                UI.slow_print(f"“{random.choice(['A pity. I had hoped for assistance.', 'Very well. The task will fall to another, then.', 'Understandable. Not all are suited for such endeavors.'])}”")
-                                self.disposition = max(0, self.disposition - random.randint(1, 4)) 
-                                self.has_offered_quest = True 
-                                break
-                            elif quest_action_prompt == "3": 
-                                UI.slow_print(f"“{random.choice(['As you wish. The opportunity may not last indefinitely.', 'Do not tarry too long if you intend to help.', 'Consider it, then. But time is often a factor.'])}”")
-                                self.has_offered_quest = True 
-                                break
-                            else:
-                                UI.slow_print("A clear answer is expected, traveler.")
-            
-            elif choice_idx == 5:
+            elif chosen_option_text == "Discuss this place":
+                self._discuss_place(current_location) # Call new helper method
+                action_taken = True
+
+            elif chosen_option_text == "Farewell":
                 UI.slow_print(f"“{random.choice(['Farewell, traveler.', 'May your path be clear.', 'Until next time.'])}”")
-                return
+                return # Exit dialogue
             else:
                 UI.slow_print("Your will wavers, or the choice is unclear.")
             
             if action_taken:
                 UI.press_enter()
                 UI.clear_screen()
-                UI.slow_print(f"You are speaking with {self.name}. Disposition: {self.disposition}") 
+                UI.slow_print(f"You are speaking with {self.name}. Disposition: {self.disposition}")
                 UI.slow_print(f"“{self.greeting} {self.purpose}”")

@@ -1,4 +1,4 @@
-# quests.py
+# rumors.py
 import random
 from typing import List, Dict, Any # Import specific typing hints
 from locations import LOCATIONS # Assuming LOCATIONS is fully defined and imported
