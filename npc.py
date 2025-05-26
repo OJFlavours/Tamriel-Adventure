@@ -2,7 +2,7 @@
 import random
 from stats import Stats, RACES
 from items import Item
-from ui import UI
+from ui import UI # Import UI for capitalization and debug messages
 from quests import generate_location_appropriate_quest, Quest, process_quest_rewards
 from tags import TAGS, get_tags
 import flavor
@@ -176,17 +176,21 @@ class NPC:
             gender = random.choice(["male", "female"])
             name_type = "noble" if self.role in NOBLE_ROLES else "commoner"
             
-            race_name_pool_data = NAME_POOLS.get(self.race, NAME_POOLS.get("nord"))
+            race_name_pool_data = NAME_POOLS.get(self.race)
             if not race_name_pool_data:
-                # Fallback if race not found in NAME_POOLS
-                race_name_pool_data = {"noble": {"male":["nobilus_0"],"female":["nobilia_1"]}, "commoner": {"male":["comminus_2"],"female":["commina_3"]}}
+                UI.print_system_message(f"DEBUG: NPC Init - No name pool found for race '{self.race}'. Falling back to 'nord'.")
+                race_name_pool_data = NAME_POOLS.get("nord")
 
-            specific_name_pool = race_name_pool_data.get(name_type, race_name_pool_data.get("commoner", {"male": ["nameless_one_4"], "female": ["nameless_one_5"]}))
+            specific_name_pool = race_name_pool_data.get(name_type)
+            if not specific_name_pool:
+                UI.print_system_message(f"DEBUG: NPC Init - No '{name_type}' name pool for race '{self.race}'. Falling back to 'commoner'.")
+                specific_name_pool = race_name_pool_data.get("commoner")
             
-            gender_specific_pool = specific_name_pool.get(gender, specific_name_pool.get("male"))
+            gender_specific_pool = specific_name_pool.get(gender)
             if not gender_specific_pool:
-                 gender_specific_pool = ["unknown_npc_6"]
-            
+                UI.print_system_message(f"DEBUG: NPC Init - No '{gender}' names for '{name_type}' '{self.race}'. Falling back to generic 'unknown_npc'.")
+                gender_specific_pool = ["unknown_npc_6"] # Final fallback
+
             chosen_id_from_pool = random.choice(gender_specific_pool)
             self.name = chosen_id_from_pool.split('_')[0].capitalize() # Display name is first part of ID
             self.unique_id = chosen_id_from_pool # Use the full ID from NAME_POOLS
@@ -298,18 +302,18 @@ class NPC:
             possible_greetings = flavor.NPC_FLAVORS['attitude'][attitude]
             if self.race in flavor.NPC_FLAVORS.get('race', {}): # Add race specific greetings
                 possible_greetings.extend(flavor.NPC_FLAVORS['race'][self.race])
-            return random.choice(possible_greetings)
+            return UI.capitalize_dialogue(random.choice(possible_greetings))
 
-        # Fallback to simpler disposition-based greetings
+        # Fallback to simpler disposition-based greetings, applying capitalization
         if attitude != "hostile":
             if self.disposition >= 70:
-                return random.choice(base_greetings["friendly"] + ["The gods smile upon this meeting!", "May your roads lead you to warm sands."])
+                return UI.capitalize_dialogue(random.choice(base_greetings["friendly"] + ["The gods smile upon this meeting!", "May your roads lead you to warm sands."]))
             elif self.disposition >= 30:
-                return random.choice(base_greetings["neutral"] + ["Need something?", "Speak if you must."])
+                return UI.capitalize_dialogue(random.choice(base_greetings["neutral"] + ["Need something?", "Speak if you must."]))
             else:
-                return random.choice(["Hmph.", "Don't waste my time.", "What is it now?"])
+                return UI.capitalize_dialogue(random.choice(["Hmph.", "Don't waste my time.", "What is it now?"]))
         else:
-            return random.choice(base_greetings["hostile"])
+            return UI.capitalize_dialogue(random.choice(base_greetings["hostile"]))
 
     def _generate_purpose(self):
         role_lower = self.role.lower()
@@ -321,21 +325,21 @@ class NPC:
                     role_flavor_key = key
                     break
             if role_flavor_key and flavor.NPC_FLAVORS['class'][role_flavor_key]:
-                return random.choice(flavor.NPC_FLAVORS['class'][role_flavor_key])
+                return UI.capitalize_dialogue(random.choice(flavor.NPC_FLAVORS['class'][role_flavor_key]))
 
-        # Fallback to existing purpose generation
-        if "merchant" in role_lower: return random.choice(["am here to trade fine goods.", "offer the best prices in this hold.", "seek to make a profit, of course."])
-        elif "guard" in role_lower: return random.choice(["am keeping the peace.", "protect this place and its people.", "am on duty, move along."])
-        elif "farmer" in role_lower or "farm_hand" in role_lower: return random.choice(["tend to my crops.", "work this land from dawn till dusk.", "pray for a good harvest this year."])
-        elif "innkeeper" in role_lower: return random.choice(["run this fine establishment.", "offer a warm bed and a hot meal to weary travelers.", "hear many tales, some true, some not so much."])
-        elif "bard" in role_lower: return random.choice(["share songs and stories of old.", "bring a little light into this world with my music.", "seek inspiration for my next great ballad."])
-        elif "scholar" in role_lower or "mage" in role_lower: return random.choice(["delve into ancient lore and forgotten secrets.", "study the mysteries of Aetherius and Oblivion.", "seek knowledge above all else, for knowledge is power."])
-        elif "priest" in role_lower or "healer" in role_lower or "acolyte" in role_lower: return random.choice(["serve the Divines and their will.", "offer comfort and healing to the needy and the sick.", "guide the lost and protect the faithful from darkness."])
-        elif "hunter" in role_lower: return random.choice(["track game in the wilds to provide for my kin.", "know these lands like the back of my hand, every stream and shadow.", "live by the bow and the quiet footfall."])
-        elif "miner" in role_lower: return random.choice(["toil in the depths for ore and precious gems.", "seek riches beneath the stone, hoping for a lucky strike.", "earn my keep with the sweat of my brow and the swing of my pickaxe."])
-        elif any(s_role in role_lower for s_role in ["adventurer", "warrior", "mercenary", "companion", "explorer"]): return random.choice(["seek fortune and glory wherever they may be found.", "live by my blade and my wits.", "am always ready for a new challenge or a worthy cause."])
-        elif any(s_role in role_lower for s_role in ["bandit", "thief", "forsworn"]): return random.choice(["take what this land owes me.", "believe this world is for the taking.", "survive by my own rules."])
-        else: return random.choice(["live my life as best I can in these trying times.", "am just trying to get by, same as anyone.", "mind my own affairs mostly, if you please.", "have my duties to attend to, like everyone else."])
+        # Fallback to existing purpose generation, applying capitalization
+        if "merchant" in role_lower: return UI.capitalize_dialogue(random.choice(["am here to trade fine goods.", "offer the best prices in this hold.", "seek to make a profit, of course."]))
+        elif "guard" in role_lower: return UI.capitalize_dialogue(random.choice(["am keeping the peace.", "protect this place and its people.", "am on duty, move along."]))
+        elif "farmer" in role_lower or "farm_hand" in role_lower: return UI.capitalize_dialogue(random.choice(["tend to my crops.", "work this land from dawn till dusk.", "pray for a good harvest this year."]))
+        elif "innkeeper" in role_lower: return UI.capitalize_dialogue(random.choice(["run this fine establishment.", "offer a warm bed and a hot meal to weary travelers.", "hear many tales, some true, some not so much."]))
+        elif "bard" in role_lower: return UI.capitalize_dialogue(random.choice(["share songs and stories of old.", "bring a little light into this world with my music.", "seek inspiration for my next great ballad."]))
+        elif "scholar" in role_lower or "mage" in role_lower: return UI.capitalize_dialogue(random.choice(["delve into ancient lore and forgotten secrets.", "study the mysteries of Aetherius and Oblivion.", "seek knowledge above all else, for knowledge is power."]))
+        elif "priest" in role_lower or "healer" in role_lower or "acolyte" in role_lower: return UI.capitalize_dialogue(random.choice(["serve the Divines and their will.", "offer comfort and healing to the needy and the sick.", "guide the lost and protect the faithful from darkness."]))
+        elif "hunter" in role_lower: return UI.capitalize_dialogue(random.choice(["track game in the wilds to provide for my kin.", "know these lands like the back of my hand, every stream and shadow.", "live by the bow and the quiet footfall."]))
+        elif "miner" in role_lower: return UI.capitalize_dialogue(random.choice(["toil in the depths for ore and precious gems.", "seek riches beneath the stone, hoping for a lucky strike.", "earn my keep with the sweat of my brow and the swing of my pickaxe."]))
+        elif any(s_role in role_lower for s_role in ["adventurer", "warrior", "mercenary", "companion", "explorer"]): return UI.capitalize_dialogue(random.choice(["seek fortune and glory wherever they may be found.", "live by my blade and my wits.", "am always ready for a new challenge or a worthy cause."]))
+        elif any(s_role in role_lower for s_role in ["bandit", "thief", "forsworn"]): return UI.capitalize_dialogue(random.choice(["take what this land owes me.", "believe this world is for the taking.", "survive by my own rules."]))
+        else: return UI.capitalize_dialogue(random.choice(["live my life as best I can in these trying times.", "am just trying to get by, same as anyone.", "mind my own affairs mostly, if you please.", "have my duties to attend to, like everyone else."]))
 
 
     def share_rumor(self, player, current_location) -> None:
@@ -344,28 +348,30 @@ class NPC:
         Can also lead to the offering of a quest.
         """
         if self.disposition < 35:
-            UI.slow_print(f"“{random.choice(['I have no time for idle gossip.', 'Find someone else to bother with your trivial questions.'])}”")
+            UI.slow_print(UI.capitalize_dialogue(f"“{random.choice(['I have no time for idle gossip.', 'Find someone else to bother with your trivial questions.'])}”"))
             return
 
         # Call the dedicated rumor generation function, passing NPC's unique ID as quest_giver_id
         rumor_output = generate_rumor(player.level, current_location, self.unique_id)
-        rumor_text = rumor_output["text"]
+        rumor_text = rumor_output["text"] # This is already capitalized by rumors.py
         quest_data = rumor_output.get("quest_data")
 
-        UI.slow_print(f"“{rumor_text.capitalize()}”")
+        UI.slow_print(f"“{rumor_text}”")
 
         # Logic for offering quest if rumor generates one
         if quest_data:
             # Check if player already has this quest or has completed it
             if player.quest_log.get_quest_by_id(quest_data.quest_id):
-                UI.slow_print(f"“It seems you're already familiar with that matter, {player.name}.”")
+                UI.slow_print(UI.capitalize_dialogue(f"“It seems you're already familiar with that matter, {player.name}.”"))
             else:
                 self._offer_quest(player, quest_data)
 
 
     def _offer_quest(self, player, quest: Quest) -> None:
         """Internal method to handle the quest offering dialogue."""
-        UI.slow_print(f"“And speaking of such things... I've heard there's a need for someone to {quest.description.split('.')[0].lower()}.”")
+        # Capitalize the relevant part of the quest description for dialogue
+        quest_intro_text = UI.capitalize_dialogue(quest.description.split('.')[0])
+        UI.slow_print(f"“And speaking of such things... I've heard there's a need for someone to {quest_intro_text.lower()}.”")
         UI.print_line('-')
         UI.print_info(f"Quest: {quest.title}")
         UI.print_info(f"Objective: {quest.description}") # Quest's main description
@@ -388,19 +394,19 @@ class NPC:
             quest_action_prompt = UI.print_prompt("Your response? [1] Accept [2] Decline [3] Consider it further").strip()
             if quest_action_prompt == "1":
                 if player.quest_log.add_quest(quest):
-                    UI.slow_print(f"“Excellent! I knew I could count on you, {player.name}. The details are in your journal.”")
+                    UI.slow_print(UI.capitalize_dialogue(f"“Excellent! I knew I could count on you, {player.name}. The details are in your journal.”"))
                     self.disposition = min(100, self.disposition + random.randint(3, 7))
                 else:
-                    UI.slow_print("“It seems you already have this task, or your journal is full. A pity.”")
+                    UI.slow_print(UI.capitalize_dialogue("“It seems you already have this task, or your journal is full. A pity.”"))
                 self.has_offered_quest = True
                 break
             elif quest_action_prompt == "2":
-                UI.slow_print(f"“{random.choice(['A pity. I had hoped for assistance.', 'Very well. The task will fall to another, then.', 'Understandable. Not all are suited for such endeavors.'])}”")
+                UI.slow_print(UI.capitalize_dialogue(f"“{random.choice(['A pity. I had hoped for assistance.', 'Very well. The task will fall to another, then.', 'Understandable. Not all are suited for such endeavors.'])}”"))
                 self.disposition = max(0, self.disposition - random.randint(1, 4))
                 self.has_offered_quest = True
                 break
             elif quest_action_prompt == "3":
-                UI.slow_print(f"“{random.choice(['As you wish. The opportunity may not last indefinitely.', 'Do not tarry too long if you intend to help.', 'Consider it, then. But time is often a factor.'])}”")
+                UI.slow_print(UI.capitalize_dialogue(f"“{random.choice(['As you wish. The opportunity may not last indefinitely.', 'Do not tarry too long if you intend to help.', 'Consider it, then. But time is often a factor.'])}”"))
                 break
             else:
                 UI.slow_print("A clear answer is expected, traveler.")
@@ -425,7 +431,7 @@ class NPC:
         
         if flavor_vignettes:
             chosen_flavor = random.choice(flavor_vignettes)
-            UI.slow_print(f"“Ah, {loc_name}. {chosen_flavor}”")
+            UI.slow_print(UI.capitalize_dialogue(f"“Ah, {loc_name}. {chosen_flavor}”"))
         else:
             # Fallback to general comments if no specific flavor found
             comments = []
@@ -438,9 +444,9 @@ class NPC:
             if "mine" in loc_tags: comments.append("Many fortunes have been made and lost in these mines. A hard life, but honest work.")
 
             if comments:
-                UI.slow_print(f"“Ah, {loc_name}. {random.choice(comments)}”")
+                UI.slow_print(UI.capitalize_dialogue(f"“Ah, {loc_name}. {random.choice(comments)}”"))
             else:
-                UI.slow_print(f"“{loc_name}... It is what it is. Not much else to say about it, really.”")
+                UI.slow_print(UI.capitalize_dialogue(f"“{loc_name}... It is what it is. Not much else to say about it, really.”"))
 
 
     def dialogue(self, player, current_location) -> None:
@@ -495,10 +501,10 @@ class NPC:
                         turn_in_idx = int(turn_in_choice) - 1
                         if 0 <= turn_in_idx < len(quests_to_turn_in):
                             quest_to_process = quests_to_turn_in[turn_in_idx]
-                            UI.slow_print(f"“Ah, you've completed '{quest_to_process.title}'! Excellent work!”")
+                            UI.slow_print(UI.capitalize_dialogue(f"“Ah, you've completed '{quest_to_process.title}'! Excellent work!”"))
                             process_quest_rewards(player, quest_to_process)
                             player.quest_log.remove_quest(quest_to_process.quest_id)
-                            UI.slow_print(f"“Thank you, {player.name}. Your efforts are much appreciated.”")
+                            UI.slow_print(UI.capitalize_dialogue(f"“Thank you, {player.name}. Your efforts are much appreciated.”"))
                             self.disposition = min(100, self.disposition + random.randint(5, 10))
                             quests_to_turn_in = player.quest_log.get_quests_for_turn_in(self.unique_id)
                             if not quests_to_turn_in and "Turn in a completed quest" in options_texts:
@@ -518,19 +524,19 @@ class NPC:
             elif chosen_option_text == "Ask about your work/purpose":
                 UI.slow_print(f"“As I said, I {self.purpose}”")
                 if self.disposition > 60 and "merchant" in self.role.lower():
-                    UI.slow_print(f"“Perhaps you're looking to buy or sell, {player.name}? I have a few things that might interest you, or I might be interested in what you carry.”")
+                    UI.slow_print(UI.capitalize_dialogue(f"“Perhaps you're looking to buy or sell, {player.name}? I have a few things that might interest you, or I might be interested in what you carry.”"))
                 elif self.disposition > 55 and "guard" in self.role.lower():
-                    UI.slow_print(f"“Just try to stay out of trouble. That makes my job easier.”")
+                    UI.slow_print(UI.capitalize_dialogue(f"“Just try to stay out of trouble. That makes my job easier.”"))
                 
                 # Chance to offer a quest based on their 'work' if they haven't already offered one
                 if not self.has_offered_quest and random.random() < 0.4: # 40% chance
-                     UI.slow_print(f"“Actually, since you're asking, there is something that's been bothering me about my work...”")
+                     UI.slow_print(UI.capitalize_dialogue(f"“Actually, since you're asking, there is something that's been bothering me about my work...”"))
                      # Generate a quest here (similar to how share_rumor does it)
                      quest = generate_location_appropriate_quest(player.stats.level, current_location.get("tags", []), self.unique_id)
                      if quest and not player.quest_log.get_quest_by_id(quest.quest_id): # Ensure not a duplicate
                          self._offer_quest(player, quest)
                      else:
-                         UI.slow_print(random.choice(["“But perhaps it's best not to burden you with my troubles.”", "“Nevermind, I'll handle it myself.”"]))
+                         UI.slow_print(UI.capitalize_dialogue(random.choice(["“But perhaps it's best not to burden you with my troubles.”", "“Nevermind, I'll handle it myself.”"])))
                 action_taken = True
 
             elif chosen_option_text == "Discuss this place":
@@ -538,10 +544,10 @@ class NPC:
                 action_taken = True
 
             elif chosen_option_text == "Farewell":
-                UI.slow_print(f"“{random.choice(['Farewell, traveler.', 'May your path be clear.', 'Until next time.'])}”")
+                UI.slow_print(UI.capitalize_dialogue(f"“{random.choice(['Farewell, traveler.', 'May your path be clear.', 'Until next time.'])}”"))
                 return # Exit dialogue
             else:
-                UI.slow_print("Your will wavers, or the choice is unclear.")
+                UI.slow_print("A clear answer is expected, traveler.")
             
             if action_taken:
                 UI.press_enter()

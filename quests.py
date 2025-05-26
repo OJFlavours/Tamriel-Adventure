@@ -6,6 +6,7 @@ import tags # Assuming tags.py contains TAGS dictionary
 import flavor # Assuming flavor.py contains get_flavor function
 # Import Item class from items.py for reward generation and type hinting
 from items import Item, generate_random_item as gr_item_func, generate_item_from_key # Using alias for generate_random_item
+from ui import UI # Import UI for debug messages
 
 # Constant defined for quest rewards, used elsewhere if needed.
 QUEST_REWARDS_TEMPLATE = {
@@ -160,6 +161,7 @@ def get_npc_name_by_role_hint(role_hint: str) -> Dict[str, str]:
     
     name_pool_entry = NAME_POOLS.get(random_race, {}).get("commoner", {}).get(random_gender, None)
     if not name_pool_entry: # Fallback to a very generic name if specific pool fails
+        UI.print_system_message(f"DEBUG: Could not find specific name pool for role hint '{role_hint}'. Falling back to Nord commoner male.")
         name_pool_entry = NAME_POOLS["nord"]["commoner"]["male"]
     
     chosen_name_with_id = random.choice(name_pool_entry)
@@ -417,7 +419,7 @@ def generate_location_appropriate_quest(player_level: int, location_tags: List[s
 
     if not possible_templates:
         # Fallback to generic quest generation if no specific templates match
-        print(f"DEBUG: No specific quest template matched for level {player_level} and tags {location_tags}. Generating generic quest.")
+        UI.print_system_message(f"DEBUG: No specific quest template matched for level {player_level} and tags {location_tags}. Generating generic quest.")
         
         chosen_location = random.choice(LOCATIONS) # Use a generic location
         
@@ -453,6 +455,7 @@ def generate_location_appropriate_quest(player_level: int, location_tags: List[s
     
     # If no specific relevant locations are found, fallback to current location or a general one
     if not relevant_locations:
+        UI.print_system_message(f"DEBUG: No specific relevant location found for quest template '{chosen_template['id']}' based on tags. Falling back to random major location.")
         final_quest_location = random.choice(LOCATIONS) # Fallback to any major location
     else:
         final_quest_location = random.choice(relevant_locations) # Choose one from relevant locations
@@ -486,6 +489,7 @@ def generate_location_appropriate_quest(player_level: int, location_tags: List[s
                 if obj["type"] == "reach_location" and obj["location_name"] == "[SPECIFIC_SITE]":
                     obj["location_name"] = specific_site["name"]
         else: # Fallback if no specific sites found
+            UI.print_system_message(f"DEBUG: No specific site found for quest template '{chosen_template['id']}' for '[SPECIFIC_SITE]' placeholder. Using generic description.")
             for obj in chosen_template["objectives_template"]:
                 if obj["type"] == "reach_location" and obj["location_name"] == "[SPECIFIC_SITE]":
                     obj["location_name"] = f"a mysterious site in {final_quest_location['name']}"
@@ -516,7 +520,7 @@ def generate_location_appropriate_quest(player_level: int, location_tags: List[s
         status="active",
         turn_in_npc_id=quest_giver_id # Assign quest giver ID from the NPC who offered it
     )
-    quest.add_tag("quest", "type", chosen_template["id"]) # Use template ID as quest type tag
+    quest.add_tag("quest", "type", chosen_template["id"])
     
     # Add flavor tags from the template
     if "flavor_tags" in chosen_template:
@@ -531,7 +535,7 @@ def generate_location_appropriate_quest(player_level: int, location_tags: List[s
 
     # Ensure the quest has at least one objective (safety check)
     if not quest.objectives:
-        print(f"Warning: Quest '{quest.title}' generated without objectives. Adding default.")
+        UI.print_system_message(f"DEBUG: Quest '{quest.title}' generated without objectives. Adding default 'reach_location'.")
         quest.objectives.append({"type": "reach_location", "location_name": final_quest_location["name"]})
 
     return quest

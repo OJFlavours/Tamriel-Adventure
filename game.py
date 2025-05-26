@@ -1386,3 +1386,6 @@ def start_game():
     finally:
         UI.print_system_message("The world fades... Press Enter to return to reality.")
         input()
+        
+if __name__ == "__main__":
+    start_game()

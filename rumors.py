@@ -5,6 +5,7 @@ from locations import LOCATIONS
 import tags
 import flavor
 from items import Item, generate_random_item as gr_item_func, generate_item_from_key
+from ui import UI # Ensure UI is imported for capitalization
 
 # Constant defined for quest rewards
 QUEST_REWARDS_TEMPLATE = {
@@ -271,13 +272,14 @@ def generate_location_appropriate_quest(player_level: int, location_tags: List[s
             continue
 
         if template["location_tags_required"]:
-            if not all(tag in location_tags for tag in template["location_tags_required"]]):
+            if not all(tag in location_tags for tag in template["location_tags_required"]):
                 continue
         
         possible_templates.append(template)
 
     if not possible_templates:
-        print(f"DEBUG: No specific quest template matched for level {player_level} and tags {location_tags}. Generating generic quest.")
+        # Re-enabled DEBUG message
+        UI.print_system_message(f"DEBUG: No specific quest template matched for level {player_level} and tags {location_tags}. Generating generic quest.")
         
         chosen_location = random.choice(LOCATIONS)
         
@@ -373,13 +375,13 @@ def generate_location_appropriate_quest(player_level: int, location_tags: List[s
                     quest.add_tag(cat, t_type, t_value)
 
     if not quest.objectives:
-        print(f"Warning: Quest '{quest.title}' generated without objectives. Adding default.")
+        UI.print_system_message(f"DEBUG: Quest '{quest.title}' generated without objectives. Adding default 'reach_location'.") # Debug message
         quest.objectives.append({"type": "reach_location", "location_name": final_quest_location["name"]})
 
     return quest
 
 def process_quest_rewards(player: Any, quest: Quest) -> None:
-    from ui import UI 
+    from ui import UI
     
     UI.print_subheading(f"Quest Completed: {quest.title}!")
     UI.slow_print("You have received your rewards:")
@@ -402,109 +404,80 @@ def process_quest_rewards(player: Any, quest: Quest) -> None:
             UI.print_success(f"- A favor {reward_value}.")
     
     UI.press_enter()
+    
+def generate_rumor(player_level: int, current_location: Dict[str, Any], quest_giver_id: str | None = None) -> Dict[str, Any]:
+    """
+    Generates a rumor text, potentially linking to a new quest.
+    It uses the generate_location_appropriate_quest function also within this file.
+    """
+    # Generate a potential quest using the function already in rumors.py
+    quest_data = generate_location_appropriate_quest(player_level, current_location.get("tags", []), quest_giver_id)
+    rumor_text = ""
 
-def generate_rumor(player_level: int, current_location: Dict[str, Any], quest_giver_id: str = None) -> Dict[str, Any]:
-    """
-    Generate a contextual rumor based on player level and current location.
-    Can optionally include quest data.
-    Returns:
-        Dict with 'text' key containing rumor text, and optional 'quest_data' key with Quest object
-    """
-    rumors_general = [
-        "I heard strange sounds coming from the old ruins to the north.",
-        "Merchants have been avoiding the main roads lately. Bandits, they say.",
-        "The local mine has been quiet for days. Might be trouble down there.",
-        "Travelers speak of unnatural cold in the mountains, even in summer.",
-        "The guards whisper of missing livestock near the old burial grounds.",
-        "Psst, I hear the skooma trade is picking up again. Keep an eye out.",
-        "They say the dragons are gone, but I swear I saw one flying near the Throat of the World.",
-        "The Greybeards have been unusually active lately. Something big is coming, I feel it.",
-        "Word is the Thalmor are sniffing around again. They're always looking for something.",
-        "Heard a tale of a hidden Dwemer ruin, untouched for centuries, filled with treasures and dangers.",
-        "Some say the Sea of Ghosts is haunted by the ghosts of ancient shipwrecks.",
-        "A Khajiit caravan passed through, muttering about a rising darkness in Elsweyr."
-    ]
-    
-    rumors_by_location_tag = {
-        "whiterun": [
-            "The Companions are looking for new recruits. Maybe you have what it takes?",
-            "Heard that Nazeem is still as annoying as ever. Someone ought to teach him a lesson.",
-            "The Gildergreen is looking a little worse for wear. I hope it's not dying.",
-            "The Jarl is worried about the dragons, but he's doing his best to protect us.",
-            "The market is bustling as usual. Always something to buy or sell."
-        ],
-        "riften": [
-            "The Thieves Guild is always looking for new members. Are you light-fingered enough?",
-            "Maven Black-Briar controls everything in this town. Don't cross her.",
-            "The fishing is good in Lake Honrich, but be careful of Slaughterfish.",
-            "The orphanage is always in need of donations. Think of the children.",
-            "The mead is flowing freely at the Bee and Barb. Maybe too freely..."
-        ],
-        "windhelm": [
-            "The Gray Quarter is getting restless. Tensions are rising between the Nords and Dunmer.",
-            "Ulfric Stormcloak is preparing for war. Skyrim will soon be free!",
-            "The Palace of the Kings is always bustling with activity. Something big is brewing.",
-            "The docks are busy with ships coming and going. Trade is booming, despite the war.",
-            "Be careful walking around at night. The streets can be dangerous."
-        ],
-        "solitude": [
-            "The Blue Palace is always a sight to behold. The Empire's wealth is on full display.",
-            "The Bards College is hosting a performance tonight. It's sure to be a spectacle.",
-            "The East Empire Company has a strong presence here. They control much of the trade.",
-            "The executioner is sharpening his blade. Justice will be served.",
-            "The views from the city walls are breathtaking. You can see for miles."
-        ],
-        "markarth": [
-            "The Silver-Bloods control everything in this city. Don't cross them.",
-            "The Forsworn are a constant threat in the Reach. Be careful traveling outside the city walls.",
-            "The Dwemer ruins are fascinating, but also dangerous. Explore at your own risk.",
-            "The guards are always on the lookout for trouble. Crime is rampant in this city.",
-            "The views from the top of the city are incredible. You can see the entire Reach."
-        ],
-        "falkreath": [
-            "The graveyard is always expanding. Death is a constant presence in this town.",
-            "The Jarl is a somber man. He carries the weight of the past on his shoulders.",
-            "Hunters are frequently seen bringing in kills from the surrounding forest. It's a dangerous place.",
-            "The local inn is always filled with travelers. It's a good place to hear the latest news.",
-            "There's an unsettling quiet about this town. It's as if something is always watching."
-        ],
-        "dawnstar": [
-            "The nightmares are getting worse. People are afraid to go to sleep.",
-            "Miners are unearthing strange artifacts from the nearby mines. What secrets do they hold?",
-            "The sea is rough these days. Shipwrecks are becoming more common.",
-            "Fishermen are reporting strange creatures in the water. Stay away from the shore at night.",
-            "There's a chill in the air that has nothing to do with the snow. Something is amiss."
-        ],
-        "winterhold": [
-            "The College of Winterhold attracts mages from all over Tamriel. It's a hub of magical knowledge.",
-            "The ruins of the old city are a constant reminder of the Great Collapse. A tragic event.",
-            "Locals whisper of strange energies emanating from the College. What are they up to?",
-            "The Frozen Hearth is the only inn left in town. It's a quiet place, but the ale is good.",
-            "The sea is encroaching on the town. Winterhold is slowly being swallowed by the waves."
-        ],
-        "morthal": [
-            "The Jarl seems preoccupied these days. What troubles weigh on her mind?",
-            "The swamp is a dangerous place. Strange creatures lurk in the murky waters.",
-            "People whisper of dark magic being practiced in the shadows. Be wary of strangers.",
-            "The old barrows are said to be haunted by restless spirits. Don't disturb the dead.",
-            "The fog is always thick in Morthal. It's easy to get lost in the gloom."
+    # Attempt to get generic rumor starting phrases from flavor.py
+    generic_rumor_starts = []
+    if hasattr(flavor, 'DIALOGUE_FLAVORS') and \
+       "topic" in flavor.DIALOGUE_FLAVORS and \
+       "rumor" in flavor.DIALOGUE_FLAVORS["topic"]:
+        generic_rumor_starts = flavor.DIALOGUE_FLAVORS["topic"]["rumor"] #
+
+    if quest_data:
+        # Craft a rumor based on the generated quest
+        if quest_data.location and quest_data.location.get('name'):
+            rumor_text_base = f"I've heard whispers concerning {quest_data.location.get('name', 'a nearby place')}."
+        else:
+            rumor_text_base = f"Word is there's something stirring in the region."
+
+        # Extract quest type for more specific rumor details
+        quest_type_tag = ""
+        if quest_data.tags and "quest" in quest_data.tags and "type" in quest_data.tags["quest"]:
+             quest_type_tag = quest_data.tags["quest"]["type"]
+
+        if "bandits" in quest_type_tag or "clear_bandit_camp" in quest_type_tag:
+            rumor_text_detail = "Bandits are causing trouble, preying on the weak. Someone ought to do something about it."
+        elif "fetch" in quest_type_tag or "ancient_relic_retrieval" in quest_type_tag:
+            item_name_objective = "an ancient relic"
+            for obj in quest_data.objectives: #
+                if obj["type"] == "collect_item": #
+                    item_name_objective = obj.get("item_key", "an important item").replace("_", " ")
+                    break
+            rumor_text_detail = f"There's talk of {item_name_objective} hidden away, waiting to be found by a worthy adventurer."
+        else:
+            rumor_text_detail = "It sounds like a task fitting for someone of your skills."
+
+        if generic_rumor_starts:
+            rumor_text = f"{random.choice(generic_rumor_starts)} {rumor_text_detail}"
+        else:
+            rumor_text = f"{rumor_text_base} {rumor_text_detail}"
+
+    else:
+        # Generate a generic rumor if no quest is created
+        loc_name = current_location.get("name", "these parts")
+        
+        generic_rumors_list = [
+            f"The winds whisper strange tales around {loc_name} lately.",
+            f"Keep an eye out if you're traveling near {loc_name}. You never know what you'll encounter.",
+            "Just the usual tavern chatter, mostly nonsense, but sometimes there's a kernel of truth.",
+            f"Some say the Jarl over in {current_location.get('parent_name', 'the capital city')} is in a foul mood these days.", #
+            "The local merchants have been complaining about the price of mead again."
         ]
-    }
-    
-    location_tags = current_location.get("tags", [])
-    possible_rumors = rumors_general.copy()
-    
-    for tag in location_tags:
-        if tag in rumors_by_location_tag:
-            possible_rumors.extend(rumors_by_location_tag[tag])
-    
-    chosen_rumor = random.choice(possible_rumors)
-    
-    result = {"text": chosen_rumor}
-    
-    if random.random() < 0.3 and quest_giver_id:
-        quest = generate_location_appropriate_quest(player_level, location_tags, quest_giver_id)
-        if quest:
-            result["quest_data"] = quest
-    
-    return result
+        if generic_rumor_starts:
+            chosen_start = random.choice(generic_rumor_starts)
+            detail_fallback = [
+                "The caravans seem to be running late again.",
+                "Strange lights were seen over the mountains last night.",
+                "Never a dull moment in Skyrim, is there?"
+            ]
+            current_tags = current_location.get("tags", [])
+            if "trade" in current_tags or "market" in current_tags: #
+                detail = "There's talk of a new shipment arriving soon, or perhaps being delayed."
+            elif "magic" in current_tags or "college" in current_tags: #
+                detail = "The mages are probably up to something, as usual."
+            else:
+                detail = random.choice(detail_fallback)
+            rumor_text = f"{chosen_start} {detail}"
+        else: # Absolute fallback
+            rumor_text = random.choice(generic_rumors_list)
+
+    # Ensure the text is properly capitalized for dialogue
+    return {"text": UI.capitalize_dialogue(rumor_text), "quest_data": quest_data} #

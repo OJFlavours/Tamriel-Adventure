@@ -18,7 +18,7 @@ FAILURE_COLOR = Fore.RED
 MENU_COLOR = Fore.MAGENTA
 HIGHLIGHT_COLOR = Fore.YELLOW
 COMBAT_TEXT_COLOR = Fore.RED
-SYSTEM_MESSAGE_COLOR = Fore.BLUE + Style.BRIGHT
+SYSTEM_MESSAGE_COLOR = Fore.BLUE + Style.BRIGHT # Used for debug messages
 
 class UI:
     """
@@ -108,14 +108,52 @@ class UI:
 
     @staticmethod
     def print_system_message(text):
-        """Prints important system messages."""
+        """Prints important system messages (including debug messages)."""
         print(f"{SYSTEM_MESSAGE_COLOR}{UI.wrap_text(text)}{Style.RESET_ALL}")
+
+    @staticmethod
+    def capitalize_dialogue(text: str) -> str:
+        """
+        Capitalizes the first letter of sentences and fixes standalone 'i' to 'I'.
+        Assumes basic sentence structure.
+        """
+        if not text:
+            return ""
+        
+        # Replace standalone 'i' or 'i ' with 'I' or 'I '
+        processed_text = text.replace(" i ", " I ").replace(" i'", " I'").replace("i'm", "I'm").replace("i've", "I've")
+        if processed_text.startswith("i "): # Catch initial 'i ' at the very start
+            processed_text = "I" + processed_text[1:]
+
+        # Capitalize the first letter of the overall string
+        if processed_text: # Ensure string is not empty before attempting to capitalize
+            processed_text = processed_text[0].upper() + processed_text[1:]
+
+        # Capitalize after sentence-ending punctuation.
+        punctuations = ['.', '!', '?']
+        for punc in punctuations:
+            parts = processed_text.split(punc)
+            for i, part in enumerate(parts):
+                stripped_part = part.strip()
+                if stripped_part:
+                    # Keep original leading/trailing spaces for proper re-joining
+                    original_leading_spaces = part[:(len(part) - len(part.lstrip()))]
+                    original_trailing_spaces = part[len(part.rstrip()):]
+                    
+                    capitalized_stripped = stripped_part[0].upper() + stripped_part[1:]
+                    parts[i] = original_leading_spaces + capitalized_stripped + original_trailing_spaces
+            processed_text = punc.join(parts)
+        
+        return processed_text
 
     @staticmethod
     def display_player_stats(player):
         """Displays the player's current stats in a formatted way."""
         UI.print_subheading("Player Stats")
-        UI.print_info(f"Name: {player.name}, Level: {player.level} {player.race} {player.character_class}")
+        # Ensure 'character_class' is an attribute of player or player.stats
+        # For now, using player.subclass as a fallback if character_class is not set
+        class_display = getattr(player, 'character_class', player.subclass if hasattr(player, 'subclass') else 'Adventurer')
+        UI.print_info(f"Name: {player.name}, Level: {player.level} {player.race.capitalize()} {class_display.capitalize()}")
         UI.print_info(f"Health: {player.stats.current_health}/{player.stats.max_health}")
         UI.print_info(f"Magicka: {player.stats.current_magicka}/{player.stats.max_magicka}")
         UI.print_info(f"Fatigue: {player.stats.current_fatigue}/{player.stats.max_fatigue}")
@@ -142,8 +180,8 @@ class UI:
     def display_inventory(player):
         """Displays the player's inventory."""
         UI.print_subheading("Inventory")
-        if player.inventory:
-            for i, item in enumerate(player.inventory):
+        if player.stats.inventory: # Changed from player.inventory to player.stats.inventory
+            for i, item in enumerate(player.stats.inventory):
                 UI.print_info(f"[{i + 1}] {item.name} ({item.weight} lbs, Value: {item.value} gold)")
         else:
             UI.print_info("Your inventory is empty.")
@@ -154,11 +192,14 @@ class UI:
         """Displays the player's current quest log."""
         UI.print_subheading("Quest Log")
         if hasattr(player, 'quest_log') and player.quest_log:
-            quests = player.quest_log.list_quests()  # Updated to use list_quests()
-            for i, quest in enumerate(quests):
-                UI.print_info(f"[{i + 1}] {quest.title}: {UI.wrap_text(quest.description, width=LINE_WIDTH - 4)}")
+            quests = player.quest_log.list_quests()
+            if quests:
+                for i, quest in enumerate(quests):
+                    UI.print_info(f"[{i + 1}] {quest.title}: {UI.wrap_text(quest.description, width=UI.LINE_WIDTH - 4)}")
+            else:
+                UI.print_info("You have no active quests.")
         else:
-            UI.print_info("You have no active quests.")
+            UI.print_info("You have no active quests.") # Redundant, but harmless
         print()
 
     @staticmethod
@@ -176,6 +217,15 @@ if __name__ == "__main__":
 
     UI.print_subheading("A New Day Dawns")
     UI.print_info("The crisp morning air fills your lungs as you awaken. The sounds of a nearby town drift towards you.")
+
+    # Example of capitalizing dialogue using the new method
+    test_dialogue_1 = "i think i've heard that rumor before. it's quite interesting, isn't it?"
+    test_dialogue_2 = "a dark shadow falls over the land! what will you do?"
+    test_dialogue_3 = "hello. what do you want?"
+
+    UI.slow_print(f"Test 1: \"{UI.capitalize_dialogue(test_dialogue_1)}\"")
+    UI.slow_print(f"Test 2: \"{UI.capitalize_dialogue(test_dialogue_2)}\"")
+    UI.slow_print(f"Test 3: \"{UI.capitalize_dialogue(test_dialogue_3)}\"")
 
     player_name = UI.print_prompt("Enter your name")
     UI.print_info(f"Greetings, {player_name}!")
@@ -199,4 +249,4 @@ if __name__ == "__main__":
     UI.print_failure("The wolf bites you!")
 
     UI.print_system_message("\n--- End of Example ---")
-    UI.press_enter()  # Added for example flow
+    UI.press_enter() # Added for example flow
