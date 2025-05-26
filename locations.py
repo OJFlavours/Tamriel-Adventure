@@ -1,11 +1,10 @@
-# locations.py
 LOCATIONS = [
     # WHITERUN HOLD
     {
         "id": 1,
         "name": "Whiterun Hold",
         "desc": "The fertile heartland of Skyrim, marked by golden plains and the bustling city of Whiterun. A center of commerce, conflict, and tradition.",
-        "tags": ["hold", "plains", "central"],
+        "tags": ["hold", "plains", "central", "commerce"],
         "demographics": {"Nord": 85, "Imperial": 10, "Others": 5},
         "travel": {
             "roads": ["Riften", "Windhelm", "Markarth", "Solitude"],
@@ -16,7 +15,7 @@ LOCATIONS = [
                 "id": 10,
                 "name": "Whiterun",
                 "desc": "A thriving trade city built around the great keep Dragonsreach. Its bustling market and legendary mead hall form the heart of the hold.",
-                "tags": ["city", "capital", "trade"],
+                "tags": ["city", "capital", "trade", "whiterun", "market", "jarls_seat"],
                 "sub_locations": [
                     {
                         "id": 1001,
@@ -126,7 +125,7 @@ LOCATIONS = [
         "id": 2,
         "name": "The Pale",
         "desc": "A frozen hold of bleak beauty, stretching from snow-tipped plains to the Sea of Ghosts. Harsh and unforgiving, yet full of untold opportunities.",
-        "tags": ["hold", "snow", "coastal"],
+        "tags": ["hold", "snow", "coastal", "mining"],
         "demographics": {"Nord": 90, "Imperial": 5, "Others": 5},
         "travel": {
             "roads": ["Dawnstar", "Windhelm"],
@@ -137,7 +136,7 @@ LOCATIONS = [
                 "id": 20,
                 "name": "Dawnstar",
                 "desc": "A resilient town on the northern edge, thriving on fishing, mining, and hardy tradition.",
-                "tags": ["town", "port"],
+                "tags": ["town", "port", "dawnstar", "isolated"],  # Added "dawnstar" tag
                 "sub_locations": [
                     {
                         "id": 2001,
@@ -197,7 +196,7 @@ LOCATIONS = [
         "id": 3,
         "name": "Winterhold",
         "desc": "A shattered hold on the northern coast, now synonymous with magic, ruin, and the enigmatic College of Winterhold.",
-        "tags": ["hold", "snow", "coastal", "magic"],
+        "tags": ["hold", "snow", "coastal", "magic", "ruin"],
         "demographics": {"Nord": 75, "Altmer": 10, "Dunmer": 10, "Others": 5},
         "travel": {
             "roads": ["Dawnstar", "Windhelm"],
@@ -208,7 +207,7 @@ LOCATIONS = [
                 "id": 30,
                 "name": "Winterhold (Town)",
                 "desc": "A ghost town clinging to remnants of its past amid the ruins left by the sea.",
-                "tags": ["town", "ruin"],
+                "tags": ["town", "ruin", "winterhold", "magical"],  # Added "winterhold" tag
                 "sub_locations": [
                     {
                         "id": 3001,
@@ -256,7 +255,7 @@ LOCATIONS = [
         "id": 4,
         "name": "Hjaalmarch",
         "desc": "A bleak, marshy hold shrouded in perpetual mist and steeped in superstition, dominated by the enigmatic town of Morthal.",
-        "tags": ["hold", "marsh", "swamp"],
+        "tags": ["hold", "marsh", "swamp", "isolated"],
         "demographics": {"Nord": 95, "Others": 5},
         "travel": {
             "roads": ["Dawnstar"],
@@ -267,7 +266,7 @@ LOCATIONS = [
                 "id": 40,
                 "name": "Morthal",
                 "desc": "A somber town wrapped in fog and mystery, where every shadow hides an untold story.",
-                "tags": ["town", "marsh"],
+                "tags": ["town", "marsh", "morthal", "superstitious"],  # Added "morthal" tag
                 "sub_locations": [
                     {
                         "id": 4001,
@@ -315,7 +314,7 @@ LOCATIONS = [
         "id": 5,
         "name": "Falkreath Hold",
         "desc": "A heavily forested hold in southern Skyrim, enveloped in mystery and dark legends, renowned for its sprawling graveyard and haunting tales.",
-        "tags": ["hold", "forest", "southern"],
+        "tags": ["hold", "forest", "southern", "graveyard"],
         "demographics": {"Nord": 85, "Imperial": 10, "Others": 5},
         "travel": {
             "roads": ["Whiterun"],
@@ -326,7 +325,7 @@ LOCATIONS = [
                 "id": 50,
                 "name": "Falkreath",
                 "desc": "A quiet town immersed in lore and veiled in legend, where the past and present converge.",
-                "tags": ["town", "forest"],
+                "tags": ["town", "forest", "falkreath", "lore"],  # Added "falkreath" tag
                 "sub_locations": [
                     {
                         "id": 5001,
@@ -368,7 +367,7 @@ LOCATIONS = [
         "id": 6,
         "name": "The Reach",
         "desc": "A wild, mountainous region of ancient ruins, rebel encampments, and hidden wonders, with Markarth as its crown jewel.",
-        "tags": ["hold", "mountain", "dwemer"],
+        "tags": ["hold", "mountain", "dwemer", "forsworn"],
         "demographics": {"Nord": 60, "Reachmen": 30, "Others": 10},
         "travel": {
             "roads": ["Whiterun", "Solitude"],
@@ -379,7 +378,7 @@ LOCATIONS = [
                 "id": 60,
                 "name": "Markarth",
                 "desc": "A city hewn from ancient Dwemer stone where treachery and treasures hide in its labyrinthine passages.",
-                "tags": ["city", "dwemer", "mountain"],
+                "tags": ["city", "dwemer", "mountain", "markarth", "rebellion"],  # Added "markarth" tag
                 "sub_locations": [
                     {
                         "id": 6001,
@@ -427,7 +426,7 @@ LOCATIONS = [
         "id": 7,
         "name": "Eastmarch",
         "desc": "A fierce, volcanic hold dominated by the storied city of Windhelm, where ancient traditions clash with modern strife.",
-        "tags": ["hold", "volcanic", "nordic"],
+        "tags": ["hold", "volcanic", "nordic", "stormcloak"],
         "demographics": {"Nord": 90, "Dunmer": 5, "Others": 5},
         "travel": {
             "roads": ["Whiterun", "Riften"],
@@ -438,7 +437,7 @@ LOCATIONS = [
                 "id": 70,
                 "name": "Windhelm",
                 "desc": "One of Skyrim's oldest cities, imbued with the spirit of Stormcloaks and ancient Nordic valor.",
-                "tags": ["city", "capital", "stormcloak"],
+                "tags": ["city", "capital", "nordic", "windhelm", "historic"],  # Added "windhelm" tag
                 "sub_locations": [
                     {
                         "id": 7001,
@@ -492,7 +491,7 @@ LOCATIONS = [
         "id": 8,
         "name": "Haafingar",
         "desc": "A coastal hold rich in Imperial influence and maritime heritage, led by the stately city of Solitude.",
-        "tags": ["hold", "coastal", "imperial"],
+        "tags": ["hold", "coastal", "imperial", "maritime"],
         "demographics": {"Nord": 70, "Imperial": 20, "Others": 10},
         "travel": {
             "roads": ["Markarth", "Whiterun", "Dawnstar"],
@@ -503,7 +502,7 @@ LOCATIONS = [
                 "id": 80,
                 "name": "Solitude",
                 "desc": "A majestic city perched atop a rocky promontory, epitomizing Imperial grandeur and Nordic resilience.",
-                "tags": ["city", "capital", "imperial"],
+                "tags": ["city", "capital", "imperial", "solitude", "wealth"],  # Added "solitude" tag
                 "sub_locations": [
                     {
                         "id": 8001,
@@ -551,7 +550,7 @@ LOCATIONS = [
         "id": 9,
         "name": "The Rift",
         "desc": "A lush, verdant hold defined by dense forests, flowing rivers, and the enigmatic city of Riften, where intrigue and mystery intertwine.",
-        "tags": ["hold", "forest", "water"],
+        "tags": ["hold", "forest", "water", "autumnal"],
         "demographics": {"Nord": 75, "Dunmer": 10, "Argonian": 10, "Others": 5},
         "travel": {
             "roads": ["Whiterun", "Windhelm"],
@@ -562,7 +561,7 @@ LOCATIONS = [
                 "id": 90,
                 "name": "Riften",
                 "desc": "A city of contrasts, where gleaming canals meet the dark secrets of the underground Ratway.",
-                "tags": ["city", "underground"],
+                "tags": ["city", "underground", "riften", "thieves"],  # Added "riften" tag
                 "sub_locations": [
                     {
                         "id": 9001,
@@ -649,7 +648,7 @@ LOCATIONS = [
         "id": 104,
         "name": "Labyrinthian",
         "desc": "A vast, maze-like ruin once a grand Nord city, now overrun by draugr and cursed with the lingering magic of a forgotten dragon priest.",
-        "tags": ["ruin", "nordic", "maze", "undead", "dungeon"],
+        "tags": ["ruin", "nordic", "undead", "maze", "dungeon"],
         "demographics": {"Nord": 100},
         "travel": {
             "roads": ["Ancient Road"],
@@ -681,7 +680,7 @@ LOCATIONS = [
     {
         "id": 107,
         "name": "Ustengrav",
-        "desc": "A vast Nordic tomb in Hjaalmarch's marshes, its dark corridors echo with the clamor of ancient battles and the lure of cursed treasures.",
+        "desc": "A vast Nordic tomb in Hjaalmarch\'s marshes, its dark corridors echo with the clamor of ancient battles and the lure of cursed treasures.",
         "tags": ["barrow", "nordic", "undead", "swamp", "dungeon"],
         "demographics": {"Nord": 100},
         "travel": {

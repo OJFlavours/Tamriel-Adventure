@@ -7,6 +7,10 @@ LOCATIONS = {
     "terrain": ["mountainous", "hilly", "plains", "forest", "desert", "island"],
     "structure": ["natural", "ruined", "fortified", "populated", "abandoned"],
     "magical": ["enchanted", "cursed", "holy", "arcane", "tainted"],
+    # City Specific tags.
+    "city_affiliation": ["whiterun", "riften", "windhelm", "solitude", "markarth", "falkreath", "dawnstar", "winterhold", "morthal"],
+    "city_features": ["market", "jarls_seat", "temple", "thieves_guild", "companions_guild", "college", "imperial_presence", "stormcloak_presence", "dwemer_influence"],
+    "urban_issues": ["crime", "poverty", "corruption", "political_unrest", "monster_attacks"]
 }
 
 # Faction Tags
@@ -95,7 +99,7 @@ TAGS = {
 
 def get_random_tag(tag_category):
     """Returns a random tag from the specified category within the master TAGS dictionary."""
-    category_dict = TAGS.get(tag_category.upper()) # Access from the new TAGS dictionary
+    category_dict = TAGS.get(tag_category.upper())  # Access from the new TAGS dictionary
     if category_dict:
         # If the category is a dictionary (like LOCATIONS, FACTIONS, etc.),
         # we want to pick a random value from one of its sub-categories.
@@ -116,13 +120,13 @@ def get_random_tag(tag_category):
             return random.choice(category_dict)
     return None
 
-def add_tag(entity, tag_category, tag_type, tag_value): # Modified to accept tag_type and tag_value
+def add_tag(entity, tag_category, tag_type, tag_value):  # Modified to accept tag_type and tag_value
     """Adds a tag to the specified entity (e.g., NPC, Location, Quest) with a nested structure."""
     if not hasattr(entity, "tags"):
         entity.tags = {}
     if tag_category not in entity.tags:
-        entity.tags[tag_category] = {} # Initialize as a dictionary for nested tags
-    entity.tags[tag_category][tag_type] = tag_value # Assign the tag_value to the specific type
+        entity.tags[tag_category] = {}  # Initialize as a dictionary for nested tags
+    entity.tags[tag_category][tag_type] = tag_value  # Assign the tag_value to the specific type
 
 def get_tags(entity):
     """returns all tags from an entity"""
@@ -192,13 +196,13 @@ def get_dialogue_options(npc, player_relationship):
     # Access DIALOGUE from the new TAGS dictionary
     # Example adjusted to new tag structure assuming 'location' is a tag category
     # options.append(f"Ask about rumors in the {npc_tags.get('location', {}).get('environment', 'area')}")
-    options.append(f"Ask about rumors in the area") # Simplified, as specific location tags are complex here
+    options.append(f"Ask about rumors in the area")  # Simplified, as specific location tags are complex here
     options.append(f"Attempt to {TAGS['DIALOGUE'].get('persuasion')}")
     return options
 
 def get_all_tags_by_category(category):
     """Returns a list of all valid tags within a specified category from the master TAGS dictionary."""
-    category_dict = TAGS.get(category.upper()) # Access from the new TAGS dictionary
+    category_dict = TAGS.get(category.upper())  # Access from the new TAGS dictionary
     if category_dict:
         # If it's a dictionary of lists (like LOCATIONS), return all values from all sub-categories
         if isinstance(category_dict, dict):
@@ -212,7 +216,7 @@ def get_all_tags_by_category(category):
     else:
         return []
 
-def remove_tag(entity, tag_category, tag_type): # Modified to accept tag_type
+def remove_tag(entity, tag_category, tag_type):  # Modified to accept tag_type
     """Removes a tag from a specific entity."""
     if hasattr(entity, "tags") and tag_category in entity.tags:
         if tag_type in entity.tags[tag_category]:
@@ -220,4 +224,3 @@ def remove_tag(entity, tag_category, tag_type): # Modified to accept tag_type
             # Optionally remove the category if it becomes empty
             if not entity.tags[tag_category]:
                 del entity.tags[tag_category]
-
