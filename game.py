@@ -142,6 +142,38 @@ def discover_connected_locations(location):
                     known_locations.add(dest_loc["id"])
                     known_locations_objects.append(dest_loc) # Add object to the list
 
+def determine_city_type(city_obj):
+    """Determines the display type string for a city-level location."""
+    tags = city_obj.get("tags", [])
+    if "city" in tags: return "City"
+    if "town" in tags: return "Town"
+    if "village" in tags: return "Village"
+    if "barrow" in tags or "nordic_ruin" in tags: return "Ruin/Barrow"
+    if "cave" in tags: return "Cave System"
+    if "mine" in tags: return "Mine"
+    if "camp" in tags: return "Camp"
+    if "watchtower" in tags: return "Watchtower"
+    if "fort" in tags and "ruined" not in tags : return "Fort"
+    if "dungeon" in tags : return "Dungeon Site"
+    return "Settlement"
+
+def determine_venue_type(venue_obj):
+    """Determines the display type string for a venue-level location."""
+    tags = venue_obj.get("tags", [])
+    if "tavern" in tags or "inn" in tags: return "Tavern/Inn"
+    if "shop" in tags and "alchemy" in tags : return "Apothecary"
+    if "shop" in tags and "blacksmith" in tags : return "Smithy"
+    if "shop" in tags: return "Shop"
+    if "keep" in tags or ("jarls_seat" in tags and "palace" not in tags and "longhouse" not in tags): return "Keep"
+    if "palace" in tags or ("jarls_seat" in tags and ("palace" in tags or "longhouse" in tags)): return "Palace/Longhouse"
+    if "temple" in tags: return "Temple"
+    if "guild" in tags or "college" in tags or "meadhall" in tags : return "Guild/College Hall"
+    if "residence" in tags: return "Residence"
+    if "market" in tags : return "Market Area"
+    if "docks" in tags: return "Docks"
+    if "catacombs" in tags or "hall_of_the_dead" in tags : return "Catacombs"
+    return "Point of Interest"
+
 def explore_and_travel_menu(player, current_location_param):
     while True:
         clear_screen()
@@ -149,76 +181,107 @@ def explore_and_travel_menu(player, current_location_param):
         UI.print_info(f"You are currently at: {current_location_param['name']}")
         UI.print_line()
 
-        if not known_locations:
+        if not known_locations: # known_locations is a set of IDs
             UI.slow_print("Your map remains blank, a world yet to be charted.")
             UI.print_line()
             UI.press_enter()
             return current_location_param
 
-        display_map = {}
-        details_map = {}
+        # Determine player's current contextual Hold and City-level entity
+        # player_contextual_hold is the Hold object the player is in.
+        # player_contextual_city is the City/Town/Village object player is in, or a "city-like" main sub-location of a Hold.
+        # If current_location_param is a venue (e.g., Bannered Mare), player_contextual_city will be its parent city (Whiterun).
+        # If current_location_param is a city (e.g., Whiterun), player_contextual_city will be Whiterun.
+        # If current_location_param is a Hold (e.g., Whiterun Hold), player_contextual_city will be None.
+        player_contextual_hold, player_contextual_city = _find_hierarchy(current_location_param["id"])
 
-        sorted_known_holds = sorted(
-            (loc for loc in ALL_LOCATIONS if "hold" in loc.get("tags", []) and loc["id"] in known_locations),
+        display_map = {} # Stores [display_num_str] -> location_object
+        details_map = {} # Stores [display_num_str] -> {"parent_name": str, "type": str}
+        major_loc_counter = 0
+
+        # Sort all top-level holds in the game alphabetically for consistent display order
+        sorted_all_holds_in_game = sorted(
+            (loc for loc in ALL_LOCATIONS if "hold" in loc.get("tags", [])),
             key=lambda x: x["name"]
         )
 
-        major_loc_counter = 0
-        for hold_obj in sorted_known_holds:
+        for hold_obj_iterated in sorted_all_holds_in_game:
+            # Condition for displaying a Hold: It must be known by the player.
+            if hold_obj_iterated["id"] not in known_locations:
+                continue
+
             major_loc_counter += 1
             hold_num_str = str(major_loc_counter)
-            display_map[hold_num_str] = hold_obj
+            display_map[hold_num_str] = hold_obj_iterated
             details_map[hold_num_str] = {"parent_name": None, "type": "Hold"}
 
-            city_counter = 0
-            sorted_cities_in_hold = sorted(
-                (sub for sub in hold_obj.get("sub_locations", []) if sub["id"] in known_locations),
-                key=lambda x: x["name"]
-            )
-            for city_obj in sorted_cities_in_hold:
-                city_counter += 1
-                city_num_str = f"{hold_num_str}.{city_counter}"
-                display_map[city_num_str] = city_obj
-                city_type = "City"
-                if "town" in city_obj.get("tags", []): city_type = "Town"
-                elif "village" in city_obj.get("tags", []): city_type = "Village"
-                elif any(t in city_obj.get("tags", []) for t in ["dungeon", "barrow", "cave", "ruin", "camp", "mine"]): city_type = "Site"
-                details_map[city_num_str] = {"parent_name": hold_obj["name"], "type": city_type}
-
-                venue_counter = 0
-                sorted_venues_in_city = sorted(
-                    (v for v in city_obj.get("sub_locations", []) if v["id"] in known_locations),
+            # --- Condition for displaying cities/towns/villages within this iterated_hold_obj ---
+            # Only show these if the iterated_hold_obj is the player's current contextual_hold.
+            # Or, if the player is at the hold level itself (player_contextual_city is None)
+            # and the iterated hold is the one they are in.
+            if player_contextual_hold and hold_obj_iterated["id"] == player_contextual_hold["id"]:
+                city_counter = 0
+                # Sort known city-level locations within this hold
+                sorted_cities_in_player_context_hold = sorted(
+                    (city for city in hold_obj_iterated.get("sub_locations", []) if city["id"] in known_locations),
                     key=lambda x: x["name"]
                 )
-                for venue_obj in sorted_venues_in_city:
-                    venue_counter += 1
-                    venue_num_str = f"{city_num_str}.{venue_counter}"
-                    display_map[venue_num_str] = venue_obj
-                    venue_type = "Point of Interest"
-                    if "tavern" in venue_obj.get("tags", []): venue_type = "Tavern"
-                    elif "shop" in venue_obj.get("tags", []): venue_type = "Shop"
-                    elif "keep" in venue_obj.get("tags", []): venue_type = "Keep"
-                    elif "temple" in venue_obj.get("tags", []): venue_type = "Temple"
-                    details_map[venue_num_str] = {"parent_name": city_obj["name"], "type": venue_type}
+
+                for city_obj_iterated in sorted_cities_in_player_context_hold:
+                    city_counter += 1
+                    city_num_str = f"{hold_num_str}.{city_counter}"
+                    display_map[city_num_str] = city_obj_iterated
+                    city_type_str = determine_city_type(city_obj_iterated)
+                    details_map[city_num_str] = {"parent_name": hold_obj_iterated["name"], "type": city_type_str}
+
+                    # --- Condition for displaying venues within this iterated_city_obj ---
+                    # Only show these if the iterated_city_obj is the player's current contextual_city.
+                    if player_contextual_city and city_obj_iterated["id"] == player_contextual_city["id"]:
+                        venue_counter = 0
+                        # Sort known venues within this city context
+                        sorted_venues_in_player_context_city = sorted(
+                            (venue for venue in city_obj_iterated.get("sub_locations", []) if venue["id"] in known_locations),
+                            key=lambda x: x["name"]
+                        )
+                        for venue_obj_iterated in sorted_venues_in_player_context_city:
+                            venue_counter += 1
+                            venue_num_str = f"{city_num_str}.{venue_counter}"
+                            display_map[venue_num_str] = venue_obj_iterated
+                            venue_type_str = determine_venue_type(venue_obj_iterated)
+                            details_map[venue_num_str] = {"parent_name": city_obj_iterated["name"], "type": venue_type_str}
         
         if not display_map:
-            UI.slow_print("You know of no specific mapped locations beyond your immediate surroundings.")
+            # This case should ideally be hit if known_locations is empty or only contains
+            # locations that don't fit the display hierarchy based on current location.
+            UI.slow_print("You know of no specific mapped locations relevant to your current position or discovery level.")
             UI.press_enter()
             return current_location_param
 
         UI.print_subheading("Known Locations:")
         try:
+            # Sort keys for hierarchical display (e.g., 1, 1.1, 1.1.1, 2)
             sorted_map_keys = sorted(display_map.keys(), key=lambda x: tuple(map(int, x.split('.'))))
         except ValueError:
+            # Fallback sort if keys are not purely numeric dot-separated (should not happen with current logic)
             sorted_map_keys = sorted(display_map.keys())
 
         for num_str in sorted_map_keys:
             loc_obj_to_display = display_map[num_str]
             indent_level = num_str.count('.')
-            indent = "  " * indent_level
-            brief_desc = loc_obj_to_display["desc"].split(".")[0] + "."
+            indent = "  " * indent_level # Two spaces per indent level
+            
+            # Construct a brief description, taking the first sentence.
+            desc_sentences = loc_obj_to_display["desc"].split(".")
+            brief_desc = desc_sentences[0] + "." if desc_sentences else loc_obj_to_display["desc"]
+            if len(desc_sentences) > 1 and brief_desc.count(' ') < 5 : # if first sentence is too short, add next
+                brief_desc += " " + desc_sentences[1].strip() + "."
+
+
             type_display = details_map[num_str]["type"]
-            UI.print_info(f"{indent}[{num_str}] {loc_obj_to_display['name']:<30} ({type_display}) — {brief_desc}")
+            
+            # Formatting the line: Indent, Number, Name (padded), Type, Description
+            # Adjust padding for name as needed based on typical name lengths
+            UI.print_info(f"{indent}[{num_str}] {loc_obj_to_display['name']:<35} ({type_display}) — {brief_desc}")
         UI.print_line()
 
         loc_choice_str = UI.print_prompt("Enter location number to interact with (or 0 to go back)")
@@ -234,14 +297,15 @@ def explore_and_travel_menu(player, current_location_param):
                 selected_loc_obj_for_action,
                 selected_loc_details_for_action,
                 player,
-                current_location_param,
-                loc_choice_str
+                current_location_param, # Pass current location for context if needed by prompt_examine_or_travel
+                loc_choice_str # Pass the selection string for context
             )
             
-            if action_result_loc == "REPROMPT_MAP":
+            if action_result_loc == "REPROMPT_MAP": # Special string to indicate reprompting the map
                 continue
-            elif isinstance(action_result_loc, dict) and "id" in action_result_loc:
-                return action_result_loc
+            elif isinstance(action_result_loc, dict) and "id" in action_result_loc: # Check if it's a location object
+                return action_result_loc # Return the new current location if travel occurred
+            # If it's neither, it might be an error or an unhandled case, loop again.
         else:
             UI.slow_print("Invalid location number. Please try again.")
             UI.press_enter()
@@ -304,44 +368,44 @@ def enter_location_or_prompt_sub(chosen_destination, player, previous_location, 
     global known_locations
     global known_locations_objects
 
+    # Initial discovery of travel connections FOR the chosen_destination itself
     known_locations.add(chosen_destination["id"])
     if chosen_destination not in known_locations_objects:
         known_locations_objects.append(chosen_destination)
     discover_connected_locations(chosen_destination)
 
-    known_sub_locs = [
+    # Check for known sub-locations WITHIN chosen_destination to potentially prompt the player
+    # These are sub-locations already in the player's `known_locations` set
+    known_sub_locs_to_prompt = [
         sub for sub in chosen_destination.get("sub_locations", []) if sub["id"] in known_locations
     ]
 
-    if known_sub_locs:
+    final_destination = None # This will be the location the player actually ends up in
+
+    if known_sub_locs_to_prompt: # If there are known sub-locations to choose from
         clear_screen()
         UI.print_heading(f"Realms Within {chosen_destination['name']}")
         
         sub_option_map = {}
+        # Option to explore the container (chosen_destination) itself
         explore_container_option_num = f"{selection_prefix}.0"
         UI.print_info(f"[{explore_container_option_num}] Explore {chosen_destination['name']} itself")
         sub_option_map[explore_container_option_num] = chosen_destination
 
-        sorted_known_sub_locs = sorted(known_sub_locs, key=lambda x: x["name"])
-        for i, sub_loc_item in enumerate(sorted_known_sub_locs, start=1):
+        sorted_known_sub_locs_to_prompt = sorted(known_sub_locs_to_prompt, key=lambda x: x["name"])
+        for i, sub_loc_item in enumerate(sorted_known_sub_locs_to_prompt, start=1):
             display_num = f"{selection_prefix}.{i}"
             brief_desc = sub_loc_item["desc"].split(".")[0] + "."
             
-            sub_loc_type = "Point of Interest"
-            if "tavern" in sub_loc_item.get("tags",[]): sub_loc_type = "Tavern"
-            elif "shop" in sub_loc_item.get("tags",[]): sub_loc_type = "Shop"
-            elif "keep" in sub_loc_item.get("tags",[]): sub_loc_type = "Keep"
-            elif "temple" in sub_loc_item.get("tags",[]): sub_loc_type = "Temple"
-            elif "guild" in sub_loc_item.get("tags",[]): sub_loc_type = "Guild Hall"
-
+            sub_loc_type = determine_venue_type(sub_loc_item)
             UI.print_info(f"[{display_num}] {sub_loc_item['name']:<30} ({sub_loc_type}) — {brief_desc}")
             sub_option_map[display_num] = sub_loc_item
         UI.print_line()
 
-        sub_sel = UI.print_prompt(f"Your choice? (00 to cancel and return to {previous_location['name']})").strip()
+        sub_sel = UI.print_prompt(f"Your choice? (Enter number, 00 to cancel and return to {previous_location['name']})").strip()
 
         if sub_sel == "00":
-            return previous_location
+            return previous_location # Player cancels, returns to where they were
 
         if sub_sel in sub_option_map:
             final_destination = sub_option_map[sub_sel]
@@ -350,68 +414,51 @@ def enter_location_or_prompt_sub(chosen_destination, player, previous_location, 
                 UI.slow_print(f"You focus your attention on {final_destination['name']}.")
             else:
                 UI.slow_print(f"You venture into {final_destination['name']} (within {chosen_destination['name']}).")
-            
-            UI.slow_print(final_destination["desc"])
-
-            tags_for_final_dest = list(final_destination.get("tags", []))
-            inheritable = {"nordic","imperial","stormcloak","thieves","corrupt","military","bards","city","town","village","hold", "plains", "central", "snow", "coastal", "magic", "marsh", "swamp", "forest", "southern", "mountain", "dwemer", "volcanic", "water"}
-
-            immediate_parent_for_tags = None
-            if final_destination["id"] != chosen_destination["id"]:
-                immediate_parent_for_tags = chosen_destination
-            else:
-                parent_hold, parent_city = _find_hierarchy(final_destination["id"])
-                if parent_city and parent_city["id"] == final_destination["id"]:
-                    immediate_parent_for_tags = parent_hold
-            
-            if immediate_parent_for_tags:
-                tags_for_final_dest.extend([t for t in immediate_parent_for_tags.get("tags", []) if t in inheritable])
-            tags_for_final_dest = list(set(tags_for_final_dest))
-
-            UI.slow_print(get_flavor_text(tags_for_final_dest, "location_tags", ensure_vignette=True))
-            trigger_random_event(tags_for_final_dest, player, UI, final_destination)
-            generate_npcs_for_location(final_destination)
-            player.update_current_location_for_quest(final_destination)
-            return final_destination
         else:
-            UI.slow_print(f"Path unknown within {chosen_destination['name']}. You remain in {chosen_destination['name']} for now.")
-            
-            parent_hold_for_container, _ = _find_hierarchy(chosen_destination["id"])
-            container_tags = list(chosen_destination.get("tags", []))
-            inheritable = {"nordic","imperial","stormcloak","thieves","corrupt","military","bards","city","town","village","hold", "plains", "central", "snow", "coastal", "magic", "marsh", "swamp", "forest", "southern", "mountain", "dwemer", "volcanic", "water"}
-            if parent_hold_for_container and parent_hold_for_container["id"] != chosen_destination["id"]:
-                 container_tags.extend([t for t in parent_hold_for_container.get("tags", []) if t in inheritable])
-            container_tags = list(set(container_tags))
-
-            UI.slow_print(get_flavor_text(container_tags, "location_tags", ensure_vignette=True))
-            trigger_random_event(container_tags, player, UI, chosen_destination)
-            generate_npcs_for_location(chosen_destination)
-            player.update_current_location_for_quest(chosen_destination)
-            return chosen_destination
-            
+            # Invalid selection from prompt, or player chose to explore the container (if "0" was used for that)
+            # Default to exploring the container (chosen_destination)
+            UI.slow_print(f"Invalid choice or exploring {chosen_destination['name']} directly.")
+            final_destination = chosen_destination
     else:
-        UI.slow_print(f"You travel to {chosen_destination['name']}.")
-        UI.slow_print(chosen_destination["desc"])
+        # No known sub-locations to prompt, so player is directly entering chosen_destination
+        final_destination = chosen_destination
+        UI.slow_print(f"You travel to {final_destination['name']}.")
 
-        parent_hold, parent_city = _find_hierarchy(chosen_destination["id"])
-        tags_for_chosen_dest = list(chosen_destination.get("tags", []))
-        inheritable = {"nordic","imperial","stormcloak","thieves","corrupt","military","bards","city","town","village","hold", "plains", "central", "snow", "coastal", "magic", "marsh", "swamp", "forest", "southern", "mountain", "dwemer", "volcanic", "water"}
-        
-        primary_parent_for_tags = None
-        if parent_city and parent_city["id"] != chosen_destination["id"] and any(sub["id"] == chosen_destination["id"] for sub in parent_city.get("sub_locations",[])):
-            primary_parent_for_tags = parent_city
-        elif parent_hold and parent_hold["id"] != chosen_destination["id"] and any(sub["id"] == chosen_destination["id"] for sub in parent_hold.get("sub_locations",[])):
-            primary_parent_for_tags = parent_hold
-        
-        if primary_parent_for_tags:
-             tags_for_chosen_dest.extend([t for t in primary_parent_for_tags.get("tags", []) if t in inheritable])
-        tags_for_chosen_dest = list(set(tags_for_chosen_dest))
+    # At this point, final_destination is set to the location the player is entering.
+    UI.slow_print(final_destination["desc"])
 
-        UI.slow_print(get_flavor_text(tags_for_chosen_dest, "location_tags", ensure_vignette=True))
-        trigger_random_event(tags_for_chosen_dest, player, UI, chosen_destination)
-        generate_npcs_for_location(chosen_destination)
-        player.update_current_location_for_quest(chosen_destination)
-        return chosen_destination
+    # --- Auto-discover immediate sub-locations (venues/points of interest) of the final_destination ---
+    if "sub_locations" in final_destination and final_destination.get("sub_locations"):
+        for sub_loc_to_discover in final_destination.get("sub_locations", []):
+            if sub_loc_to_discover["id"] not in known_locations:
+                known_locations.add(sub_loc_to_discover["id"])
+                if sub_loc_to_discover not in known_locations_objects:
+                    known_locations_objects.append(sub_loc_to_discover)
+    
+    # --- Tag Inheritance Logic ---
+    tags_for_final_dest = list(final_destination.get("tags", []))
+    inheritable = {"nordic","imperial","stormcloak","thieves","corrupt","military","bards","city","town","village","hold", "plains", "central", "snow", "coastal", "magic", "marsh", "swamp", "forest", "southern", "mountain", "dwemer", "volcanic", "water"}
+    
+    # Determine the correct parent for tag inheritance based on final_destination
+    parent_hold_for_tags, parent_city_for_tags = _find_hierarchy(final_destination["id"])
+    contextual_parent_for_tags = None
+
+    if parent_city_for_tags and parent_city_for_tags["id"] != final_destination["id"]:
+        contextual_parent_for_tags = parent_city_for_tags
+    elif parent_hold_for_tags and parent_hold_for_tags["id"] != final_destination["id"]:
+        contextual_parent_for_tags = parent_hold_for_tags
+    
+    if contextual_parent_for_tags:
+        tags_for_final_dest.extend([t for t in contextual_parent_for_tags.get("tags", []) if t in inheritable])
+    tags_for_final_dest = list(set(tags_for_final_dest)) # Remove duplicates
+
+    # --- Continue with game logic for the entered location ---
+    UI.slow_print(get_flavor_text(tags_for_final_dest, "location_tags", ensure_vignette=True))
+    trigger_random_event(tags_for_final_dest, player, UI, final_destination)
+    generate_npcs_for_location(final_destination)
+    player.update_current_location_for_quest(final_destination)
+    
+    return final_destination
 
 def look_around_area(player, current_location_param, npc_registry_param, all_locs_param, ui_param):
     UI.slow_print(f"You take a moment to observe your surroundings in {current_location_param['name']}...")
@@ -1229,7 +1276,7 @@ def initialize_player():
         return None
 
 def initialize_starting_location():
-    global known_locations_objects
+    global known_locations, known_locations_objects, ALL_LOCATIONS # Make sure ALL_LOCATIONS is available
     start_tavern_name = "The Bannered Mare"
     start_city_name = "Whiterun"
     start_hold_name = "Whiterun Hold"
@@ -1238,33 +1285,60 @@ def initialize_starting_location():
     parent_city_obj = None
     parent_hold_obj = None
 
+    # Find parent hold
     parent_hold_obj = next((h for h in ALL_LOCATIONS if h["name"] == start_hold_name), None)
     if not parent_hold_obj:
         UI.print_warning(f"Starting hold '{start_hold_name}' not found. Defaulting.")
-        parent_hold_obj = ALL_LOCATIONS[0]
+        parent_hold_obj = ALL_LOCATIONS[0] # Fallback
 
-    parent_city_obj = next((c for c in parent_hold_obj.get("sub_locations", []) if c["name"] == start_city_name), None)
-    if not parent_city_obj:
-        UI.print_warning(f"Starting city '{start_city_name}' in {parent_hold_obj['name']} not found. Defaulting.")
-        parent_city_obj = parent_hold_obj.get("sub_locations", [parent_hold_obj])[0]
-
-    if "sub_locations" in parent_city_obj:
-        starting_loc_obj = next((v for v in parent_city_obj.get("sub_locations", []) if v["name"] == start_tavern_name), None)
+    # Find parent city within the hold
+    if parent_hold_obj and "sub_locations" in parent_hold_obj:
+        parent_city_obj = next((c for c in parent_hold_obj["sub_locations"] if c["name"] == start_city_name), None)
     
-    if not starting_loc_obj:
+    if not parent_city_obj: # Fallback if city not found in hold, or hold had no sub_locations
+        UI.print_warning(f"Starting city '{start_city_name}' in {parent_hold_obj['name']} not found. Defaulting to hold or first city.")
+        # Ensure parent_city_obj is a location dictionary even in fallback
+        parent_city_obj = parent_hold_obj.get("sub_locations", [parent_hold_obj])[0] if parent_hold_obj.get("sub_locations") else parent_hold_obj
+
+
+    # Find starting location (tavern) within the city
+    if parent_city_obj and "sub_locations" in parent_city_obj:
+        starting_loc_obj = next((v for v in parent_city_obj["sub_locations"] if v["name"] == start_tavern_name), None)
+    
+    if not starting_loc_obj: # Fallback if tavern not found in city, or city had no sub_locations
         UI.print_warning(f"Starting tavern '{start_tavern_name}' in {parent_city_obj['name']} not found. Starting in city.")
         starting_loc_obj = parent_city_obj
 
-    known_locations.add(parent_hold_obj["id"])
-    known_locations_objects.append(parent_hold_obj)
-    discover_connected_locations(parent_hold_obj)
-    if parent_city_obj["id"] != parent_hold_obj["id"]:
-        known_locations.add(parent_city_obj["id"])
-        if parent_city_obj not in known_locations_objects: known_locations_objects.append(parent_city_obj)
-        discover_connected_locations(parent_city_obj)
-    if starting_loc_obj["id"] != parent_city_obj["id"]:
-        known_locations.add(starting_loc_obj["id"])
-        if starting_loc_obj not in known_locations_objects: known_locations_objects.append(starting_loc_obj)
+    # --- Initial Discovery Enhancement ---
+    # Always add the hold, city, and specific start point
+    for loc_obj in [parent_hold_obj, parent_city_obj, starting_loc_obj]:
+        if loc_obj and loc_obj["id"] not in known_locations:
+            known_locations.add(loc_obj["id"])
+            if loc_obj not in known_locations_objects: # Avoid duplicates in list
+                 known_locations_objects.append(loc_obj)
+
+    # Discover locations connected by travel from the hold and city
+    if parent_hold_obj:
+        discover_connected_locations(parent_hold_obj) #
+    # If the city itself has travel links (it could, for exits or unique connections)
+    if parent_city_obj and parent_city_obj["id"] != parent_hold_obj["id"]: # Avoid re-processing hold if city is the hold
+        discover_connected_locations(parent_city_obj) #
+    
+    # *** NEW: Discover all sub-locations (points of interest) within the starting city ***
+    if parent_city_obj and "sub_locations" in parent_city_obj:
+        for sub_loc_in_city in parent_city_obj["sub_locations"]:
+            if sub_loc_in_city["id"] not in known_locations:
+                known_locations.add(sub_loc_in_city["id"])
+                if sub_loc_in_city not in known_locations_objects: # Avoid duplicates
+                    known_locations_objects.append(sub_loc_in_city)
+            # OPTIONAL: If these PoIs can have their own distinct sub-locations not part of normal city navigation,
+            # you could recursively discover them here or upon entering that PoI.
+            # For now, this discovers all first-level PoIs within the starting city.
+
+    # Discover connections from the specific starting location (e.g., if a tavern has a secret back exit defined in its "travel" attribute)
+    if starting_loc_obj and starting_loc_obj["id"] != parent_city_obj["id"]: # Avoid re-processing city if start_loc is the city
+         discover_connected_locations(starting_loc_obj) #
+
 
     message = f"You awaken in {starting_loc_obj['name']}, a seemingly cozy establishment in {parent_city_obj['name']}, within the lands of {parent_hold_obj['name']}..."
     UI.slow_print(message)
@@ -1272,7 +1346,7 @@ def initialize_starting_location():
     UI.slow_print(starting_loc_obj['desc'])
     UI.slow_print("The warm fire crackles. A few patrons murmur over their drinks. Adventure awaits.")
     
-    generate_npcs_for_location(starting_loc_obj)
+    generate_npcs_for_location(starting_loc_obj) #
     return starting_loc_obj
 
 def initialize_game_state():
