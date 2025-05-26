@@ -934,13 +934,11 @@ def initialize_player():
         UI.print_success(f"You are now a {selected_subclass_final_data['name']}, a {selected_class_data['name']} of unique talents.")
 
         player = Player(
-            name=player_name,
-            race=player_race_str,
-            character_class=selected_class_data['name'], 
-            subclass=selected_subclass_final_data['name'],   
-            attributes=selected_subclass_final_data["attributes"],
-            skills=selected_subclass_final_data["skills"].copy() 
-        )
+            race=selected_class_data["race"],  # Use the correct variable
+            subclass=selected_class_data["name"],
+            stats=selected_class_data["stats"].copy(),
+            skills=selected_class_data["skills"].copy(),
+        )  
 
         initial_items_added_names = []
         UI.slow_print("Preparing your starting gear...")
@@ -1176,7 +1174,70 @@ def handle_player_choice(choice, player, current_loc_param, menu_options_list):
          UI.press_enter()
 
     return new_current_location
+def display_inventory_with_equipped(player):
+    UI.print_subheading("Inventory")
+    if not player.inventory and not player.equipment:
+        UI.slow_print("Your inventory is empty.")
+        return
 
+    # Combine inventory and equipped items for display
+    all_items = player.inventory + [{"item": item, "equipped": True} for item in player.equipment]
+    for i, entry in enumerate(all_items, 1):
+        item = entry if isinstance(entry, dict) else {"item": entry, "equipped": False}
+        equipped_flag = " (Equipped)" if item["equipped"] else ""
+        UI.print_info(f"[{i}] {item['item'].name}{equipped_flag} - Desc: {item['item'].get_description()}")
+
+def handle_inventory_menu(player):
+    while True:
+        display_inventory_with_equipped(player)
+        item_choice_input = UI.print_prompt("Select an item to interact with (Enter number, 0 to cancel):")
+        if not item_choice_input.isdigit():
+            UI.slow_print("Invalid input.")
+            continue
+
+        item_choice_idx = int(item_choice_input)
+        if item_choice_idx == 0:
+            UI.slow_print("Exiting inventory menu.")
+            break
+
+        try:
+            selected_entry = player.inventory[item_choice_idx - 1]
+            if isinstance(selected_entry, dict) and selected_entry.get("equipped"):
+                equipped_item = selected_entry["item"]
+                UI.slow_print(f"{equipped_item.name} is equipped.")
+                action_choice = UI.print_prompt("What would you like to do? [1] Examine [2] Unequip")
+                if action_choice == "1":
+                    player.examine_item(equipped_item)
+                elif action_choice == "2":
+                    player.unequip_item(equipped_item)
+                else:
+                    UI.slow_print("Invalid choice.")
+            else:
+                selected_item = selected_entry
+                UI.slow_print(f"Selected {selected_item.name}.")
+                action_choice = UI.print_prompt("What do you want to do? [1] Examine [2] Equip [3] Use [4] Drop")
+                if action_choice == "1":
+                    player.examine_item(selected_item)
+                elif action_choice == "2":
+                    player.equip_item(selected_item)
+                elif action_choice == "3":
+                    player.use_item(selected_item)
+                elif action_choice == "4":
+                    player.drop_item(selected_item)
+                else:
+                    UI.slow_print("Invalid choice.")
+        except IndexError:
+            UI.slow_print("Invalid selection.")
+
+def sort_inventory_menu(player):
+    UI.print_subheading("Sort Inventory")
+    sort_choice = UI.print_prompt("Sort inventory by [1] Name [2] Category")
+    if sort_choice == "1":
+        player.sort_inventory("name")
+    elif sort_choice == "2":
+        player.sort_inventory("category")
+    else:
+        UI.slow_print("Invalid choice.")
 
 def handle_item_use(player):
     UI.print_subheading("Use Item")

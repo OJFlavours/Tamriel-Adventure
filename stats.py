@@ -157,139 +157,52 @@ CLASSES = {
 }
 
 class Player:
-    """
-    Represents the player character in the Skyrim Adventure game.
-    """
-    def __init__(self, name: str, race: str, character_class: str, subclass: str, attributes: dict, skills: dict):
+    def __init__(self, name, race, subclass, stats, skills):
         self.name = name
         self.race = race
-        self.character_class = character_class
         self.subclass = subclass
-        self.level = 1
-        self.experience = 0
-        self.experience_to_next_level = 100
-
-        # Initialize base stats with provided attributes
-        self.stats = Stats(
-            strength=attributes.get("strength", 40),
-            intelligence=attributes.get("intelligence", 40),
-            willpower=attributes.get("willpower", 40),
-            agility=attributes.get("agility", 40),
-            speed=attributes.get("speed", 40),
-            endurance=attributes.get("endurance", 40),
-            personality=attributes.get("personality", 40),
-            luck=attributes.get("luck", 40),
-        )
-
-        # Apply race modifiers
-        race_mods = RACES.get(race.lower(), {})
-        self.stats.strength += race_mods.get("strength_mod", 0)
-        self.stats.intelligence += race_mods.get("intelligence_mod", 0)
-        self.stats.willpower += race_mods.get("willpower_mod", 0)
-        self.stats.agility += race_mods.get("agility_mod", 0)
-        self.stats.speed += race_mods.get("speed_mod", 0)
-        self.stats.endurance += race_mods.get("endurance_mod", 0)
-        self.stats.personality += race_mods.get("personality_mod", 0)
-        self.stats.luck += race_mods.get("luck_mod", 0)
-        self.stats.poison_resist += race_mods.get("poison_resist", 0)
-        self.stats.magic_resist += race_mods.get("magic_resist", 0)
-        self.stats.frost_resist += race_mods.get("frost_resist", 0)
-        self.stats.shock_resist += race_mods.get("shock_resist", 0)
-        self.stats.fire_resist += race_mods.get("fire_resist", 0)
-        # Update max health/magicka/fatigue based on new attributes
-        self.stats.max_health = 100 + (self.stats.endurance * 2)
-        self.stats.max_magicka = 50 + (self.stats.intelligence * 1.5)
-        self.stats.max_fatigue = 100 + (self.stats.endurance * 1.5)
-        self.stats.current_health = self.stats.max_health
-        self.stats.current_magicka = self.stats.max_magicka
-        self.stats.current_fatigue = self.stats.max_fatigue
-
-
-        # Initialize skills based on class and subclass
-        self.skills = skills.copy() # Start with subclass skills
-        # Add racial skill bonuses
-        for skill, value in race_mods.items():
-            if "_skill" in skill:
-                skill_name = skill.replace("_skill", "")
-                self.skills[skill_name] = self.skills.get(skill_name, 0) + value
-
-        self.inventory = self.stats.inventory # Inventory is now managed by Stats object
-        self.equipment = []
-        self.quest_log = QuestLog() # Initialized as a QuestLog object
-        self.combat = None # Reference to current combat instance if in combat
-
-        # Combat state flags
-        self.is_blocking = False
-        self.is_dodging = False
-        self.status_effects = [] # List to hold StatusEffect objects
-
-    def __str__(self):
-        return f"{self.name} (Level {self.level} {self.race} {self.character_class} - {self.subclass})"
-
-    def add_experience(self, amount):
-        """Adds experience to the player and handles leveling up."""
-        self.experience += amount
-        while self.experience >= self.experience_to_next_level:
-            self.level_up()
-
-    def level_up(self):
-        """Increases player level and updates stats."""
-        self.level += 1
-        self.experience -= self.experience_to_next_level
-        self.experience_to_next_level = int(self.experience_to_next_level * 1.5) # Increase XP needed for next level
-
-        # Increase a random primary attribute
-        attribute_to_improve = random.choice(["strength", "intelligence", "willpower", "agility", "speed", "endurance", "personality", "luck"])
-        setattr(self.stats, attribute_to_improve, getattr(self.stats, attribute_to_improve) + 5)
-        print(f"You gained 5 {attribute_to_improve}!")
-
-        # Restore health/magicka/fatigue on level up
-        self.stats.max_health = 100 + (self.stats.endurance * 2)
-        self.stats.max_magicka = 50 + (self.stats.intelligence * 1.5)
-        self.stats.max_fatigue = 100 + (self.stats.endurance * 1.5)
-        self.stats.current_health = self.stats.max_health
-        self.stats.current_magicka = self.stats.max_magicka
-        self.stats.current_fatigue = self.stats.max_fatigue
-
-        print(f"{self.name} reached Level {self.level}!")
-
-    def is_alive(self):
-        return self.stats.is_alive()
-
-    def add_item(self, item):
-        """Adds an item to the player's inventory via the Stats object."""
-        return self.stats.add_to_inventory(item)
-
-    def remove_item(self, item):
-        """Removes an item from the player's inventory via the Stats object."""
-        return self.stats.remove_from_inventory(item)
-
-    def improve_skill(self, skill, amt=1):
-        """Improves a specific skill."""
-        if skill in self.skills:
-            self.skills[skill] += amt
-        else:
-            self.skills[skill] = 15 + amt # Base value if new skill
+        self.stats = stats
+        self.skills = skills
 
     def equip_item(self, item):
-        """Equips an item, adding it to the equipment list and updating encumbrance."""
         if item in self.inventory:
-            self.equipment.append(item)
             self.inventory.remove(item)
-            self.stats.update_encumbrance()  # Update encumbrance after equipping
-            return True
-        return False
+            self.equipment.append(item)
+            UI.slow_print(f"{item.name} has been equipped.")
+        else:
+            UI.slow_print(f"{item.name} is not in your inventory.")
 
     def unequip_item(self, item):
-        """Unequips an item, adding it back to the inventory and updating encumbrance."""
         if item in self.equipment:
             self.equipment.remove(item)
-            # Check if there's space in inventory before adding back
-            if self.stats.current_encumbrance + item.weight <= self.stats.encumbrance_limit:
-                self.inventory.append(item)
-                self.stats.update_encumbrance()
-                return True
-            else:
-                print("Cannot unequip: inventory is full.")
-                return False
-        return False
+            self.inventory.append(item)
+            UI.slow_print(f"{item.name} has been unequipped.")
+        else:
+            UI.slow_print(f"{item.name} is not equipped.")
+
+    def examine_item(self, item):
+        UI.slow_print(item.get_description())
+
+    def use_item(self, item):
+        if item.category in ["potion", "food", "scroll"]:  # Expand categories as needed
+            item.use(self)  # Assuming `use` is already implemented in the Item class
+        else:
+            UI.slow_print(f"{item.name} cannot be used directly.")
+
+    def drop_item(self, item):
+        if item in self.inventory:
+            self.inventory.remove(item)
+            UI.slow_print(f"You dropped {item.name}.")
+        else:
+            UI.slow_print(f"{item.name} is not in your inventory.")
+
+    def sort_inventory(self, key="name"):
+        self.inventory.sort(key=lambda item: getattr(item, key, "").lower())
+        UI.slow_print(f"Inventory sorted by {key}.")
+
+    def inspect_equipped_items(self):
+        if not self.equipment:
+            UI.slow_print("You have no items equipped.")
+            return
+        for item in self.equipment:
+            UI.print_info(f"{item.name} - {item.get_description()}")
