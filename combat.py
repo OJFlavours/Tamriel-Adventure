@@ -4,9 +4,10 @@ import random
 from enum import Enum
 from typing import List, Dict, Optional
 from datetime import datetime
+
 from ui import UI
 from items import Item, generate_random_item
-from player import Player
+from stats import Player  # Changed from 'player import Player'
 from npc import NPC, get_tags
 
 class StatusEffectType(Enum):
