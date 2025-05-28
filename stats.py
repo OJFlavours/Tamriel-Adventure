@@ -1,6 +1,6 @@
 # stats.py
 import random
-from typing import Dict, List, Any # Import specific typing hints
+from typing import Dict, List, Any, Set # Import Set for type hinting
 
 # Assuming QuestLog is in quests.py and Item is in items.py
 # We import them here to avoid circular dependencies where possible
@@ -34,7 +34,7 @@ class Stats:
 
         self.level = level
         self.gold = gold
-        
+
         # Experience for leveling
         self.experience = 0
         self.next_level_exp = self._calculate_next_level_exp(self.level)
@@ -58,7 +58,7 @@ class Stats:
         self.current_fatigue = int(current_fatigue if current_fatigue is not None else self.max_fatigue)
 
         self.inventory = inventory if inventory is not None else []
-        self.encumbrance_limit = 100 + (self.strength * 2) 
+        self.encumbrance_limit = 100 + (self.strength * 2)
         self.current_encumbrance = self.calculate_current_encumbrance()
 
     def _calculate_next_level_exp(self, current_level: int) -> int:
@@ -71,7 +71,7 @@ class Stats:
 
     def add_to_inventory(self, item: Item) -> bool:
         """Adds an item to the inventory if there's enough encumbrance capacity."""
-        if not hasattr(item, 'weight'): 
+        if not hasattr(item, 'weight'):
             UI.print_warning(f"Item {getattr(item, 'name', 'Unknown item')} has no weight attribute, cannot add to inventory.")
             return False
         if self.current_encumbrance + item.weight <= self.encumbrance_limit:
@@ -119,8 +119,7 @@ class Stats:
         """Increases character's level and recalculates derived stats."""
         self.level += 1
         UI.print_system_message(f"CONGRATULATIONS! You have reached LEVEL {self.level}!")
-        
-        # Increase base attributes (can be made player-choice driven)
+
         attribute_increase = random.randint(3, 5)
         self.strength += attribute_increase
         self.intelligence += attribute_increase
@@ -131,38 +130,35 @@ class Stats:
         self.personality += attribute_increase
         self.luck += attribute_increase
 
-        # Recalculate max health, magicka, fatigue based on new level and attributes
         self.max_health = int(100 + (self.endurance * 2) + (self.level * 5))
         self.max_magicka = int(50 + (self.intelligence * 1.5) + (self.level * 3))
         self.max_fatigue = int(100 + (self.endurance * 1.5) + (self.level * 4))
 
-        # Restore to full or proportional
         self.current_health = self.max_health
         self.current_magicka = self.max_magicka
         self.current_fatigue = self.max_fatigue
 
         self.next_level_exp = self._calculate_next_level_exp(self.level)
-        self.experience = 0 # Reset XP for new level
+        self.experience = 0
         UI.slow_print("Your attributes and skills have grown stronger!")
         UI.press_enter()
 
-
-# --- Racial Modifiers ---
+# --- Racial Modifiers --- (from original - unchanged)
 RACES = {
     "nord": {"strength_mod": 10, "endurance_mod": 10, "frost_resist": 50, "two_handed_skill": 5, "block_skill": 5},
     "imperial": {"personality_mod": 10, "luck_mod": 5, "restoration_skill": 5, "heavy_armor_skill": 5},
     "breton": {"intelligence_mod": 10, "willpower_mod": 5, "magic_resist": 25, "conjuration_skill": 10},
     "redguard": {"agility_mod": 10, "speed_mod": 10, "one_handed_skill": 10, "archery_skill": 5},
     "dunmer": {"intelligence_mod": 5, "agility_mod": 5, "fire_resist": 50, "destruction_skill": 10, "sneak_skill": 5},
-    "altmer": {"intelligence_mod": 15, "magicka_mod": 50, "illusion_skill": 10, "alteration_skill": 5}, # magicka_mod is a direct bonus to max_magicka
+    "altmer": {"intelligence_mod": 15, "magicka_mod": 50, "illusion_skill": 10, "alteration_skill": 5},
     "bosmer": {"agility_mod": 15, "archery_skill": 10, "sneak_skill": 5, "light_armor_skill": 5},
-    "orc": {"strength_mod": 15, "endurance_mod": 5, "heavy_armor_skill": 10, "smithing_skill": 5}, # Assuming smithing skill
-    "argonian": {"speed_mod": 10, "poison_resist": 75, "disease_resist": 50, "alteration_skill": 5, "light_armor_skill": 5}, # Added disease_resist
+    "orc": {"strength_mod": 15, "endurance_mod": 5, "heavy_armor_skill": 10, "smithing_skill": 5},
+    "argonian": {"speed_mod": 10, "poison_resist": 75, "disease_resist": 50, "alteration_skill": 5, "light_armor_skill": 5},
     "khajiit": {"agility_mod": 10, "luck_mod": 10, "sneak_skill": 10, "pickpocket_skill": 5},
 }
 
-# --- Class Definitions ---
-CLASSES = { # This is the user's CLASSES structure. Ensure items listed here are in items.py with equipment_tags
+# --- Class Definitions --- (from original - unchanged)
+CLASSES = {
     "warrior": {
         "name": "Warrior",
         "desc": "A master of arms, favoring strength and direct combat.",
@@ -204,7 +200,6 @@ CLASSES = { # This is the user's CLASSES structure. Ensure items listed here are
     }
 }
 
-
 class Player:
     """
     Represents the player character, inheriting core stats from Stats and
@@ -224,12 +219,25 @@ class Player:
             "main_hand": None, "off_hand": None,
             "amulet": None, "ring1": None, "ring2": None
         }
-        
+
         # Trackers for quest objectives and world state
         self.defeated_enemies_tracker: Dict[str, int] = {} # e.g., {"bandit_raider_unique_id": 3, "draugr_restless_unique_id": 1}
         self.talked_to_npcs: Set[str] = set() # Stores unique NPC IDs after talking to them
         self.current_location_obj: Dict[str, Any] | None = None # Set by the game loop during travel
         self.known_locations_objects: List[Dict[str, Any]] = [] # List of known location dicts, updated during travel
+        self.faction_reputation: Dict[str, int] = { # Initial faction reputations
+            "imperial_legion": 0,
+            "stormcloaks": 0,
+            "thieves_guild": 0,
+            "college_of_winterhold": 0,
+            "companions": 0,
+            "dark_brotherhood": 0,
+            "silver_blood": 0,
+            "thalmor": 0,
+            "khajiit_caravans": 0,
+            "falkreath": 0 # Example for a hold-level reputation
+        }
+
 
     @property
     def level(self) -> int:
@@ -240,7 +248,7 @@ class Player:
     def experience(self) -> int:
         """Convenience property to access player's current experience from their Stats object."""
         return self.stats.experience
-    
+
     @property
     def next_level_exp(self) -> int:
         """Convenience property to access XP needed for next level from Stats object."""
@@ -287,49 +295,41 @@ class Player:
 
         target_slot_tag = item_to_equip.equipment_tag
 
-        # --- Handle Rings ---
         if target_slot_tag == "ring":
             slot_to_place_in = None
             if not self.slots["ring1"]: slot_to_place_in = "ring1"
             elif not self.slots["ring2"]: slot_to_place_in = "ring2"
-            else: # Both ring slots are full, replace ring1 by default
+            else:
                 UI.slow_print(f"Both ring slots are full. Unequipping {self.slots['ring1'].name} to make space for {item_to_equip.name}.")
                 self._unequip_from_slot("ring1")
                 slot_to_place_in = "ring1"
-            
+
             self.slots[slot_to_place_in] = item_to_equip
             self.stats.remove_from_inventory(item_to_equip)
             UI.slow_print(f"{item_to_equip.name} has been equipped to {slot_to_place_in}.")
             return True
 
-        # --- Handle Two-Handed Weapons ---
         if target_slot_tag == "two_handed":
-            # Unequip whatever is in main_hand and off_hand
             if self.slots["main_hand"]: self._unequip_from_slot("main_hand")
             if self.slots["off_hand"]: self._unequip_from_slot("off_hand")
-            
-            self.slots["main_hand"] = item_to_equip
-            
+
+            self.slots["main_hand"] = item_to_equip;
             self.stats.remove_from_inventory(item_to_equip)
             UI.slow_print(f"{item_to_equip.name} (Two-Handed) has been equipped.")
             return True
 
-        # --- Handle Regular Single-Slot Items (non-ring, non-two_handed) ---
         if target_slot_tag in self.slots:
-            # If equipping a 1H weapon in main_hand, and a 2H weapon is there, unequip 2H.
             if target_slot_tag == "main_hand" and self.slots["main_hand"] and getattr(self.slots["main_hand"], 'equipment_tag', '') == "two_handed":
-                self._unequip_from_slot("main_hand") 
+                self._unequip_from_slot("main_hand")
 
-            # If equipping a shield/off-hand item, and a 2H weapon is in main_hand:
             if target_slot_tag == "off_hand" and self.slots["main_hand"] and \
                getattr(self.slots["main_hand"], 'equipment_tag', '') == "two_handed":
                 UI.slow_print(f"Cannot equip {item_to_equip.name} in off-hand while wielding {self.slots['main_hand'].name}. Unequip it first.")
-                return False 
+                return False
 
-            # Unequip whatever is currently in the target slot
             if self.slots[target_slot_tag]:
                 self._unequip_from_slot(target_slot_tag)
-            
+
             self.slots[target_slot_tag] = item_to_equip
             self.stats.remove_from_inventory(item_to_equip)
             UI.slow_print(f"{item_to_equip.name} has been equipped to {target_slot_tag}.")
@@ -345,9 +345,9 @@ class Player:
             if equipped_item_in_slot == item_to_unequip:
                 found_slot_name = slot_name
                 break
-        
+
         if found_slot_name:
-            self._unequip_from_slot(found_slot_name) # Handles message and inventory return
+            self._unequip_from_slot(found_slot_name)
             return True
         else:
             UI.slow_print(f"{item_to_unequip.name} is not currently equipped or not found in slots.")
@@ -361,24 +361,22 @@ class Player:
     def use_item(self, item: Item) -> None:
         """Attempts to use an item (e.g., consumable, scroll)."""
         if hasattr(item, 'use') and callable(item.use):
-            item.use(self) # Pass the player instance to the item's use method
+            item.use(self)
         else:
             UI.slow_print(f"You cannot use {item.name} in that way.")
 
     def drop_item(self, item_to_drop: Item) -> bool:
         """Drops an item from inventory or unequipped from equipment."""
-        # First, check if the item is equipped. If so, it must be unequipped first.
         for slot_name, equipped_item in self.slots.items():
             if equipped_item == item_to_drop:
                 UI.slow_print(f"You must unequip {item_to_drop.name} from your {slot_name} slot before dropping it.")
-                return False 
+                return False
 
-        # If not equipped, try to remove from general inventory
         if item_to_drop in self.stats.inventory:
             if self.stats.remove_from_inventory(item_to_drop):
                 UI.slow_print(f"You dropped {item_to_drop.name} on the ground.")
                 return True
-            else: 
+            else:
                 UI.slow_print(f"Could not drop {item_to_drop.name} for an unknown reason.")
                 return False
         else:
@@ -412,25 +410,22 @@ class Player:
         if skill_name in self.skills:
             self.skills[skill_name] = self.skills.get(skill_name, 0) + amount
         else:
-            self.skills[skill_name] = amount # Add new skill
+            self.skills[skill_name] = amount
 
     def is_alive(self) -> bool:
         """Checks if the player is alive."""
         return self.stats.is_alive()
 
-    # --- Experience and Leveling System ---
     def gain_experience(self, amount: int) -> None:
         """Awards experience points to the player and checks for level up."""
         self.stats.experience += amount
         UI.print_info(f"You gained {amount} experience points!")
         UI.print_info(f"Total XP: {self.stats.experience} / {self.stats.next_level_exp}")
         while self.stats.experience >= self.stats.next_level_exp:
-            self.stats.level_up() # Trigger level up in Stats class
-            self.stats.experience -= self.stats.next_level_exp # Carry over excess XP
-            # Recalculate next_level_exp for the new level
-            self.stats.next_level_exp = self.stats._calculate_next_level_exp(self.stats.level) 
-            
-    # --- Quest Objective Tracking ---
+            self.stats.level_up()
+            self.stats.experience -= self.stats.next_level_exp
+            self.stats.next_level_exp = self.stats._calculate_next_level_exp(self.stats.level)
+
     def update_defeated_enemies_tracker(self, enemy_id: str, count: int = 1) -> None:
         """Updates the count of defeated enemies for quest tracking."""
         self.defeated_enemies_tracker[enemy_id] = self.defeated_enemies_tracker.get(enemy_id, 0) + count
@@ -442,7 +437,38 @@ class Player:
     def update_current_location_for_quest(self, location_obj: Dict[str, Any]) -> None:
         """Updates the player's current location for quest tracking."""
         self.current_location_obj = location_obj
-        # Also add to known_locations_objects for 'reach_location' objectives
-        # Ensure that known_locations_objects only contains unique location dicts
         if location_obj not in self.known_locations_objects:
              self.known_locations_objects.append(location_obj)
+
+    def perform_skill_check(self, skill_name: str, difficulty_class: int) -> bool:
+        """
+        Performs a skill check against a difficulty class.
+        Returns True for success, False for failure.
+        """
+        player_skill_value = self.skills.get(skill_name, 5) # Default to 5 if skill not present
+        
+        # Determine relevant attribute for the skill if needed (example mapping)
+        if skill_name in ["one_handed", "two_handed", "block", "heavy_armor", "smithing"]:
+            attribute_bonus = self.stats.strength // 10
+        elif skill_name in ["destruction", "restoration", "alteration", "conjuration", "illusion", "mysticism", "alchemy"]:
+            attribute_bonus = self.stats.intelligence // 10
+        elif skill_name in ["archery", "light_armor", "sneak", "pickpocket", "security"]:
+            attribute_bonus = self.stats.agility // 10
+        elif skill_name in ["speech", "persuasion", "intimidation"]:
+            attribute_bonus = self.stats.personality // 10
+        else:
+            attribute_bonus = 0 # No specific attribute bonus for other skills
+
+        roll = random.randint(1, 20) # A D20 roll
+        total_skill_value = player_skill_value + attribute_bonus + (self.stats.luck // 5) # Luck provides a minor bonus
+
+        UI.slow_print(f"Performing a {skill_name.replace('_', ' ').capitalize()} check (DC: {difficulty_class})...")
+        UI.slow_print(f"Your skill: {player_skill_value} + Attribute Bonus: {attribute_bonus} + Luck Bonus: {self.stats.luck // 5} (Total: {total_skill_value}) + Roll: {roll}")
+
+        if roll + total_skill_value >= difficulty_class:
+            UI.print_success(f"SUCCESS! You pass the {skill_name.replace('_', ' ').capitalize()} check.")
+            self.improve_skill(skill_name, random.randint(1,2)) # Minor skill improvement on success
+            return True
+        else:
+            UI.print_failure(f"FAILURE! You fail the {skill_name.replace('_', ' ').capitalize()} check.")
+            return False

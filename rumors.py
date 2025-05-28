@@ -5,6 +5,7 @@ import tags
 import flavor
 from items import Item, generate_random_item as gr_item_func, generate_item_from_key
 from ui import UI # Ensure UI is imported for capitalization
+from quests import Quest # Import the Quest class here
 
 # Constant defined for quest rewards
 QUEST_REWARDS_TEMPLATE = {
@@ -63,11 +64,11 @@ def get_npc_name_by_role_hint(role_hint: str) -> Dict[str, str]:
     from npc import NAME_POOLS
     random_race = random.choice(list(NAME_POOLS.keys()))
     random_gender = random.choice(["male", "female"])
-    
+
     name_pool_entry = NAME_POOLS.get(random_race, {}).get("commoner", {}).get(random_gender, None)
     if not name_pool_entry:
         name_pool_entry = NAME_POOLS["nord"]["commoner"]["male"]
-    
+
     chosen_name_with_id = random.choice(name_pool_entry)
     name_display = chosen_name_with_id.split('_')[0].capitalize()
 
@@ -76,9 +77,9 @@ def get_npc_name_by_role_hint(role_hint: str) -> Dict[str, str]:
 # Generate reward
 def generate_reward(player_level: int, quest_tags: List[str]) -> Dict[str, Any]:
     reward: Dict[str, Any] = {}
-    
+
     reward["gold"] = random.randint(QUEST_REWARDS_TEMPLATE["gold"]["min"] * player_level, QUEST_REWARDS_TEMPLATE["gold"]["max"] * player_level)
-    
+
     if random.random() < 0.7:
         reward["experience"] = random.randint(QUEST_REWARDS_TEMPLATE["experience"]["min"] * player_level, QUEST_REWARDS_TEMPLATE["experience"]["max"] * player_level)
 
@@ -114,7 +115,7 @@ class DummyRumor:
 
 def generate_location_appropriate_quest(player_level: int, location_tags: List[str], quest_giver_id: str | None = None, rumor_text: str | None = None) -> Any:
     possible_templates = []
-    
+
     for template in QUEST_TEMPLATES:
         if not (template["level_range"][0] <= player_level <= template["level_range"][1]):
             continue
@@ -122,7 +123,7 @@ def generate_location_appropriate_quest(player_level: int, location_tags: List[s
         if template["location_tags_required"]:
             if not all(tag in location_tags for tag in template["location_tags_required"]):
                 continue
-        
+
         possible_templates.append(template)
 
     if rumor_text:
@@ -134,32 +135,34 @@ def generate_location_appropriate_quest(player_level: int, location_tags: List[s
     if not possible_templates:
         # Re-enabled DEBUG message
         UI.print_system_message(f"DEBUG: No specific quest template matched for level {player_level} and tags {location_tags}. Generating generic quest.")
-        
+
         chosen_location = random.choice(LOCATIONS)
-        
+
         title = "A Simple Request"
         description = f"A local resident needs help in {chosen_location.get('name', 'the area')} with a minor issue."
         objectives = [{"type": "reach_location", "location_name": chosen_location["name"]}]
         reward = generate_reward(player_level, location_tags)
-        
-        quest = {"title":title,
-                 "description":description,
-                 "reward":reward,
-                 "level_requirement":player_level,
-                 "location":chosen_location,
-                 "objectives":objectives,
-                 "status":"active",
-                 "turn_in_npc_id":quest_giver_id}
-        
+
+        quest = Quest( # Directly instantiate Quest object
+            title=title,
+            description=description,
+            reward=reward,
+            level_requirement=player_level,
+            location=chosen_location,
+            objectives=objectives,
+            status="active",
+            turn_in_npc_id=quest_giver_id
+        )
+
         return quest
 
     chosen_template = random.choice(possible_templates)
-    
+
     relevant_locations = []
     for tag in chosen_template["location_tags_required"]:
         relevant_locations.extend(find_locations_by_tag(tag))
     relevant_locations = list({loc["name"]: loc for loc in relevant_locations}.values())
-    
+
     if not relevant_locations:
         final_quest_location = random.choice(LOCATIONS)
     else:
@@ -205,20 +208,22 @@ def generate_location_appropriate_quest(player_level: int, location_tags: List[s
 
     reward = generate_reward(player_level, chosen_template.get("reward_tags", []))
 
-    quest = {"title":title,
-             "description":description,
-             "reward":reward,
-             "level_requirement":player_level,
-             "location":final_quest_location,
-             "objectives":objectives,
-             "status":"active",
-             "turn_in_npc_id":quest_giver_id}
-    
+    quest = Quest( # Directly instantiate Quest object
+        title=title,
+        description=description,
+        reward=reward,
+        level_requirement=player_level,
+        location=final_quest_location,
+        objectives=objectives,
+        status="active",
+        turn_in_npc_id=quest_giver_id
+    )
+
     return quest
 
 def process_quest_rewards(player: Any, quest: Quest) -> None:
     from ui import UI
-    
+
     UI.print_subheading(f"Quest Completed: {quest.title}!")
     UI.slow_print("You have received your rewards:")
 
@@ -238,16 +243,16 @@ def process_quest_rewards(player: Any, quest: Quest) -> None:
             UI.print_success(f"- {reward_value} Reputation with local factions.")
         elif reward_type == "favor":
             UI.print_success(f"- A favor {reward_value}.")
-    
+
     UI.press_enter()
-    
+
 def generate_rumor(player_level: int, current_location: Dict[str, Any], quest_giver_id: str | None = None) -> Dict[str, Any]:
     """
     Generates a rumor text, potentially linking to a new quest.
     It uses the generate_location_appropriate_quest function also within this file.
     """
     # Generate a potential quest using the function already in rumors.py
-    
+
     class DummyRumor:
         def __init__(self):
             self.tags = {}
@@ -256,7 +261,7 @@ def generate_rumor(player_level: int, current_location: Dict[str, Any], quest_gi
             if tag_category not in self.tags:
                 self.tags[tag_category] = {}
             self.tags[tag_category][tag_type] = tag_value
-    
+
     quest_data = generate_location_appropriate_quest(player_level, current_location.get("tags", []), quest_giver_id)
     rumor_text = ""
 
@@ -265,7 +270,7 @@ def generate_rumor(player_level: int, current_location: Dict[str, Any], quest_gi
     if hasattr(flavor, 'DIALOGUE_FLAVORS') and \
        "topic" in flavor.DIALOGUE_FLAVORS and \
        "rumor" in flavor.DIALOGUE_FLAVORS["topic"]:
-        generic_rumor_starts = flavor.DIALOGUE_FLAVORS["topic"]["rumor"] #
+        generic_rumor_starts = flavor.DIALOGUE_FLAVORS["topic"]["rumor"]
 
     if quest_data:
         # Craft a rumor based on the generated quest
@@ -276,17 +281,18 @@ def generate_rumor(player_level: int, current_location: Dict[str, Any], quest_gi
 
         # Extract quest type for more specific rumor details
         quest_type_tag = ""
-        # if quest_data.tags and "quest" in quest_data.tags and "type" in quest_data.tags["quest"]: # Original
-        #      quest_type_tag = quest_data.tags["quest"]["type"]
-        if quest_data and "quest" in quest_data and "type" in quest_data["quest"]:
-            quest_type_tag = quest_data["quest"]["type"]
+        if quest_data and "tags" in quest_data and "quest" in quest_data["tags"] and "type" in quest_data["tags"]["quest"]: # Check `quest_data.tags` first
+             quest_type_tag = quest_data["tags"]["quest"]["type"]
+        elif quest_data and "type" in quest_data: # Fallback to a direct 'type' if tags structure is different
+            quest_type_tag = quest_data["type"]
+
 
         if "bandits" in quest_type_tag or "clear_bandit_camp" in quest_type_tag:
             rumor_text_detail = "Bandits are causing trouble, preying on the weak. Someone ought to do something about it."
         elif "fetch" in quest_type_tag or "ancient_relic_retrieval" in quest_type_tag:
             item_name_objective = "an ancient relic"
-            for obj in quest_data["objectives"]: #
-                if obj["type"] == "collect_item": #
+            for obj in quest_data["objectives"]:
+                if obj["type"] == "collect_item":
                     item_name_objective = obj.get("item_key", "an important item").replace("_", " ")
                     break
             rumor_text_detail = f"There's talk of {item_name_objective} hidden away, waiting to be found by a worthy adventurer."
@@ -299,20 +305,26 @@ def generate_rumor(player_level: int, current_location: Dict[str, Any], quest_gi
             rumor_text = f"{rumor_text_base} {rumor_text_detail}"
 
         # Add tags to quest_data
-        dummy_rumor = DummyRumor()
-        dummy_rumor.add_tag("rumor", "text", rumor_text)
-        rumor_tags = tags.get_tags(dummy_rumor) #
+        # This part of the original code was trying to set quest_data["tags"] directly.
+        # Since `quest_data` is now a `Quest` object, you should use its `add_tag` method.
+        # However, `generate_location_appropriate_quest` already adds tags to the `Quest` object it returns.
+        # So, this block is likely redundant or should be re-evaluated based on the desired tag propagation.
+        # For now, I'm commenting it out as it's not strictly necessary for the immediate fix.
+        # dummy_rumor = DummyRumor()
+        # dummy_rumor.add_tag("rumor", "text", rumor_text)
+        # rumor_tags = tags.get_tags(dummy_rumor)
         # quest_data["tags"] = rumor_tags
-        
+
+
     else:
         # Generate a generic rumor if no quest is created
         loc_name = current_location.get("name", "these parts")
-        
+
         generic_rumors_list = [
             f"The winds whisper strange tales around {loc_name} lately.",
             f"Keep an eye out if you're traveling near {loc_name}. You never know what you'll encounter.",
             "Just the usual tavern chatter, mostly nonsense, but sometimes there's a kernel of truth.",
-            f"Some say the Jarl over in {current_location.get('parent_name', 'the capital city')} is in a foul mood these days.", #
+            f"Some say the Jarl over in {current_location.get('parent_name', 'the capital city')} is in a foul mood these days.",
             "The local merchants have been complaining about the price of mead again."
         ]
         if generic_rumor_starts:
@@ -323,9 +335,9 @@ def generate_rumor(player_level: int, current_location: Dict[str, Any], quest_gi
                 "Never a dull moment in Skyrim, is there?"
             ]
             current_tags = current_location.get("tags", [])
-            if "trade" in current_tags or "market" in current_tags: #
+            if "trade" in current_tags or "market" in current_tags:
                 detail = "There's talk of a new shipment arriving soon, or perhaps being delayed."
-            elif "magic" in current_tags or "college" in current_tags: #
+            elif "magic" in current_tags or "college" in current_tags:
                 detail = "The mages are probably up to something, as usual."
             else:
                 detail = random.choice(detail_fallback)
@@ -334,4 +346,4 @@ def generate_rumor(player_level: int, current_location: Dict[str, Any], quest_gi
             rumor_text = random.choice(generic_rumors_list)
 
     # Ensure the text is properly capitalized for dialogue
-    return {"text": UI.capitalize_dialogue(rumor_text), "quest_data": quest_data} #
+    return {"text": UI.capitalize_dialogue(rumor_text), "quest_data": quest_data}

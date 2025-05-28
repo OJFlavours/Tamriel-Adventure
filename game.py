@@ -7,22 +7,22 @@ from datetime import datetime, timezone
 
 try:
     from locations import LOCATIONS
-    from stats import Player, Stats, RACES, CLASSES # Player and Stats are now in stats.py
+    from stats import Player, Stats, RACES, CLASSES
     from npc import NPC, FRIENDLY_ROLES, HOSTILE_ROLES, NAME_POOLS
     from combat import Combat
     from ui import UI
     from items import generate_random_item, Item, generate_item_from_key
-    from events import trigger_random_event, explore_location
+    from events import trigger_random_event, explore_location # Now triggers events with more detail
     from quests import (
         QuestLog,
         generate_location_appropriate_quest,
-        generate_reward,
         process_quest_rewards,
-        list_player_quests_for_display # Used for UI display
+        list_player_quests_for_display,
+        Quest # Import Quest class
     )
     import tags
     import flavor
-    from quests import generate_rumor # for generating rumors in NPC dialogue
+    from rumors import generate_rumor # for generating rumors in NPC dialogue
 except ImportError as e:
     print(f"Error importing modules: {e}")
     traceback.print_exc()
@@ -53,7 +53,7 @@ def _build_location_maps(loc_list):
 
 LOCATION_BY_ID, LOCATION_BY_NAME = _build_location_maps(ALL_LOCATIONS)
 
-ENCOUNTER_NAMES = {
+ENCOUNTER_NAMES = { # This is from your original game.py, may not be fully used with new event system
     "city": [
         {"name": "Street Urchin", "desc": "A nimble child attempts to pickpocket you.", "type": "thieves_encounter"},
         {"name": "Drunkard",    "desc": "A staggering drunkard accosts you for coin.", "type": "social_encounter"},
@@ -91,6 +91,7 @@ def get_flavor_text(tags_list_param, category, ensure_vignette=False):
     class DummyEntity:
         def __init__(self, final_tags_list, category_):
             self.tags = {}
+            # Use specific TAGS categories for correct flavor retrieval
             if category_ == "location_tags" and hasattr(tags, 'LOCATIONS'):
                 self.tags['location'] = {}
                 for tag_type, possible_values in tags.LOCATIONS.items():
@@ -103,7 +104,9 @@ def get_flavor_text(tags_list_param, category, ensure_vignette=False):
                     found_tags = [t for t in final_tags_list if t in possible_values]
                     if found_tags:
                         self.tags['npc'][tag_type] = found_tags
+            # Add other categories if needed, e.g., "item_tags", "quest_tags", etc.
             else:
+                # Fallback for generic tag handling if category not specific
                 self.tags[category_] = final_tags_list
     
     entity = DummyEntity(tags_filtered, category)
@@ -188,11 +191,6 @@ def explore_and_travel_menu(player, current_location_param):
             return current_location_param
 
         # Determine player's current contextual Hold and City-level entity
-        # player_contextual_hold is the Hold object the player is in.
-        # player_contextual_city is the City/Town/Village object player is in, or a "city-like" main sub-location of a Hold.
-        # If current_location_param is a venue (e.g., Bannered Mare), player_contextual_city will be its parent city (Whiterun).
-        # If current_location_param is a city (e.g., Whiterun), player_contextual_city will be Whiterun.
-        # If current_location_param is a Hold (e.g., Whiterun Hold), player_contextual_city will be None.
         player_contextual_hold, player_contextual_city = _find_hierarchy(current_location_param["id"])
 
         display_map = {} # Stores [display_num_str] -> location_object
@@ -251,8 +249,6 @@ def explore_and_travel_menu(player, current_location_param):
                             details_map[venue_num_str] = {"parent_name": city_obj_iterated["name"], "type": venue_type_str}
         
         if not display_map:
-            # This case should ideally be hit if known_locations is empty or only contains
-            # locations that don't fit the display hierarchy based on current location.
             UI.slow_print("You know of no specific mapped locations relevant to your current position or discovery level.")
             UI.press_enter()
             return current_location_param
@@ -375,7 +371,6 @@ def enter_location_or_prompt_sub(chosen_destination, player, previous_location, 
     discover_connected_locations(chosen_destination)
 
     # Check for known sub-locations WITHIN chosen_destination to potentially prompt the player
-    # These are sub-locations already in the player's `known_locations` set
     known_sub_locs_to_prompt = [
         sub for sub in chosen_destination.get("sub_locations", []) if sub["id"] in known_locations
     ]
@@ -454,7 +449,10 @@ def enter_location_or_prompt_sub(chosen_destination, player, previous_location, 
 
     # --- Continue with game logic for the entered location ---
     UI.slow_print(get_flavor_text(tags_for_final_dest, "location_tags", ensure_vignette=True))
-    trigger_random_event(tags_for_final_dest, player, UI, final_destination)
+    
+    # Pass player to explore_location to allow skill checks and item adds.
+    explore_location(player, final_destination, {}, npc_registry, ALL_LOCATIONS, UI) 
+    
     generate_npcs_for_location(final_destination)
     player.update_current_location_for_quest(final_destination)
     
@@ -463,16 +461,25 @@ def enter_location_or_prompt_sub(chosen_destination, player, previous_location, 
 def look_around_area(player, current_location_param, npc_registry_param, all_locs_param, ui_param):
     UI.slow_print(f"You take a moment to observe your surroundings in {current_location_param['name']}...")
     
+    # Pass player to explore_location
     explore_location(player, current_location_param, {}, npc_registry_param, all_locs_param, ui_param)
     
+    # Original random quest generation logic
     if random.random() < 0.25:
         # Pass quest_giver_id as None because this quest isn't from a specific NPC interaction initially
         new_quest = generate_location_appropriate_quest(player.level, current_location_param.get("tags", []), None)
         if new_quest:
-            ui_param.slow_print("\nSomething catches your eye... it seems to be a new undertaking!")
-            ui_param.slow_print(f"Quest: {new_quest.title}")
-            ui_param.slow_print(f"Objective: {new_quest.description}")
+            UI.slow_print("\nSomething catches your eye... it seems to be a new undertaking!")
+            UI.slow_print(f"Quest: {new_quest.title}")
+            UI.slow_print(f"Objective: {new_quest.description}") # Main quest description
             
+            # Display current stage objectives
+            if new_quest.current_stage:
+                UI.slow_print(f"Current Tasks:")
+                for obj in new_quest.current_stage.get("objectives", []):
+                    UI.slow_print(f"  - {obj.get('note', 'A task awaits.')}")
+
+
             reward_parts = []
             if isinstance(new_quest.reward, dict):
                 for r_type, r_value in new_quest.reward.items():
@@ -483,13 +490,13 @@ def look_around_area(player, current_location_param, npc_registry_param, all_loc
             else:
                 reward_parts.append(str(new_quest.reward))
 
-            ui_param.slow_print(f"Reward: {', '.join(reward_parts) if reward_parts else 'A fair compensation'}")
+            UI.slow_print(f"Reward: {', '.join(reward_parts) if reward_parts else 'A fair compensation'}")
             
             if hasattr(player, 'quest_log') and player.quest_log is not None:
                 player.quest_log.add_quest(new_quest)
-                ui_param.slow_print("The details have been noted in your journal.")
+                UI.slow_print("The details have been noted in your journal.")
             else:
-                ui_param.slow_print("(You feel you should find a way to record such tasks.)")
+                UI.slow_print("(You feel you should find a way to record such tasks.)")
     return current_location_param
 
 # --- NPC Generation Functions ---
@@ -905,7 +912,7 @@ def handle_inventory_menu(player):
             UI.slow_print("Invalid selection number.")
             UI.press_enter()
 
-def sort_inventory_menu(player):
+def sort_inventory_menu(player): # This function is not called in game.py from what I can see
     UI.print_subheading("Sort Inventory")
     sort_choice = UI.print_prompt("Sort inventory by [1] Name [2] Category")
     if sort_choice == "1":
@@ -1004,6 +1011,7 @@ def handle_player_choice(choice, player, current_loc_param, menu_options_list):
     elif action == "inspect thy possessions":
         handle_inventory_menu(player)
     elif action == "look around the area":
+        # Pass player to look_around_area
         new_current_location = look_around_area(player, current_loc_param, npc_registry, ALL_LOCATIONS, UI)
     elif action == "review quest log":
         UI.display_quest_log(player)
@@ -1383,9 +1391,18 @@ def start_game():
 
             # Check active quests for completion at the start of each turn
             for quest in player.quest_log.active_quests:
-                if quest.status == "active":
-                    if quest.check_all_objectives_met(player): # Check if quest objectives are met
+                # Update current stage progress based on player's current state
+                if quest.current_stage and not quest.check_all_current_stage_objectives_met(player):
+                    for obj in quest.current_stage.get("objectives", []):
+                        quest.check_objective_met(obj, player) # Update progress for each objective
+
+                if quest.check_all_current_stage_objectives_met(player):
+                    if quest.current_stage_index + 1 < len(quest.stages):
+                        UI.print_system_message(f"QUEST STAGE COMPLETE for '{quest.title}'! Advancing to next stage.")
+                        quest.advance_quest_stage()
+                    else:
                         UI.print_system_message(f"QUEST OBJECTIVES MET for '{quest.title}'! Return to {LOCATION_BY_ID.get(quest.turn_in_npc_id.split('_')[0],{}).get('name', 'your quest giver')} to turn in.")
+                        quest.status = "completed" # Explicitly set status to completed after all stages are met
 
             if player.stats.current_encumbrance > player.stats.encumbrance_limit:
                 UI.slow_print("Your heavy load weighs you down.", speed=0.005)
@@ -1446,9 +1463,11 @@ def start_game():
             
             player.update_current_location_for_quest(current_location_global) # Update player's current location object
             
+            # Simplified event trigger: still calls trigger_random_event
             if main_loop_running and current_location_global and random.random() < 0.10:
                 UI.print_line('.')
                 UI.slow_print("The winds of fate shift...")
+                # The trigger_random_event function itself should handle UI and potential effects
                 trigger_random_event(current_location_global.get("tags",[]), player, UI, current_location_global)
                 UI.press_enter()
 
