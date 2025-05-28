@@ -1,11 +1,13 @@
 # npc.py
 import random
+from typing import Optional
 from stats import Stats, RACES
 from items import Item
 from ui import UI # Import UI for capitalization and debug messages
 # Import Quest and generate_location_appropriate_quest from quests.py
 from quests import Quest, generate_location_appropriate_quest, QuestLog, process_quest_rewards
 from tags import TAGS, get_tags
+import tags
 import flavor
 from exploration_data import EXPLORATION_RESULTS # Needed if NPCs can provide specific exploration hints
 from rumors import generate_rumor # for generating rumors in NPC dialogue
@@ -294,650 +296,650 @@ class NPC:
         self.tags[category][key] = value
 
     def _generate_greeting(self):
-    """Generate comprehensive, lore-friendly greetings based on role, race, disposition, and context"""
-    attitude = self.tags.get("npc", {}).get("attitude", "neutral")
-    role_lower = self.role.lower()
-    race_lower = self.race.lower()
-    disposition = self.disposition
-    
-    # Hostile greetings - always prioritize if hostile attitude
-    if attitude == "hostile" or disposition < 20:
-        hostile_greetings = {
-            "bandit": [
-                "Hand over your coin, or I'll take it from your corpse!",
-                "Wrong place, wrong time, stranger. This is bandit territory!",
-                "You've walked into the wrong camp, fool. Prepare to die!",
-                "Your purse or your life! Choose quickly!"
-            ],
-            "forsworn": [
-                "Another Imperial dog comes to defile our sacred lands!",
-                "The old gods demand your blood, outlander!",
-                "You trespass on Forsworn territory. The Reach will have its revenge!",
-                "By Hircine's bloody hunt, you will not leave here alive!"
-            ],
-            "thalmor": [
-                "Another inferior being seeks audience with their betters.",
-                "You dare approach an agent of the Aldmeri Dominion so brazenly?",
-                "Your very presence offends the natural order, mortal.",
-                "State your business quickly, before I lose what little patience I have."
-            ],
-            "vampire": [
-                "You reek of mortality... how deliciously fragile you are.",
-                "Another warm-blooded fool wanders into my domain.",
-                "Your blood calls to me, mortal. Resist if you can.",
-                "The living should not disturb the eternal. You will regret this."
-            ],
-            "necromancer": [
-                "You interrupt my communion with death itself!",
-                "Another soul to add to my collection... willing or not.",
-                "The dark arts have shown me your fate, fool.",
-                "Life is but a fleeting moment before eternal servitude!"
-            ],
-            "default": [
-                "You picked the wrong person to cross!",
-                "Get away from me before I do something we'll both regret!",
-                "I don't have time for your kind!",
-                "Move along before this gets ugly!"
-            ]
-        }
+        """Generate comprehensive, lore-friendly greetings based on role, race, disposition, and context"""
+        attitude = self.tags.get("npc", {}).get("attitude", "neutral")
+        role_lower = self.role.lower()
+        race_lower = self.race.lower()
+        disposition = self.disposition
         
-        for role_key in hostile_greetings:
-            if role_key in role_lower:
-                return random.choice(hostile_greetings[role_key])
-        return random.choice(hostile_greetings["default"])
-    
-    # Unfriendly but not hostile (20-40 disposition)
-    elif disposition < 40:
-        unfriendly_greetings = {
-            "guard": [
-                "Keep moving, citizen. Nothing to see here.",
-                "State your business and make it quick.",
-                "I've got my eye on you, stranger.",
-                "Don't give me a reason to arrest you."
-            ],
-            "merchant": [
-                "I suppose you want something. Coin first, questions later.",
-                "My prices aren't negotiable, so don't waste my time haggling.",
-                "What do you want? I'm busy running a business here.",
-                "If you're not buying, then you're browsing. Don't touch anything."
-            ],
-            "noble": [
-                "Do you have an appointment? No? Then this conversation is over.",
-                "I don't associate with commoners without good reason.",
-                "Your presence here is... unexpected. And unwelcome.",
-                "Speak quickly. My time is far more valuable than yours."
-            ],
-            "priest": [
-                "The gods test my patience with visitors like you.",
-                "State your need for divine guidance... if you're worthy.",
-                "Even the Divines grow weary of those who lack faith.",
-                "What brings you to disturb my meditation?"
-            ],
-            "default": [
-                "What do you want?",
-                "Make it quick, I haven't got all day.",
-                "I suppose you need something from me.",
-                "This better be important."
-            ]
-        }
+        # Hostile greetings - always prioritize if hostile attitude
+        if attitude == "hostile" or disposition < 20:
+            hostile_greetings = {
+                "bandit": [
+                    "Hand over your coin, or I'll take it from your corpse!",
+                    "Wrong place, wrong time, stranger. This is bandit territory!",
+                    "You've walked into the wrong camp, fool. Prepare to die!",
+                    "Your purse or your life! Choose quickly!"
+                ],
+                "forsworn": [
+                    "Another Imperial dog comes to defile our sacred lands!",
+                    "The old gods demand your blood, outlander!",
+                    "You trespass on Forsworn territory. The Reach will have its revenge!",
+                    "By Hircine's bloody hunt, you will not leave here alive!"
+                ],
+                "thalmor": [
+                    "Another inferior being seeks audience with their betters.",
+                    "You dare approach an agent of the Aldmeri Dominion so brazenly?",
+                    "Your very presence offends the natural order, mortal.",
+                    "State your business quickly, before I lose what little patience I have."
+                ],
+                "vampire": [
+                    "You reek of mortality... how deliciously fragile you are.",
+                    "Another warm-blooded fool wanders into my domain.",
+                    "Your blood calls to me, mortal. Resist if you can.",
+                    "The living should not disturb the eternal. You will regret this."
+                ],
+                "necromancer": [
+                    "You interrupt my communion with death itself!",
+                    "Another soul to add to my collection... willing or not.",
+                    "The dark arts have shown me your fate, fool.",
+                    "Life is but a fleeting moment before eternal servitude!"
+                ],
+                "default": [
+                    "You picked the wrong person to cross!",
+                    "Get away from me before I do something we'll both regret!",
+                    "I don't have time for your kind!",
+                    "Move along before this gets ugly!"
+                ]
+            }
+            
+            for role_key in hostile_greetings:
+                if role_key in role_lower:
+                    return random.choice(hostile_greetings[role_key])
+            return random.choice(hostile_greetings["default"])
         
-        for role_key in unfriendly_greetings:
-            if role_key in role_lower:
-                return random.choice(unfriendly_greetings[role_key])
-        return random.choice(unfriendly_greetings["default"])
-    
-    # Neutral greetings (40-60 disposition)
-    elif disposition < 60:
-        neutral_greetings = {
-            "innkeeper": [
-                "Welcome to my establishment. Room or board?",
-                "What can I get for you today?",
-                "Take a seat wherever you like. I'll be with you shortly.",
-                "We've got food, drink, and beds. What's your pleasure?"
-            ],
-            "merchant": [
-                "Browse my wares if you like. Prices are fair.",
-                "I've got quality goods at reasonable prices.",
-                "Looking for anything in particular today?",
-                "Take a look around. I'm sure we can make a deal."
-            ],
-            "guard": [
-                "Citizen. Keep your nose clean while you're in town.",
-                "Just remember to follow the laws while you're here.",
-                "Move along, nothing to see here.",
-                "Keep the peace, and we won't have any problems."
-            ],
-            "blacksmith": [
-                "I work with steel and iron. What do you need forged?",
-                "My forge burns hot and my hammer rings true.",
-                "Looking for weapons or armor? You've come to the right place.",
-                "Quality smithwork takes time. What can I craft for you?"
-            ],
-            "farmer": [
-                "Another traveler passes through our humble lands.",
-                "The soil here is good, but the work is hard.",
-                "Are you here about the crops, or just passing through?",
-                "Times are tough for farmers, but we manage."
-            ],
-            "miner": [
-                "Long days in the mines make for short conversations.",
-                "The deeper you dig, the more dangers you find.",
-                "Mining's honest work, if you can handle the darkness.",
-                "These mountains hold more secrets than gold."
-            ],
-            "hunter": [
-                "The wilds provide for those who respect them.",
-                "Game's been scarce lately. Something's got them spooked.",
-                "A hunter learns to read the signs the land provides.",
-                "These forests hold both bounty and danger in equal measure."
-            ],
-            "scholar": [
-                "Knowledge is the greatest treasure of all.",
-                "I seek understanding in the written word.",
-                "Ancient lore holds answers to modern questions.",
-                "Learning never ends for those who truly seek wisdom."
-            ],
-            "bard": [
-                "Every person has a story worth telling.",
-                "Music and tales lighten even the darkest days.",
-                "I collect stories like others collect coin.",
-                "Would you care to hear a song, or perhaps share a tale?"
-            ],
-            "default": [
-                "Hello there.",
-                "Can I help you with something?",
-                "What brings you here?",
-                "Good to see another traveler."
-            ]
-        }
+        # Unfriendly but not hostile (20-40 disposition)
+        elif disposition < 40:
+            unfriendly_greetings = {
+                "guard": [
+                    "Keep moving, citizen. Nothing to see here.",
+                    "State your business and make it quick.",
+                    "I've got my eye on you, stranger.",
+                    "Don't give me a reason to arrest you."
+                ],
+                "merchant": [
+                    "I suppose you want something. Coin first, questions later.",
+                    "My prices aren't negotiable, so don't waste my time haggling.",
+                    "What do you want? I'm busy running a business here.",
+                    "If you're not buying, then you're browsing. Don't touch anything."
+                ],
+                "noble": [
+                    "Do you have an appointment? No? Then this conversation is over.",
+                    "I don't associate with commoners without good reason.",
+                    "Your presence here is... unexpected. And unwelcome.",
+                    "Speak quickly. My time is far more valuable than yours."
+                ],
+                "priest": [
+                    "The gods test my patience with visitors like you.",
+                    "State your need for divine guidance... if you're worthy.",
+                    "Even the Divines grow weary of those who lack faith.",
+                    "What brings you to disturb my meditation?"
+                ],
+                "default": [
+                    "What do you want?",
+                    "Make it quick, I haven't got all day.",
+                    "I suppose you need something from me.",
+                    "This better be important."
+                ]
+            }
+            
+            for role_key in unfriendly_greetings:
+                if role_key in role_lower:
+                    return random.choice(unfriendly_greetings[role_key])
+            return random.choice(unfriendly_greetings["default"])
         
-        for role_key in neutral_greetings:
-            if role_key in role_lower:
-                return random.choice(neutral_greetings[role_key])
-        return random.choice(neutral_greetings["default"])
-    
-    # Friendly greetings (60-80 disposition)
-    elif disposition < 80:
-        friendly_greetings = {
-            "innkeeper": [
-                "Welcome, welcome! Come warm yourself by the fire!",
-                "Well met, traveler! The finest ale in the hold awaits you!",
-                "A friendly face! Please, make yourself at home here.",
-                "By the Eight and One, it's good to see a new face! What can I do for you?"
-            ],
-            "merchant": [
-                "Ah, a discerning customer! I have just the thing for you!",
-                "Welcome, friend! My wares are the finest you'll find anywhere!",
-                "Excellent timing! I just received a new shipment you'll want to see.",
-                "A shrewd buyer knows quality when they see it. Take a look around!"
-            ],
-            "guard": [
-                "Well met, citizen. Always good to see law-abiding folk.",
-                "Greetings! Your timing is good - the roads are safe today.",
-                "Welcome to our fair city. May your stay be peaceful and profitable.",
-                "A friendly face in these troubled times. How can I assist you?"
-            ],
-            "priest": [
-                "The Divines bless this meeting, child. How may I serve?",
-                "May Akatosh's light guide your path, traveler.",
-                "Welcome to this sacred place. The gods smile upon the faithful.",
-                "Peace be with you, friend. What spiritual guidance do you seek?"
-            ],
-            "blacksmith": [
-                "Ah, someone who appreciates fine metalwork! Welcome to my forge!",
-                "Well met! I take pride in every piece that leaves my workshop.",
-                "A fellow admirer of steel and flame! What can I craft for you?",
-                "The ring of hammer on anvil calls to all true warriors. How can I help?"
-            ],
-            "noble": [
-                "Greetings, citizen. Your reputation precedes you.",
-                "Well met! It's refreshing to encounter someone of quality.",
-                "A person of distinction, I see. How may I be of service?",
-                "Welcome! Your presence brings honor to my hall."
-            ],
-            "farmer": [
-                "Well met, friend! The harvest has been kind this season.",
-                "Welcome to our lands! Honest work makes for honest folk.",
-                "Good to see a friendly traveler! The road treats you well, I hope.",
-                "By Kynareth's grace, another good soul crosses our path!"
-            ],
-            "hunter": [
-                "Well met, fellow wanderer! The wilds have been good to me lately.",
-                "Greetings! A kindred spirit who appreciates nature's bounty.",
-                "Welcome, friend! The forest provides for those who respect her.",
-                "Good hunting to you! May your aim be true and your quarry plentiful."
-            ],
-            "scholar": [
-                "Greetings, fellow seeker of knowledge! What wisdom do you pursue?",
-                "Well met! A mind that questions is a mind that grows.",
-                "Welcome! Perhaps we might share discoveries over scholarly discourse?",
-                "Ah, another who values learning! What brings you to seek knowledge?"
-            ],
-            "bard": [
-                "Well met, friend! Would you care to hear a tale of distant lands?",
-                "Greetings! Every new face brings new stories to collect.",
-                "A warm welcome to you! Music and merriment lift all spirits.",
-                "Hail and well met! Perhaps you have a song or story to share?"
-            ],
-            "mage": [
-                "Well met, traveler! The arcane arts reveal much about one's character.",
-                "Greetings! I sense you have an appreciation for the mystical.",
-                "Welcome! Knowledge of the magical arts is always worth sharing.",
-                "Well encountered! The weave of magic connects all things."
-            ],
-            "default": [
-                "Well met, friend!",
-                "Greetings, traveler! Good to see you!",
-                "Welcome! What brings you our way?",
-                "A friendly face! How can I help you today?"
-            ]
-        }
+        # Neutral greetings (40-60 disposition)
+        elif disposition < 60:
+            neutral_greetings = {
+                "innkeeper": [
+                    "Welcome to my establishment. Room or board?",
+                    "What can I get for you today?",
+                    "Take a seat wherever you like. I'll be with you shortly.",
+                    "We've got food, drink, and beds. What's your pleasure?"
+                ],
+                "merchant": [
+                    "Browse my wares if you like. Prices are fair.",
+                    "I've got quality goods at reasonable prices.",
+                    "Looking for anything in particular today?",
+                    "Take a look around. I'm sure we can make a deal."
+                ],
+                "guard": [
+                    "Citizen. Keep your nose clean while you're in town.",
+                    "Just remember to follow the laws while you're here.",
+                    "Move along, nothing to see here.",
+                    "Keep the peace, and we won't have any problems."
+                ],
+                "blacksmith": [
+                    "I work with steel and iron. What do you need forged?",
+                    "My forge burns hot and my hammer rings true.",
+                    "Looking for weapons or armor? You've come to the right place.",
+                    "Quality smithwork takes time. What can I craft for you?"
+                ],
+                "farmer": [
+                    "Another traveler passes through our humble lands.",
+                    "The soil here is good, but the work is hard.",
+                    "Are you here about the crops, or just passing through?",
+                    "Times are tough for farmers, but we manage."
+                ],
+                "miner": [
+                    "Long days in the mines make for short conversations.",
+                    "The deeper you dig, the more dangers you find.",
+                    "Mining's honest work, if you can handle the darkness.",
+                    "These mountains hold more secrets than gold."
+                ],
+                "hunter": [
+                    "The wilds provide for those who respect them.",
+                    "Game's been scarce lately. Something's got them spooked.",
+                    "A hunter learns to read the signs the land provides.",
+                    "These forests hold both bounty and danger in equal measure."
+                ],
+                "scholar": [
+                    "Knowledge is the greatest treasure of all.",
+                    "I seek understanding in the written word.",
+                    "Ancient lore holds answers to modern questions.",
+                    "Learning never ends for those who truly seek wisdom."
+                ],
+                "bard": [
+                    "Every person has a story worth telling.",
+                    "Music and tales lighten even the darkest days.",
+                    "I collect stories like others collect coin.",
+                    "Would you care to hear a song, or perhaps share a tale?"
+                ],
+                "default": [
+                    "Hello there.",
+                    "Can I help you with something?",
+                    "What brings you here?",
+                    "Good to see another traveler."
+                ]
+            }
+            
+            for role_key in neutral_greetings:
+                if role_key in role_lower:
+                    return random.choice(neutral_greetings[role_key])
+            return random.choice(neutral_greetings["default"])
         
-        for role_key in friendly_greetings:
-            if role_key in role_lower:
-                return random.choice(friendly_greetings[role_key])
-        return random.choice(friendly_greetings["default"])
-    
-    # Very friendly/admiring greetings (80+ disposition)
-    else:
-        admiring_greetings = {
-            "innkeeper": [
-                "My friend! Welcome back to the finest establishment in all Skyrim!",
-                "By the gods, if it isn't my most valued patron! Your usual table awaits!",
-                "The hero graces my humble inn once more! Tonight, the ale flows freely!",
-                "Welcome, welcome! Your legendary reputation brightens these halls!"
-            ],
-            "merchant": [
-                "My most esteemed customer returns! I've saved my finest wares just for you!",
-                "The realm's greatest hero honors my shop! Everything is at your disposal!",
-                "By Zenithar's golden scales! Take whatever you need, my friend!",
-                "Your patronage brings prosperity to my business and honor to my name!"
-            ],
-            "guard": [
-                "An honor to serve alongside someone of your caliber, hero!",
-                "The people sleep safely knowing heroes like you walk among us!",
-                "By Stendarr's mercy, our city is blessed by your presence!",
-                "Your deeds will be remembered for generations, champion!"
-            ],
-            "priest": [
-                "The Divines themselves must have guided you to this sacred place!",
-                "Blessed are we to receive one so favored by the gods!",
-                "Your righteous deeds echo through the halls of Aetherius itself!",
-                "May the Nine Divines continue to bless your noble quest!"
-            ],
-            "blacksmith": [
-                "The legendary hero graces my forge! What weapon shall I craft for your next great deed?",
-                "By Talos's hammer! Working steel for a true champion is a smith's greatest honor!",
-                "Every blade I forge pales beside the legend you've already written!",
-                "Your patronage makes my humble craft legendary by association!"
-            ],
-            "noble": [
-                "My lord/lady! Your presence brings honor to my entire bloodline!",
-                "The realm's greatest champion graces my halls! You are always welcome here!",
-                "By my ancestors' honor, serving you is the privilege of a lifetime!",
-                "Your legendary deeds have earned you a place in the songs of our bards!"
-            ],
-            "scholar": [
-                "The living legend seeks knowledge! What wisdom can this humble scholar provide?",
-                "Your deeds will be studied by generations of historians yet unborn!",
-                "To share knowledge with one so renowned is a scholar's ultimate achievement!",
-                "History itself bends around your actions, shaping the fate of empires!"
-            ],
-            "bard": [
-                "The hero of legend walks among us! Your deeds surpass even the greatest epics!",
-                "Every song I sing pales before the reality of your adventures!",
-                "Bards across the realm compose verses about your magnificent deeds!",
-                "To meet the subject of so many tales in person... what an honor!"
-            ],
-            "default": [
-                "My friend! Always a pleasure to see you!",
-                "The legendary hero returns! How may I serve?",
-                "Your reputation precedes you, champion!",
-                "By the gods, what an honor to speak with you again!"
-            ]
-        }
+        # Friendly greetings (60-80 disposition)
+        elif disposition < 80:
+            friendly_greetings = {
+                "innkeeper": [
+                    "Welcome, welcome! Come warm yourself by the fire!",
+                    "Well met, traveler! The finest ale in the hold awaits you!",
+                    "A friendly face! Please, make yourself at home here.",
+                    "By the Eight and One, it's good to see a new face! What can I do for you?"
+                ],
+                "merchant": [
+                    "Ah, a discerning customer! I have just the thing for you!",
+                    "Welcome, friend! My wares are the finest you'll find anywhere!",
+                    "Excellent timing! I just received a new shipment you'll want to see.",
+                    "A shrewd buyer knows quality when they see it. Take a look around!"
+                ],
+                "guard": [
+                    "Well met, citizen. Always good to see law-abiding folk.",
+                    "Greetings! Your timing is good - the roads are safe today.",
+                    "Welcome to our fair city. May your stay be peaceful and profitable.",
+                    "A friendly face in these troubled times. How can I assist you?"
+                ],
+                "priest": [
+                    "The Divines bless this meeting, child. How may I serve?",
+                    "May Akatosh's light guide your path, traveler.",
+                    "Welcome to this sacred place. The gods smile upon the faithful.",
+                    "Peace be with you, friend. What spiritual guidance do you seek?"
+                ],
+                "blacksmith": [
+                    "Ah, someone who appreciates fine metalwork! Welcome to my forge!",
+                    "Well met! I take pride in every piece that leaves my workshop.",
+                    "A fellow admirer of steel and flame! What can I craft for you?",
+                    "The ring of hammer on anvil calls to all true warriors. How can I help?"
+                ],
+                "noble": [
+                    "Greetings, citizen. Your reputation precedes you.",
+                    "Well met! It's refreshing to encounter someone of quality.",
+                    "A person of distinction, I see. How may I be of service?",
+                    "Welcome! Your presence brings honor to my hall."
+                ],
+                "farmer": [
+                    "Well met, friend! The harvest has been kind this season.",
+                    "Welcome to our lands! Honest work makes for honest folk.",
+                    "Good to see a friendly traveler! The road treats you well, I hope.",
+                    "By Kynareth's grace, another good soul crosses our path!"
+                ],
+                "hunter": [
+                    "Well met, fellow wanderer! The wilds have been good to me lately.",
+                    "Greetings! A kindred spirit who appreciates nature's bounty.",
+                    "Welcome, friend! The forest provides for those who respect her.",
+                    "Good hunting to you! May your aim be true and your quarry plentiful."
+                ],
+                "scholar": [
+                    "Greetings, fellow seeker of knowledge! What wisdom do you pursue?",
+                    "Well met! A mind that questions is a mind that grows.",
+                    "Welcome! Perhaps we might share discoveries over scholarly discourse?",
+                    "Ah, another who values learning! What brings you to seek knowledge?"
+                ],
+                "bard": [
+                    "Well met, friend! Would you care to hear a tale of distant lands?",
+                    "Greetings! Every new face brings new stories to collect.",
+                    "A warm welcome to you! Music and merriment lift all spirits.",
+                    "Hail and well met! Perhaps you have a song or story to share?"
+                ],
+                "mage": [
+                    "Well met, traveler! The arcane arts reveal much about one's character.",
+                    "Greetings! I sense you have an appreciation for the mystical.",
+                    "Welcome! Knowledge of the magical arts is always worth sharing.",
+                    "Well encountered! The weave of magic connects all things."
+                ],
+                "default": [
+                    "Well met, friend!",
+                    "Greetings, traveler! Good to see you!",
+                    "Welcome! What brings you our way?",
+                    "A friendly face! How can I help you today?"
+                ]
+            }
+            
+            for role_key in friendly_greetings:
+                if role_key in role_lower:
+                    return random.choice(friendly_greetings[role_key])
+            return random.choice(friendly_greetings["default"])
         
-        for role_key in admiring_greetings:
-            if role_key in role_lower:
-                return random.choice(admiring_greetings[role_key])
-        return random.choice(admiring_greetings["default"])
+        # Very friendly/admiring greetings (80+ disposition)
+        else:
+            admiring_greetings = {
+                "innkeeper": [
+                    "My friend! Welcome back to the finest establishment in all Skyrim!",
+                    "By the gods, if it isn't my most valued patron! Your usual table awaits!",
+                    "The hero graces my humble inn once more! Tonight, the ale flows freely!",
+                    "Welcome, welcome! Your legendary reputation brightens these halls!"
+                ],
+                "merchant": [
+                    "My most esteemed customer returns! I've saved my finest wares just for you!",
+                    "The realm's greatest hero honors my shop! Everything is at your disposal!",
+                    "By Zenithar's golden scales! Take whatever you need, my friend!",
+                    "Your patronage brings prosperity to my business and honor to my name!"
+                ],
+                "guard": [
+                    "An honor to serve alongside someone of your caliber, hero!",
+                    "The people sleep safely knowing heroes like you walk among us!",
+                    "By Stendarr's mercy, our city is blessed by your presence!",
+                    "Your deeds will be remembered for generations, champion!"
+                ],
+                "priest": [
+                    "The Divines themselves must have guided you to this sacred place!",
+                    "Blessed are we to receive one so favored by the gods!",
+                    "Your righteous deeds echo through the halls of Aetherius itself!",
+                    "May the Nine Divines continue to bless your noble quest!"
+                ],
+                "blacksmith": [
+                    "The legendary hero graces my forge! What weapon shall I craft for your next great deed?",
+                    "By Talos's hammer! Working steel for a true champion is a smith's greatest honor!",
+                    "Every blade I forge pales beside the legend you've already written!",
+                    "Your patronage makes my humble craft legendary by association!"
+                ],
+                "noble": [
+                    "My lord/lady! Your presence brings honor to my entire bloodline!",
+                    "The realm's greatest champion graces my halls! You are always welcome here!",
+                    "By my ancestors' honor, serving you is the privilege of a lifetime!",
+                    "Your legendary deeds have earned you a place in the songs of our bards!"
+                ],
+                "scholar": [
+                    "The living legend seeks knowledge! What wisdom can this humble scholar provide?",
+                    "Your deeds will be studied by generations of historians yet unborn!",
+                    "To share knowledge with one so renowned is a scholar's ultimate achievement!",
+                    "History itself bends around your actions, shaping the fate of empires!"
+                ],
+                "bard": [
+                    "The hero of legend walks among us! Your deeds surpass even the greatest epics!",
+                    "Every song I sing pales before the reality of your adventures!",
+                    "Bards across the realm compose verses about your magnificent deeds!",
+                    "To meet the subject of so many tales in person... what an honor!"
+                ],
+                "default": [
+                    "My friend! Always a pleasure to see you!",
+                    "The legendary hero returns! How may I serve?",
+                    "Your reputation precedes you, champion!",
+                    "By the gods, what an honor to speak with you again!"
+                ]
+            }
+            
+            for role_key in admiring_greetings:
+                if role_key in role_lower:
+                    return random.choice(admiring_greetings[role_key])
+            return random.choice(admiring_greetings["default"])
 
     def _generate_purpose(self):
-    """Generate comprehensive, lore-friendly purpose descriptions based on role, race, and context"""
-    role_lower = self.role.lower()
-    race_lower = self.race.lower()
-    disposition = self.disposition
-    
-    # Comprehensive purpose descriptions organized by role
-    purpose_descriptions = {
-        "innkeeper": [
-            "provide weary travelers with warm beds, hot meals, and cold ale in these troubled times",
-            "keep this establishment running smoothly, ensuring every guest feels welcome and safe",
-            "offer refuge to those who walk the dangerous roads of Skyrim, sharing news and stories",
-            "maintain a place where all folk can rest, regardless of the civil war raging outside",
-            "serve the finest food and drink in the hold while keeping ears open for useful information",
-            "create a haven where merchants, adventurers, and locals can gather in peace",
-            "honor the old traditions of hospitality that have kept inns sacred since the First Era"
-        ],
+        """Generate comprehensive, lore-friendly purpose descriptions based on role, race, and context"""
+        role_lower = self.role.lower()
+        race_lower = self.race.lower()
+        disposition = self.disposition
         
-        "merchant": [
-            "trade in goods both common and rare, connecting distant markets across the Empire",
-            "seek profit through honest commerce, following the blessed path of Zenithar",
-            "provide essential supplies to settlements that would otherwise go without",
-            "maintain trade routes that keep gold flowing and communities prosperous",
-            "deal in exotic wares from distant provinces, bringing the world to Skyrim's doorstep",
-            "negotiate fair prices while ensuring my family's prosperity for generations to come",
-            "preserve the ancient mercantile traditions that built the great trading companies"
-        ],
+        # Comprehensive purpose descriptions organized by role
+        purpose_descriptions = {
+            "innkeeper": [
+                "provide weary travelers with warm beds, hot meals, and cold ale in these troubled times",
+                "keep this establishment running smoothly, ensuring every guest feels welcome and safe",
+                "offer refuge to those who walk the dangerous roads of Skyrim, sharing news and stories",
+                "maintain a place where all folk can rest, regardless of the civil war raging outside",
+                "serve the finest food and drink in the hold while keeping ears open for useful information",
+                "create a haven where merchants, adventurers, and locals can gather in peace",
+                "honor the old traditions of hospitality that have kept inns sacred since the First Era"
+            ],
+            
+            "merchant": [
+                "trade in goods both common and rare, connecting distant markets across the Empire",
+                "seek profit through honest commerce, following the blessed path of Zenithar",
+                "provide essential supplies to settlements that would otherwise go without",
+                "maintain trade routes that keep gold flowing and communities prosperous",
+                "deal in exotic wares from distant provinces, bringing the world to Skyrim's doorstep",
+                "negotiate fair prices while ensuring my family's prosperity for generations to come",
+                "preserve the ancient mercantile traditions that built the great trading companies"
+            ],
+            
+            "guard": [
+                "protect the innocent and uphold the laws of this hold, whatever the personal cost",
+                "maintain order in these chaotic times, when brother fights brother across Skyrim",
+                "serve the people with honor, following the righteous path of Stendarr",
+                "keep the peace while navigating the treacherous politics of civil war",
+                "defend this settlement against bandits, monsters, and worse threats from the wild",
+                "enforce justice fairly, regardless of race, creed, or political allegiance",
+                "stand as a beacon of stability when the very foundations of the Empire shake"
+            ],
+            
+            "blacksmith": [
+                "forge weapons and armor worthy of the heroes who will shape Skyrim's destiny",
+                "work the sacred metals with hammer and flame, following techniques passed down through ages",
+                "craft tools of war and peace that will outlast those who wield them",
+                "maintain the ancient traditions of metalworking that built the Nordic civilization",
+                "create blades that sing with the strength of the earth and the fury of dragon fire",
+                "honor the craft taught by the Dwemer and perfected by generations of Nordic smiths",
+                "ensure that warriors have the steel they need to face the darkness ahead"
+            ],
+            
+            "priest": [
+                "serve the Nine Divines and guide the faithful through these dark and troubled times",
+                "offer spiritual counsel to those whose souls are burdened by war and loss",
+                "maintain the sacred traditions that connect mortals to the realm of Aetherius",
+                "heal both body and spirit through the blessed power of divine magic",
+                "preserve the ancient teachings while adapting to a world where Talos is forbidden",
+                "provide sanctuary to all who seek the gods' mercy, regardless of their past sins",
+                "stand as a bulwark against the forces of darkness that would corrupt Tamriel"
+            ],
+            
+            "scholar": [
+                "delve into the mysteries of the past to better understand our troubled present",
+                "preserve knowledge that would otherwise be lost to the ravages of time and war",
+                "study the ancient texts that hold the keys to forgotten magics and lost wisdom",
+                "seek truth in the written word while others seek it with sword and flame",
+                "document the events of our time so future generations might learn from our mistakes",
+                "unravel the secrets of Dwemer technology and Ayleid magic for the betterment of all",
+                "maintain the great libraries that are civilization's true treasures"
+            ],
+            
+            "bard": [
+                "preserve the songs and stories that define our people's identity and history",
+                "bring joy and inspiration to hearts heavy with the burden of these dark times",
+                "carry news and tales between settlements, connecting distant communities through story",
+                "honor the traditions of the Bards College while creating new legends for future ages",
+                "use music and verse to heal the divisions that tear our land asunder",
+                "document the deeds of heroes whose names should echo through eternity",
+                "keep alive the old songs that remember when dragons ruled the skies"
+            ],
+            
+            "farmer": [
+                "work the sacred soil to feed the people of this hold, following Kynareth's eternal cycle",
+                "maintain the agricultural traditions that have sustained Nordic civilization for millennia",
+                "coax sustenance from the harsh northern earth through backbreaking labor and ancient wisdom",
+                "provide the foundation upon which all civilization rests - food for the hungry masses",
+                "preserve the farming techniques passed down through generations of my bloodline",
+                "endure the hardships of rural life while supporting the great cities and their grand ambitions",
+                "honor the old compact between farmer and land, giving back as much as I take"
+            ],
+            
+            "hunter": [
+                "track game through the wilds while respecting the ancient laws of the hunt",
+                "provide meat and pelts for my community while maintaining nature's delicate balance",
+                "read the signs of forest and field that speak of dangers both natural and supernatural",
+                "follow the path of Hircine while honoring Kynareth's dominion over the natural world",
+                "venture into the deep woods where few dare tread, bringing back both bounty and warnings",
+                "preserve the hunting traditions that kept the Nords alive during their first harsh winters",
+                "serve as a bridge between civilization and the untamed wilderness beyond"
+            ],
+            
+            "miner": [
+                "delve deep into the earth's bones, seeking the precious metals that fuel civilization",
+                "follow veins of ore through dangerous tunnels where cave-ins and worse things lurk",
+                "extract the wealth hidden in Skyrim's mountains while respecting the spirits of the deep",
+                "endure the darkness and danger of the mines to provide the raw materials for progress",
+                "work alongside my brothers in the dangerous depths where only trust keeps us alive",
+                "honor the ancient mining traditions while adapting to new techniques and deeper shafts",
+                "risk my life daily in the hope that my children might know a better future"
+            ],
+            
+            "mage": [
+                "study the fundamental forces that shape reality itself, wielding power beyond mortal ken",
+                "explore the mysteries of magic while respecting the dangerous forces I command",
+                "advance the understanding of the arcane arts for the betterment of all Tamriel",
+                "maintain the balance between the mortal world and the chaotic realm of Oblivion",
+                "preserve magical knowledge while training the next generation of spellcasters",
+                "serve as guardian against supernatural threats that mundane weapons cannot touch",
+                "seek to unlock the secrets of creation itself through careful study and experimentation"
+            ],
+            
+            "noble": [
+                "govern my lands and people with wisdom befitting my ancient bloodline",
+                "navigate the treacherous politics of court while serving the true needs of my subjects",
+                "maintain the old traditions of nobility - protection, justice, and responsible leadership",
+                "balance loyalty to the Empire with the growing demands of Nordic independence",
+                "preserve my family's honor while adapting to a rapidly changing political landscape",
+                "serve as a bridge between the common folk and the distant machinations of power",
+                "uphold the sacred duties of my station, whatever the personal cost may be"
+            ],
+            
+            # Hostile/Criminal roles
+            "bandit": [
+                "take what this harsh world owes me, since honest work brings only suffering",
+                "prey upon the wealthy travelers who flaunt their gold while others starve",
+                "survive in a world that offers nothing to those born without title or privilege",
+                "claim my share of Skyrim's wealth through strength and cunning rather than birthright",
+                "live free from the laws that serve only the rich and powerful",
+                "make the roads dangerous for those who would exploit the common folk",
+                "build my own kingdom in the wilderness, far from the corruption of civilization"
+            ],
+            
+            "thief": [
+                "redistribute wealth from those who have too much to those who have nothing",
+                "practice the ancient art of stealth and cunning in a world ruled by brute force",
+                "survive by my wits in a society that offers no legitimate opportunities for advancement",
+                "follow the shadowy path that leads to secrets and treasures others cannot reach",
+                "serve the Guild's ancient codes while profiting from the chaos of civil war",
+                "prove that skill and intelligence matter more than inherited privilege",
+                "operate in the spaces between law and chaos where true freedom exists"
+            ],
+            
+            "forsworn": [
+                "reclaim the ancient lands of the Reach that were stolen by Nordic invaders",
+                "serve the old gods who demand blood vengeance for generations of oppression",
+                "preserve the true heritage of the Reachmen against Imperial and Nordic corruption",
+                "wage eternal war against the usurpers who drove my people into the wilderness",
+                "honor the ancient pacts with Hagravens and the spirits of the wild",
+                "prove that the Reach will never be tamed by foreign laws and foreign gods",
+                "carry on the struggle that began when the first Nord set foot in our sacred lands"
+            ],
+            
+            "vampire": [
+                "embrace the eternal night that frees me from mortal concerns and limitations",
+                "feed upon the living while building power that spans centuries rather than mere decades",
+                "serve the will of Molag Bal while maintaining my facade among the cattle of mortality",
+                "accumulate knowledge and influence across the ages that mortals cannot comprehend",
+                "prove that undeath is evolution, not curse, despite what the living might believe",
+                "maintain the ancient bloodlines while adapting to a world that grows ever more hostile",
+                "rule from the shadows, manipulating mortal affairs like pieces on a grand game board"
+            ],
+            
+            "necromancer": [
+                "explore the forbidden arts that reveal death as merely another beginning",
+                "command the restless dead who serve more faithfully than any living follower",
+                "study the boundaries between life and death that lesser minds fear to examine",
+                "accumulate power through means that squeamish mortals refuse to consider",
+                "serve the will of the Daedric Princes who understand the true nature of existence",
+                "prove that the conventional morality of the masses is merely ignorance and weakness",
+                "build an undying empire where death has no meaning and power knows no limits"
+            ],
+            
+            # Faction-specific roles
+            "stormcloak_soldier": [
+                "fight for Skyrim's independence from the corrupt and weakened Empire",
+                "serve Ulfric Stormcloak's vision of a free Nordic homeland ruled by Nordic traditions",
+                "oppose the Thalmor's cultural imperialism and their outlawing of Talos worship",
+                "preserve the ancient ways of the Nords against foreign influence and corruption",
+                "prove that Nordic strength and honor can overcome Imperial politics and Elven manipulation",
+                "reclaim Skyrim's destiny from those who would sell it for temporary peace",
+                "fight for the right to worship Talos and maintain our ancestral traditions"
+            ],
+            
+            "imperial_soldier": [
+                "maintain unity within the Empire during its darkest hour of division",
+                "serve the greater good even when it requires difficult compromises and sacrifices",
+                "protect the peace that the Empire has maintained for centuries across Tamriel",
+                "oppose the chaos and bloodshed that Nordic independence would unleash",
+                "preserve the rule of law against the primitive tribalism of Stormcloak rebels",
+                "serve as a bulwark against the Thalmor's true agenda while maintaining necessary alliances",
+                "protect the common people from the devastation that civil war brings to all"
+            ],
+            
+            "thalmor_justiciar": [
+                "enforce the terms of the White-Gold Concordat for the good of all Tamriel",
+                "root out the heretical worship of Talos that corrupts the natural order",
+                "serve the Aldmeri Dominion's mission to restore proper hierarchy to the world",
+                "investigate threats to the carefully maintained peace between Empire and Dominion",
+                "protect Altmer superiority against the jealous violence of lesser races",
+                "maintain surveillance over the primitive humans who cannot govern themselves",
+                "advance the Thalmor's righteous agenda through law, diplomacy, and necessary force"
+            ],
+            
+            # Creature/Undead roles
+            "draugr": [
+                "guard the ancient tombs and sacred barrows of my Nordic ancestors",
+                "serve in undeath as I served in life - protecting what must be protected",
+                "maintain the eternal vigil over treasures and secrets that must not be disturbed",
+                "honor the ancient oaths that bind me even beyond the grave",
+                "punish those who would defile the resting places of heroes and kings",
+                "preserve the old ways through endless, tireless guardianship",
+                "serve the dragon priests and ancient powers that commanded my loyalty in life"
+            ]
+        }
         
-        "guard": [
-            "protect the innocent and uphold the laws of this hold, whatever the personal cost",
-            "maintain order in these chaotic times, when brother fights brother across Skyrim",
-            "serve the people with honor, following the righteous path of Stendarr",
-            "keep the peace while navigating the treacherous politics of civil war",
-            "defend this settlement against bandits, monsters, and worse threats from the wild",
-            "enforce justice fairly, regardless of race, creed, or political allegiance",
-            "stand as a beacon of stability when the very foundations of the Empire shake"
-        ],
+        # Racial modifiers for purposes
+        racial_modifiers = {
+            "nord": [
+                "while honoring the ancient traditions of my Nordic ancestors",
+                "following the path laid down by Ysgramor and the Five Hundred Companions",
+                "with the strength and determination that flows in Nordic blood",
+                "serving Skyrim and her people above all other loyalties"
+            ],
+            "imperial": [
+                "while maintaining the civilized order that the Empire represents",
+                "following the diplomatic traditions that built the greatest empire in history",
+                "with the administrative skill that has kept the Empire strong for centuries",
+                "serving the greater unity that transcends provincial boundaries"
+            ],
+            "dunmer": [
+                "while adapting the ancient wisdom of Morrowind to these northern lands",
+                "following the complex traditions of the Great Houses and their endless intrigues",
+                "with the cunning and resilience that helped my people survive the Red Year",
+                "serving the interests of Dunmer refugees while respecting our hosts"
+            ],
+            "altmer": [
+                "while maintaining the superior standards befitting the Aldmeri heritage",
+                "following the ancient wisdom preserved in the Summerset Isles for millennia",
+                "with the refined skill and knowledge that comes from centuries of study",
+                "serving the cause of proper order and hierarchy in this chaotic world"
+            ],
+            "redguard": [
+                "while honoring the warrior traditions of Hammerfell and the Way of the Sword",
+                "following the code of honor that has defined Redguard culture for ages",
+                "with the martial skill and personal integrity that flows in Yokudan blood",
+                "serving the cause of honor and justice wherever it may lead"
+            ],
+            "khajiit": [
+                "while following the moonpaths that guide all children of Elsweyr",
+                "adapting to northern customs while maintaining the wisdom of the Khajiit",
+                "with the curiosity and cunning that serves Khajiit well in foreign lands",
+                "serving the greater tapestry that connects all things under Jone and Jode"
+            ],
+            "argonian": [
+                "while following the guidance of the Hist even in these distant marshless lands",
+                "adapting the ancient wisdom of Black Marsh to the challenges of the north",
+                "with the patience and resilience that flows from the deep swamps of home",
+                "serving the mysterious purposes that only the Hist truly understand"
+            ],
+            "orc": [
+                "while maintaining the strength and honor that defines the Orsimer people",
+                "following the Code of Malacath even when surrounded by those who misunderstand it",
+                "with the forge-skill and warrior's heart that flows in Orcish blood",
+                "serving the cause of strength and honest labor in a world full of weaklings"
+            ],
+            "breton": [
+                "while balancing the practical wisdom of High Rock with mystical understanding",
+                "following the merchant traditions that have made Bretons successful across Tamriel",
+                "with the magical heritage and political acumen that defines my people",
+                "serving the cause of profitable cooperation and mutual advancement"
+            ],
+            "bosmer": [
+                "while respecting the Green Pact and the natural order even in these northern forests",
+                "following the ancient ways of Valenwood adapted to Skyrim's harsh environment",
+                "with the woodland wisdom and keen senses that flow in Bosmer blood",
+                "serving the balance between civilization and the wild that sustains all life"
+            ]
+        }
         
-        "blacksmith": [
-            "forge weapons and armor worthy of the heroes who will shape Skyrim's destiny",
-            "work the sacred metals with hammer and flame, following techniques passed down through ages",
-            "craft tools of war and peace that will outlast those who wield them",
-            "maintain the ancient traditions of metalworking that built the Nordic civilization",
-            "create blades that sing with the strength of the earth and the fury of dragon fire",
-            "honor the craft taught by the Dwemer and perfected by generations of Nordic smiths",
-            "ensure that warriors have the steel they need to face the darkness ahead"
-        ],
+        # Select appropriate purpose based on role
+        base_purposes = []
+        for role_key in purpose_descriptions:
+            if role_key in role_lower:
+                base_purposes = purpose_descriptions[role_key]
+                break
         
-        "priest": [
-            "serve the Nine Divines and guide the faithful through these dark and troubled times",
-            "offer spiritual counsel to those whose souls are burdened by war and loss",
-            "maintain the sacred traditions that connect mortals to the realm of Aetherius",
-            "heal both body and spirit through the blessed power of divine magic",
-            "preserve the ancient teachings while adapting to a world where Talos is forbidden",
-            "provide sanctuary to all who seek the gods' mercy, regardless of their past sins",
-            "stand as a bulwark against the forces of darkness that would corrupt Tamriel"
-        ],
+        # Fallback for unspecified roles
+        if not base_purposes:
+            generic_purposes = [
+                "make my way in this world as best I can during these troubled times",
+                "serve my community while pursuing my own interests and ambitions",
+                "navigate the complexities of life in Skyrim during an age of civil war",
+                "maintain my livelihood while staying true to my principles and beliefs",
+                "contribute to society while protecting what matters most to me",
+                "find my place in a world that seems to grow more dangerous each day",
+                "pursue my goals while respecting the ancient traditions of this land"
+            ]
+            base_purposes = generic_purposes
         
-        "scholar": [
-            "delve into the mysteries of the past to better understand our troubled present",
-            "preserve knowledge that would otherwise be lost to the ravages of time and war",
-            "study the ancient texts that hold the keys to forgotten magics and lost wisdom",
-            "seek truth in the written word while others seek it with sword and flame",
-            "document the events of our time so future generations might learn from our mistakes",
-            "unravel the secrets of Dwemer technology and Ayleid magic for the betterment of all",
-            "maintain the great libraries that are civilization's true treasures"
-        ],
+        # Select base purpose
+        base_purpose = random.choice(base_purposes)
         
-        "bard": [
-            "preserve the songs and stories that define our people's identity and history",
-            "bring joy and inspiration to hearts heavy with the burden of these dark times",
-            "carry news and tales between settlements, connecting distant communities through story",
-            "honor the traditions of the Bards College while creating new legends for future ages",
-            "use music and verse to heal the divisions that tear our land asunder",
-            "document the deeds of heroes whose names should echo through eternity",
-            "keep alive the old songs that remember when dragons ruled the skies"
-        ],
+        # Add racial modifier if applicable (30% chance)
+        if race_lower in racial_modifiers and random.random() < 0.3:
+            racial_addition = random.choice(racial_modifiers[race_lower])
+            base_purpose += f", {racial_addition}"
         
-        "farmer": [
-            "work the sacred soil to feed the people of this hold, following Kynareth's eternal cycle",
-            "maintain the agricultural traditions that have sustained Nordic civilization for millennia",
-            "coax sustenance from the harsh northern earth through backbreaking labor and ancient wisdom",
-            "provide the foundation upon which all civilization rests - food for the hungry masses",
-            "preserve the farming techniques passed down through generations of my bloodline",
-            "endure the hardships of rural life while supporting the great cities and their grand ambitions",
-            "honor the old compact between farmer and land, giving back as much as I take"
-        ],
+        # Add disposition-based modifiers
+        if disposition >= 80:
+            enthusiasm_modifiers = [
+                "with great passion and dedication",
+                "knowing that I serve a noble and worthy cause",
+                "with the satisfaction that comes from meaningful work",
+                "while building lasting relationships with those I serve"
+            ]
+            if random.random() < 0.4:
+                base_purpose += f", {random.choice(enthusiasm_modifiers)}"
         
-        "hunter": [
-            "track game through the wilds while respecting the ancient laws of the hunt",
-            "provide meat and pelts for my community while maintaining nature's delicate balance",
-            "read the signs of forest and field that speak of dangers both natural and supernatural",
-            "follow the path of Hircine while honoring Kynareth's dominion over the natural world",
-            "venture into the deep woods where few dare tread, bringing back both bounty and warnings",
-            "preserve the hunting traditions that kept the Nords alive during their first harsh winters",
-            "serve as a bridge between civilization and the untamed wilderness beyond"
-        ],
+        elif disposition <= 30:
+            cynical_modifiers = [
+                "though I sometimes question whether it's worth the effort",
+                "despite the lack of appreciation I receive for my efforts",
+                "while dealing with more fools and ingrates than any person should",
+                "though the pay barely covers my expenses and the risks"
+            ]
+            if random.random() < 0.3:
+                base_purpose += f", {random.choice(cynical_modifiers)}"
         
-        "miner": [
-            "delve deep into the earth's bones, seeking the precious metals that fuel civilization",
-            "follow veins of ore through dangerous tunnels where cave-ins and worse things lurk",
-            "extract the wealth hidden in Skyrim's mountains while respecting the spirits of the deep",
-            "endure the darkness and danger of the mines to provide the raw materials for progress",
-            "work alongside my brothers in the dangerous depths where only trust keeps us alive",
-            "honor the ancient mining traditions while adapting to new techniques and deeper shafts",
-            "risk my life daily in the hope that my children might know a better future"
-        ],
-        
-        "mage": [
-            "study the fundamental forces that shape reality itself, wielding power beyond mortal ken",
-            "explore the mysteries of magic while respecting the dangerous forces I command",
-            "advance the understanding of the arcane arts for the betterment of all Tamriel",
-            "maintain the balance between the mortal world and the chaotic realm of Oblivion",
-            "preserve magical knowledge while training the next generation of spellcasters",
-            "serve as guardian against supernatural threats that mundane weapons cannot touch",
-            "seek to unlock the secrets of creation itself through careful study and experimentation"
-        ],
-        
-        "noble": [
-            "govern my lands and people with wisdom befitting my ancient bloodline",
-            "navigate the treacherous politics of court while serving the true needs of my subjects",
-            "maintain the old traditions of nobility - protection, justice, and responsible leadership",
-            "balance loyalty to the Empire with the growing demands of Nordic independence",
-            "preserve my family's honor while adapting to a rapidly changing political landscape",
-            "serve as a bridge between the common folk and the distant machinations of power",
-            "uphold the sacred duties of my station, whatever the personal cost may be"
-        ],
-        
-        # Hostile/Criminal roles
-        "bandit": [
-            "take what this harsh world owes me, since honest work brings only suffering",
-            "prey upon the wealthy travelers who flaunt their gold while others starve",
-            "survive in a world that offers nothing to those born without title or privilege",
-            "claim my share of Skyrim's wealth through strength and cunning rather than birthright",
-            "live free from the laws that serve only the rich and powerful",
-            "make the roads dangerous for those who would exploit the common folk",
-            "build my own kingdom in the wilderness, far from the corruption of civilization"
-        ],
-        
-        "thief": [
-            "redistribute wealth from those who have too much to those who have nothing",
-            "practice the ancient art of stealth and cunning in a world ruled by brute force",
-            "survive by my wits in a society that offers no legitimate opportunities for advancement",
-            "follow the shadowy path that leads to secrets and treasures others cannot reach",
-            "serve the Guild's ancient codes while profiting from the chaos of civil war",
-            "prove that skill and intelligence matter more than inherited privilege",
-            "operate in the spaces between law and chaos where true freedom exists"
-        ],
-        
-        "forsworn": [
-            "reclaim the ancient lands of the Reach that were stolen by Nordic invaders",
-            "serve the old gods who demand blood vengeance for generations of oppression",
-            "preserve the true heritage of the Reachmen against Imperial and Nordic corruption",
-            "wage eternal war against the usurpers who drove my people into the wilderness",
-            "honor the ancient pacts with Hagravens and the spirits of the wild",
-            "prove that the Reach will never be tamed by foreign laws and foreign gods",
-            "carry on the struggle that began when the first Nord set foot in our sacred lands"
-        ],
-        
-        "vampire": [
-            "embrace the eternal night that frees me from mortal concerns and limitations",
-            "feed upon the living while building power that spans centuries rather than mere decades",
-            "serve the will of Molag Bal while maintaining my facade among the cattle of mortality",
-            "accumulate knowledge and influence across the ages that mortals cannot comprehend",
-            "prove that undeath is evolution, not curse, despite what the living might believe",
-            "maintain the ancient bloodlines while adapting to a world that grows ever more hostile",
-            "rule from the shadows, manipulating mortal affairs like pieces on a grand game board"
-        ],
-        
-        "necromancer": [
-            "explore the forbidden arts that reveal death as merely another beginning",
-            "command the restless dead who serve more faithfully than any living follower",
-            "study the boundaries between life and death that lesser minds fear to examine",
-            "accumulate power through means that squeamish mortals refuse to consider",
-            "serve the will of the Daedric Princes who understand the true nature of existence",
-            "prove that the conventional morality of the masses is merely ignorance and weakness",
-            "build an undying empire where death has no meaning and power knows no limits"
-        ],
-        
-        # Faction-specific roles
-        "stormcloak_soldier": [
-            "fight for Skyrim's independence from the corrupt and weakened Empire",
-            "serve Ulfric Stormcloak's vision of a free Nordic homeland ruled by Nordic traditions",
-            "oppose the Thalmor's cultural imperialism and their outlawing of Talos worship",
-            "preserve the ancient ways of the Nords against foreign influence and corruption",
-            "prove that Nordic strength and honor can overcome Imperial politics and Elven manipulation",
-            "reclaim Skyrim's destiny from those who would sell it for temporary peace",
-            "fight for the right to worship Talos and maintain our ancestral traditions"
-        ],
-        
-        "imperial_soldier": [
-            "maintain unity within the Empire during its darkest hour of division",
-            "serve the greater good even when it requires difficult compromises and sacrifices",
-            "protect the peace that the Empire has maintained for centuries across Tamriel",
-            "oppose the chaos and bloodshed that Nordic independence would unleash",
-            "preserve the rule of law against the primitive tribalism of Stormcloak rebels",
-            "serve as a bulwark against the Thalmor's true agenda while maintaining necessary alliances",
-            "protect the common people from the devastation that civil war brings to all"
-        ],
-        
-        "thalmor_justiciar": [
-            "enforce the terms of the White-Gold Concordat for the good of all Tamriel",
-            "root out the heretical worship of Talos that corrupts the natural order",
-            "serve the Aldmeri Dominion's mission to restore proper hierarchy to the world",
-            "investigate threats to the carefully maintained peace between Empire and Dominion",
-            "protect Altmer superiority against the jealous violence of lesser races",
-            "maintain surveillance over the primitive humans who cannot govern themselves",
-            "advance the Thalmor's righteous agenda through law, diplomacy, and necessary force"
-        ],
-        
-        # Creature/Undead roles
-        "draugr": [
-            "guard the ancient tombs and sacred barrows of my Nordic ancestors",
-            "serve in undeath as I served in life - protecting what must be protected",
-            "maintain the eternal vigil over treasures and secrets that must not be disturbed",
-            "honor the ancient oaths that bind me even beyond the grave",
-            "punish those who would defile the resting places of heroes and kings",
-            "preserve the old ways through endless, tireless guardianship",
-            "serve the dragon priests and ancient powers that commanded my loyalty in life"
-        ]
-    }
-    
-    # Racial modifiers for purposes
-    racial_modifiers = {
-        "nord": [
-            "while honoring the ancient traditions of my Nordic ancestors",
-            "following the path laid down by Ysgramor and the Five Hundred Companions",
-            "with the strength and determination that flows in Nordic blood",
-            "serving Skyrim and her people above all other loyalties"
-        ],
-        "imperial": [
-            "while maintaining the civilized order that the Empire represents",
-            "following the diplomatic traditions that built the greatest empire in history",
-            "with the administrative skill that has kept the Empire strong for centuries",
-            "serving the greater unity that transcends provincial boundaries"
-        ],
-        "dunmer": [
-            "while adapting the ancient wisdom of Morrowind to these northern lands",
-            "following the complex traditions of the Great Houses and their endless intrigues",
-            "with the cunning and resilience that helped my people survive the Red Year",
-            "serving the interests of Dunmer refugees while respecting our hosts"
-        ],
-        "altmer": [
-            "while maintaining the superior standards befitting the Aldmeri heritage",
-            "following the ancient wisdom preserved in the Summerset Isles for millennia",
-            "with the refined skill and knowledge that comes from centuries of study",
-            "serving the cause of proper order and hierarchy in this chaotic world"
-        ],
-        "redguard": [
-            "while honoring the warrior traditions of Hammerfell and the Way of the Sword",
-            "following the code of honor that has defined Redguard culture for ages",
-            "with the martial skill and personal integrity that flows in Yokudan blood",
-            "serving the cause of honor and justice wherever it may lead"
-        ],
-        "khajiit": [
-            "while following the moonpaths that guide all children of Elsweyr",
-            "adapting to northern customs while maintaining the wisdom of the Khajiit",
-            "with the curiosity and cunning that serves Khajiit well in foreign lands",
-            "serving the greater tapestry that connects all things under Jone and Jode"
-        ],
-        "argonian": [
-            "while following the guidance of the Hist even in these distant marshless lands",
-            "adapting the ancient wisdom of Black Marsh to the challenges of the north",
-            "with the patience and resilience that flows from the deep swamps of home",
-            "serving the mysterious purposes that only the Hist truly understand"
-        ],
-        "orc": [
-            "while maintaining the strength and honor that defines the Orsimer people",
-            "following the Code of Malacath even when surrounded by those who misunderstand it",
-            "with the forge-skill and warrior's heart that flows in Orcish blood",
-            "serving the cause of strength and honest labor in a world full of weaklings"
-        ],
-        "breton": [
-            "while balancing the practical wisdom of High Rock with mystical understanding",
-            "following the merchant traditions that have made Bretons successful across Tamriel",
-            "with the magical heritage and political acumen that defines my people",
-            "serving the cause of profitable cooperation and mutual advancement"
-        ],
-        "bosmer": [
-            "while respecting the Green Pact and the natural order even in these northern forests",
-            "following the ancient ways of Valenwood adapted to Skyrim's harsh environment",
-            "with the woodland wisdom and keen senses that flow in Bosmer blood",
-            "serving the balance between civilization and the wild that sustains all life"
-        ]
-    }
-    
-    # Select appropriate purpose based on role
-    base_purposes = []
-    for role_key in purpose_descriptions:
-        if role_key in role_lower:
-            base_purposes = purpose_descriptions[role_key]
-            break
-    
-    # Fallback for unspecified roles
-    if not base_purposes:
-        generic_purposes = [
-            "make my way in this world as best I can during these troubled times",
-            "serve my community while pursuing my own interests and ambitions",
-            "navigate the complexities of life in Skyrim during an age of civil war",
-            "maintain my livelihood while staying true to my principles and beliefs",
-            "contribute to society while protecting what matters most to me",
-            "find my place in a world that seems to grow more dangerous each day",
-            "pursue my goals while respecting the ancient traditions of this land"
-        ]
-        base_purposes = generic_purposes
-    
-    # Select base purpose
-    base_purpose = random.choice(base_purposes)
-    
-    # Add racial modifier if applicable (30% chance)
-    if race_lower in racial_modifiers and random.random() < 0.3:
-        racial_addition = random.choice(racial_modifiers[race_lower])
-        base_purpose += f", {racial_addition}"
-    
-    # Add disposition-based modifiers
-    if disposition >= 80:
-        enthusiasm_modifiers = [
-            "with great passion and dedication",
-            "knowing that I serve a noble and worthy cause",
-            "with the satisfaction that comes from meaningful work",
-            "while building lasting relationships with those I serve"
-        ]
-        if random.random() < 0.4:
-            base_purpose += f", {random.choice(enthusiasm_modifiers)}"
-    
-    elif disposition <= 30:
-        cynical_modifiers = [
-            "though I sometimes question whether it's worth the effort",
-            "despite the lack of appreciation I receive for my efforts",
-            "while dealing with more fools and ingrates than any person should",
-            "though the pay barely covers my expenses and the risks"
-        ]
-        if random.random() < 0.3:
-            base_purpose += f", {random.choice(cynical_modifiers)}"
-    
-    return base_purpose
+        return base_purpose
 
     def share_rumor(self, player, current_location) -> None:
         """
@@ -945,7 +947,7 @@ class NPC:
         Can also lead to the offering of a quest.
         """
         if self.disposition < 35:
-            UI.slow_print(UI.capitalize_dialogue(f"“{random.choice(['I have no time for idle gossip.', 'Find someone else to bother with your trivial questions.'])}”"))
+            UI.slow_print(UI.capitalize_dialogue(f'"{random.choice(["I have no time for idle gossip.", "Find someone else to bother with your trivial questions."])}"'))
             return
 
         # Call the dedicated rumor generation function, passing NPC's unique ID as quest_giver_id
@@ -953,216 +955,18 @@ class NPC:
         rumor_text = rumor_output["text"] # This is already capitalized by rumors.py
         quest_data: Optional[Quest] = rumor_output.get("quest_data") # Now returns Quest object or None
 
-        UI.slow_print(f"“{rumor_text}”")
+        UI.slow_print(f'"{rumor_text}"')
 
         # Logic for offering quest if rumor generates one
         if quest_data:
             # Check if player already has this quest or has completed it
             if player.quest_log.get_quest_by_id(quest_data.quest_id):
-                UI.slow_print(UI.capitalize_dialogue(f"“It seems you're already familiar with that matter, {player.name}.”"))
+                UI.slow_print(UI.capitalize_dialogue(f'"It seems you\'re already familiar with that matter, {player.name}."'))
             else:
                 self._offer_quest(player, quest_data)
 
     def _offer_quest(self, player, quest: Quest) -> None:
         """Internal method to handle the quest offering dialogue."""
-        UI.slow_print(f"“And speaking of such things... I've heard there's a need for someone to {quest.description.lower().split('.')[0]}.”")
+        UI.slow_print(f'"And speaking of such things... I\'ve heard there\'s a need for someone to {quest.description.lower().split(".")[0]}."')
         if quest.initial_flavor_text:
-            UI.slow_print(f"“{quest.initial_flavor_text}”")
-
-        UI.print_line('-')
-        UI.print_info(f"Quest: {quest.title}")
-        UI.print_info(f"Objective: {quest.description}") # Quest's overall description
-        UI.print_info(f"Current Stage Tasks:")
-        current_stage_objectives = quest.current_stage.get("objectives", []) if quest.current_stage else []
-        for obj in current_stage_objectives:
-            UI.print_info(f"  - {obj.get('note', 'A task awaits.')}")
-
-        reward_parts = []
-        if isinstance(quest.reward, dict):
-            for r_type, r_value in quest.reward.items():
-                if isinstance(r_value, Item):
-                    reward_parts.append(f"{r_value.name} (Item)")
-                else:
-                    reward_parts.append(f"{r_value} {r_type.capitalize()}")
-        else:
-            reward_parts.append(str(quest.reward))
-        reward_display_str = ", ".join(reward_parts) if reward_parts else "a token of my gratitude"
-        UI.print_info(f"Reward: {reward_display_str}")
-        UI.print_line('-')
-
-        while True:
-            quest_action_prompt = UI.print_prompt("Your response? [1] Accept [2] Decline [3] Consider it further").strip()
-            if quest_action_prompt == "1":
-                if player.quest_log.add_quest(quest):
-                    UI.slow_print(UI.capitalize_dialogue(f"“Excellent! I knew I could count on you, {player.name}. The details are in your journal.”"))
-                    self.disposition = min(100, self.disposition + random.randint(3, 7))
-                else:
-                    UI.slow_print(UI.capitalize_dialogue("“It seems you already have this task, or your journal is full. A pity.”"))
-                self.has_offered_quest = True
-                break
-            elif quest_action_prompt == "2":
-                UI.slow_print(UI.capitalize_dialogue(f"“{random.choice(['A pity. I had hoped for assistance.', 'Very well. The task will fall to another, then.', 'Understandable. Not all are suited for such endeavors.'])}”"))
-                self.disposition = max(0, self.disposition - random.randint(1, 4))
-                self.has_offered_quest = True
-                break
-            elif quest_action_prompt == "3":
-                UI.slow_print(UI.capitalize_dialogue(f"“{random.choice(['As you wish. The opportunity may not last indefinitely.', 'Do not tarry too long if you intend to help.', 'Consider it, then. But time is often a factor.'])}”"))
-                break
-            else:
-                UI.slow_print("A clear answer is expected, traveler.")
-
-    def _discuss_place(self, current_location) -> None:
-        """Provides a tag/flavor related answer when asked about the location."""
-        loc_name = current_location.get("name", "this place")
-        loc_tags = current_location.get("tags", [])
-
-        class DummyLocationForFlavor:
-            def __init__(self, tags_list):
-                self.tags = {"location": {}}
-                for tag_type, possible_values in tags.LOCATIONS.items():
-                    found_tags = [t for t in tags_list if t in possible_values]
-                    if found_tags:
-                        self.tags["location"][tag_type] = found_tags
-
-        dummy_loc_entity = DummyLocationForFlavor(loc_tags)
-        flavor_vignettes = flavor.get_flavor(dummy_loc_entity)
-
-        if flavor_vignettes:
-            chosen_flavor = random.choice(flavor_vignettes)
-            UI.slow_print(UI.capitalize_dialogue(f"“Ah, {loc_name}. {chosen_flavor}”"))
-        else:
-            comments = []
-            if "city" in loc_tags: comments.append("It's a major hub, always something happening, for better or worse.")
-            if "town" in loc_tags: comments.append("A decent enough place. Quieter than the big cities, which suits some folk.")
-            if "village" in loc_tags: comments.append("A small, tight-knit community. We look out for each other here.")
-            if "tavern" in loc_tags or "inn" in loc_tags: comments.append("A good place to rest your feet, share a drink, and hear the latest news... or tall tales.")
-            if "mountain" in loc_tags: comments.append("The air here is thin, and the peaks are unforgiving. Beautiful, but dangerous.")
-            if "forest" in loc_tags: comments.append("The woods are deep and old here. Many secrets, and many dangers, lie within.")
-            if "mine" in loc_tags: comments.append("Many fortunes have been made and lost in these mines. A hard life, but honest work.")
-
-            if comments:
-                UI.slow_print(UI.capitalize_dialogue(f"“Ah, {loc_name}. {random.choice(comments)}”"))
-            else:
-                UI.slow_print(UI.capitalize_dialogue(f"“{loc_name}... It is what it is. Not much else to say about it, really.”"))
-
-    def dialogue(self, player, current_location) -> None:
-    """
-    Handles the dialogue interaction with the player.
-    """
-        UI.clear_screen()
-    player.add_talked_to_npc(self.unique_id)
-
-        UI.slow_print(f"You approach {self.name} ({self.role.replace('_',' ').capitalize()}). Disposition: {self.disposition}")
-    
-    # Display description as narrative text (unquoted)
-        UI.slow_print(f"{self.purpose.capitalize()}")
-    
-    # Display greeting as actual dialogue (quoted)
-        UI.slow_print(f'"{self.greeting}"')
-
-        options_texts = []
-        quests_to_turn_in = player.quest_log.get_quests_for_turn_in(self.unique_id)
-
-        # Always show turn-in option first if available
-        if quests_to_turn_in:
-            options_texts.append("Turn in a completed quest")
-
-        # Standard options
-        options_texts.append("Ask for rumors or work")
-        options_texts.append("Ask about your work/purpose")
-        options_texts.append("Discuss this place")
-        options_texts.append("Farewell")
-
-        while True:
-            UI.print_menu(options_texts)
-            choice_input = UI.print_prompt("Your response? (Enter number)").strip()
-
-            if not choice_input.isdigit():
-                UI.slow_print("Please enter a valid number for your choice.")
-                UI.press_enter()
-                continue
-
-            choice_idx = int(choice_input)
-            action_taken = False
-
-            chosen_option_text = None
-            if 1 <= choice_idx <= len(options_texts):
-                chosen_option_text = options_texts[choice_idx - 1]
-
-            if chosen_option_text == "Turn in a completed quest":
-                if quests_to_turn_in:
-                    UI.slow_print("Which quest do you wish to turn in?")
-                    for i, quest in enumerate(quests_to_turn_in):
-                        UI.slow_print(f"[{i+1}] {quest.title}")
-
-                    turn_in_choice = UI.print_prompt("Enter number: ")
-                    if turn_in_choice.isdigit():
-                        turn_in_idx = int(turn_in_choice) - 1
-                        if 0 <= turn_in_idx < len(quests_to_turn_in):
-                            quest_to_process = quests_to_turn_in[turn_in_idx]
-
-                            # Handle custom turn-in dialogue keys
-                            turn_in_dialogue = "Thank you, {player_name}. Your efforts are much appreciated."
-                            if quest_to_process.current_stage and "turn_in_dialogue_key" in quest_to_process.current_stage:
-                                # This would ideally fetch from a DIALOGUE_TEMPLATES dict keyed by turn_in_dialogue_key
-                                # For now, just a placeholder to show it's dynamic
-                                custom_key = quest_to_process.current_stage["turn_in_dialogue_key"]
-                                if custom_key == "thalmor_interrogation_success_speech_turn_in":
-                                    turn_in_dialogue = "You managed to diffuse the situation with the Thalmor without bloodshed. A rare skill. Your discretion is noted, and the Khajiit caravan master sends his gratitude."
-                                elif custom_key == "thalmor_interrogation_success_force_turn_in":
-                                    turn_in_dialogue = "You fought off the Thalmor! Bold, but perhaps reckless. Still, the Khajiit are free, and many who chafe under the Aldmeri Dominion will quietly praise your name."
-                                else:
-                                    turn_in_dialogue = "You've done well, traveler. I commend your actions."
-
-
-                            UI.slow_print(UI.capitalize_dialogue(f"“Ah, you've completed '{quest_to_process.title}'! Excellent work!”"))
-                            UI.slow_print(UI.capitalize_dialogue(f"“{turn_in_dialogue.format(player_name=player.name)}”"))
-                            process_quest_rewards(player, quest_to_process)
-                            player.quest_log.remove_quest(quest_to_process.quest_id)
-                            self.disposition = min(100, self.disposition + random.randint(5, 10))
-                            quests_to_turn_in = player.quest_log.get_quests_for_turn_in(self.unique_id) # Re-check
-                            if not quests_to_turn_in and "Turn in a completed quest" in options_texts:
-                                options_texts.remove("Turn in a completed quest")
-                        else:
-                            UI.slow_print("Invalid choice.")
-                    else:
-                        UI.slow_print("Invalid input.")
-                else:
-                    UI.slow_print("You have no completed quests to turn in to me.")
-                action_taken = True
-
-            elif chosen_option_text == "Ask for rumors or work":
-                self.share_rumor(player, current_location)
-                action_taken = True
-
-            elif chosen_option_text == "Ask about your work/purpose":
-                UI.slow_print(f"“As I said, I {self.purpose}”")
-                if self.disposition > 60 and "merchant" in self.role.lower():
-                    UI.slow_print(UI.capitalize_dialogue(f"“Perhaps you're looking to buy or sell, {player.name}? I have a few things that might interest you, or I might be interested in what you carry.”"))
-                elif self.disposition > 55 and "guard" in self.role.lower():
-                    UI.slow_print(UI.capitalize_dialogue(f"“Just try to stay out of trouble. That makes my job easier.”"))
-
-                if not self.has_offered_quest and random.random() < 0.4:
-                     UI.slow_print(UI.capitalize_dialogue(f"“Actually, since you're asking, there is something that's been bothering me about my work...”"))
-                     quest_to_offer = generate_location_appropriate_quest(player.stats.level, current_location.get("tags", []), self.unique_id)
-                     if quest_to_offer and not player.quest_log.get_quest_by_id(quest_to_offer.quest_id):
-                         self._offer_quest(player, quest_to_offer)
-                     else:
-                         UI.slow_print(UI.capitalize_dialogue(random.choice(["“But perhaps it's best not to burden you with my troubles.”", "“Nevermind, I'll handle it myself.”"])))
-                action_taken = True
-
-            elif chosen_option_text == "Discuss this place":
-                self._discuss_place(current_location)
-                action_taken = True
-
-            elif chosen_option_text == "Farewell":
-                UI.slow_print(UI.capitalize_dialogue(f"“{random.choice(['Farewell, traveler.', 'May your path be clear.', 'Until next time.'])}”"))
-                return
-            else:
-                UI.slow_print("A clear answer is expected, traveler.")
-
-            if action_taken:
-                UI.press_enter()
-                UI.clear_screen()
-                UI.slow_print(f"You are speaking with {self.name}. Disposition: {self.disposition}")
-                UI.slow_print(f"“{self.greeting} {self.purpose}”")
+            UI.slow_
