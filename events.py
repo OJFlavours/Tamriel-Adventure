@@ -11,7 +11,93 @@ from npc import NPC, HOSTILE_ROLES # To potentially spawn NPCs directly
 from exploration_data import EXPLORATION_RESULTS
 # from npc import generate_npc_from_tags # Conceptual import, depends on implementation
 
-
+def trigger_random_event(location_tags, player, ui, current_location):
+    """Triggers a random event based on location tags."""
+    try:
+        if not location_tags:
+            return None
+            
+        # Find matching events based on location tags
+        possible_events = []
+        
+        for tag in location_tags:
+            if tag in RANDOM_EVENTS:
+                possible_events.extend(RANDOM_EVENTS[tag])
+        
+        # If no specific events found, try generic travel events
+        if not possible_events:
+            possible_events = RANDOM_EVENTS.get("generic_travel", [])
+        
+        if not possible_events:
+            return None
+            
+        # Select a random event
+        selected_event = random.choice(possible_events)
+        
+        # Display the event
+        ui.slow_print(selected_event["description"])
+        
+        # Process the event based on its type
+        event_type = selected_event.get("type", "flavor")
+        details = selected_event.get("details", {})
+        
+        if event_type == "flavor_and_buff":
+            # Apply any buffs mentioned in the event
+            if "minor_buff_debuff" in details:
+                buff_info = details["minor_buff_debuff"]
+                ui.slow_print(f"You feel the blessing of {details.get('god_mention', 'the divine')}!")
+                
+        elif event_type == "item_and_flavor":
+            # Give items to the player
+            item_keys = details.get("item_keys", [])
+            for item_key in item_keys:
+                qty_range = details.get(f"quantity_range_{item_key}", (1, 1))
+                qty = random.randint(qty_range[0], qty_range[1])
+                for _ in range(qty):
+                    from items import generate_item_from_key
+                    new_item = generate_item_from_key(item_key, player.level)
+                    if new_item:
+                        if player.add_item(new_item):
+                            ui.slow_print(f"You acquired: {new_item.name}!")
+                        else:
+                            ui.slow_print(f"You found {new_item.name}, but your inventory is full!")
+                            
+        elif event_type in ["npc_interaction_and_quest_lead", "npc_interaction_choice"]:
+            # Spawn an NPC interaction
+            if "npc_spawn_info" in details:
+                npc_info = details["npc_spawn_info"]
+                ui.slow_print(f"You encounter a {npc_info.get('role', 'stranger').replace('_', ' ')}!")
+                if details.get("dialogue_lead"):
+                    ui.slow_print(f"They say: \"{details['dialogue_lead']}\"")
+                    
+        elif event_type in ["combat_encounter", "combat_encounter_tough", "combat_encounter_boss"]:
+            # Handle combat encounters
+            if "enemy_spawn_info" in details:
+                ui.slow_print(details.get("flavor_text", "You are attacked!"))
+                ui.slow_print("Combat would be initiated here!")
+                
+        elif event_type == "quest_lead_and_item":
+            # Give quest-related items
+            item_key = details.get("item_key")
+            if item_key:
+                from items import generate_item_from_key
+                new_item = generate_item_from_key(item_key, player.level)
+                if new_item:
+                    if player.add_item(new_item):
+                        ui.slow_print(f"You discovered: {new_item.name}!")
+                    else:
+                        ui.slow_print(f"You found {new_item.name}, but your inventory is full!")
+                        
+        else:
+            # Default flavor event
+            ui.slow_print("The moment passes, leaving you with a sense of the world's deeper mysteries.")
+        
+        return selected_event
+        
+    except Exception as e:
+        ui.print_failure(f"Error in trigger_random_event: {e}")
+        return None
+        
 # --- DYNAMICALLY GENERATED DUNGEON_NAMES (from your provided code) ---
 def get_all_dungeon_style_locations(locations_data):
     dungeon_names = set()
