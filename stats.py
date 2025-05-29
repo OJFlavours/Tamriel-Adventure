@@ -206,7 +206,8 @@ class Player:
     managing inventory, equipment, quest log, and various quest-related trackers.
     """
     def __init__(self, name: str, race: str, subclass: str, stats: Stats, skills: Dict[str, int]):
-        self.name = name
+        self.full_name = name # Store the full name (including surname, if any)
+        self.name = name.split(" ")[0] # Store only the first name for simpler references
         self.race = race
         self.subclass = subclass
         self.stats = stats      # The actual Stats object instance

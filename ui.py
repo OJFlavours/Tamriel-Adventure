@@ -153,7 +153,7 @@ class UI:
         # Ensure 'character_class' is an attribute of player or player.stats
         # For now, using player.subclass as a fallback if character_class is not set
         class_display = getattr(player, 'character_class', player.subclass if hasattr(player, 'subclass') else 'Adventurer')
-        UI.print_info(f"Name: {player.name}, Level: {player.level} {player.race.capitalize()} {class_display.capitalize()}")
+        UI.print_info(f"Name: {player.full_name}, Level: {player.level} {player.race.capitalize()} {class_display.capitalize()}")
         UI.print_info(f"Health: {player.stats.current_health}/{player.stats.max_health}")
         UI.print_info(f"Magicka: {player.stats.current_magicka}/{player.stats.max_magicka}")
         UI.print_info(f"Fatigue: {player.stats.current_fatigue}/{player.stats.max_fatigue}")

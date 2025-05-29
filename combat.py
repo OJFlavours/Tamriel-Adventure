@@ -239,7 +239,7 @@ class Combat:
 
     def player_turn(self) -> bool:
         """Handles the player's combat turn"""
-        UI.print_subheading(f"{self.player.name}'s Turn")
+        UI.print_subheading(f"{self.player.full_name}'s Turn")
         UI.print_info(f"Health: {self.player.stats.current_health}/{self.player.stats.max_health}")
         UI.print_info(f"Magicka: {self.player.stats.current_magicka}/{self.player.stats.max_magicka}")
         UI.print_info(f"Fatigue: {self.player.stats.current_fatigue}/{self.player.stats.max_fatigue}")

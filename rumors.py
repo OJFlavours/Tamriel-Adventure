@@ -36,7 +36,7 @@ QUEST_TEMPLATES = [
         ],
         "reward_tags": ["gold", "experience", "item"],
         "lore_tags": ["bandits", "road_safety", "local_threat"],
-        "location_tags_required": ["camp", "bandit_camp", "ruin_occupied", "wilderness_outpost", "tavern", "inn"], # Broadened
+        "location_tags_required": ["camp", "bandit_camp", "ruin_occupied", "wilderness_outpost"], # Removed "tavern", "inn"
         "level_range": (1, 5),
         "flavor_tags": {"quest": {"type": ["hunt", "clear"], "difficulty": ["easy","medium"]}},
         "turn_in_role_hint": ["guard_captain", "jarl_steward", "local_merchant"]
@@ -471,7 +471,11 @@ def generate_rumor(player_level: int, current_location: Dict[str, Any], quest_gi
         if "errand" in quest_data_object.quest_id or "generic_errand" in quest_type_tags_list :
              rumor_text = f"Heard that someone over in {quest_data_object.location.get('name', 'a nearby place')} might have a small task, if you're not too busy for simple work."
         else:
-             rumor_text = f"There's talk of trouble over at {quest_data_object.location.get('name', 'a place nearby')}. Something about {action_verb} '{quest_data_object.title}'. Sounds like it could use a capable hand."
+             # Combine the initial hook, first sentence of description, and flavor text
+             short_desc_snippet = quest_data_object.description.split('.')[0] # First sentence of quest description
+             # Add a space if flavor text exists, otherwise just use the snippet
+             flavor_snippet = f" {quest_data_object.initial_flavor_text}" if quest_data_object.initial_flavor_text else ""
+             rumor_text = f"There's talk of trouble over at {quest_data_object.location.get('name', 'a place nearby')}. {short_desc_snippet}.{flavor_snippet} Sounds like it could use a capable hand."
     else:
         location_tags = current_location.get("tags", [])
         parent_loc_name = current_location.get("parent_name", "the capital city")
@@ -498,18 +502,5 @@ def generate_rumor(player_level: int, current_location: Dict[str, Any], quest_gi
         rumor_list_for_category = FLAVOR_RUMOR_TEMPLATES.get(chosen_rumor_category_key, FLAVOR_RUMOR_TEMPLATES["general_skyrim"])
         rumor_template = random.choice(rumor_list_for_category)
         rumor_text = _replace_placeholders_in_rumor(rumor_template, current_location)
-
-        # Try to get a generic rumor starter phrase from flavor.py if available and not already too long
-        if len(rumor_text) < 100: # Only add starter if rumor is short
-            generic_rumor_starts = []
-            if hasattr(flavor, 'DIALOGUE_FLAVORS') and "topic" in flavor.DIALOGUE_FLAVORS and "rumor" in flavor.DIALOGUE_FLAVORS["topic"]:
-                generic_rumor_starts = flavor.DIALOGUE_FLAVORS["topic"].get("rumor", []) # Use .get for safety
-            
-            if generic_rumor_starts and random.random() < 0.3: # Less chance to prepend generic starter
-                # Filter out the "Whispering tales..." type of starter
-                actual_starters = [s for s in generic_rumor_starts if "whispering tales" not in s.lower() and "spreading speculation" not in s.lower()]
-                if actual_starters:
-                     rumor_text = f"{random.choice(actual_starters)} {rumor_text}"
-
 
     return {"text": UI.capitalize_dialogue(rumor_text.strip()), "quest_data": quest_data_object}
