@@ -1,14 +1,15 @@
 # npc.py
 import random
-from stats import Stats, RACES
+from stats import Stats, RACES # Player class is now in player.py
 from items import Item
 from ui import UI # Import UI for capitalization and debug messages
 # Import Quest and generate_location_appropriate_quest from quests.py
 from quests import Quest, generate_location_appropriate_quest, QuestLog, process_quest_rewards
 from tags import TAGS, get_tags
 import flavor
-from exploration_data import EXPLORATION_RESULTS # Needed if NPCs can provide specific exploration hints
-from rumors import generate_rumor # for generating rumors in NPC dialogue
+from exploration_data import EXPLORATION_RESULTS
+from rumors import generate_rumor
+from spells import get_spell, Spell # Import for NPC spellcasting
 
 # Define roles that imply noble or commoner status (from original)
 NOBLE_ROLES = {"noble", "jarl", "thane", "baron", "lady", "duke", "duchess", "court_mage", "advisor"}
@@ -352,6 +353,13 @@ NAME_POOLS = {
             "female": [],
             "commoner_surnames": ["of-Vengeance", "Shadow-Walker", "Grave-Wail", "Spirit-Caller", "of-the-Grave"]
         }
+    },
+    "spirit_wolf": { # For summoned Spectral Wolf
+        "commoner": { # Summons don't really have noble/commoner distinction
+            "male": ["Spectral Packmate", "Ghostly Hunter", "Spirit Hound"], # Names for variety if needed
+            "female": [], # Typically genderless
+            "commoner_surnames": [] # No surnames
+        }
     }
 }
 # Add a unique ID to each NPC name in NAME_POOLS for tracking purposes (from original)
@@ -376,7 +384,15 @@ class NPC:
         self.level = max(1, level)
         self.disposition = disposition
         self.gold = gold
-        self.has_offered_quest = False # Flag to prevent offering the same quest repeatedly
+        self.has_offered_quest = False
+        self.is_follower = False # New attribute to track follower status
+        self.mercenary_hire_cost = 0
+        if "mercenary" in self.role.lower():
+            self.mercenary_hire_cost = 50 + self.level * 10
+        
+        self.known_spells: list[Spell] = []
+        # self.combat_archetype will be set after role is fully determined.
+
 
         # Assign unique_id for this NPC instance (from original)
         if name is None:
@@ -399,21 +415,33 @@ class NPC:
                 gender_specific_pool = [f"unknown_npc_{random.randint(10,99)}"] # Final fallback
 
             chosen_id_from_pool = random.choice(gender_specific_pool)
-            first_name = chosen_id_from_pool.split('_')[0].capitalize() # Display name is first part of ID
-            self.unique_id = chosen_id_from_pool # Use the full ID from NAME_POOLS
+            # Extract the base name part from the ID (e.g., "ulfric" from "ulfric_stormcloak_123")
+            # The unique_id itself (e.g., "ulfric_stormcloak_123") is stored for internal tracking.
+            self.unique_id = random.choice(gender_specific_pool)
+            first_name_base = self.unique_id.split('_')[0].capitalize()
 
-            # Add surname if available for the race
-            if self.race in NAME_POOLS and (
-                "noble_surnames" in specific_name_pool or "commoner_surnames" in specific_name_pool
-            ):
-                surname_pool = specific_name_pool.get("noble_surnames") or specific_name_pool.get("commoner_surnames")
-                if surname_pool:
-                    surname = random.choice(surname_pool)
-                    self.name = f"{first_name} {surname}"
-                else:
-                    self.name = first_name  # Just use the first name if no surnames
+            # Add surname if available for the race, ensuring it's cleaned and capitalized
+            final_surname = ""
+            if self.race in NAME_POOLS:
+                surname_key_type = "noble_surnames" if name_type == "noble" else "commoner_surnames"
+                surname_pool_ids = specific_name_pool.get(surname_key_type, [])
+                
+                if surname_pool_ids:
+                    chosen_surname_id = random.choice(surname_pool_ids) # e.g., "icestorm_123" or "battle-born_456"
+                    base_surname_part = chosen_surname_id.split('_')[0] # e.g., "icestorm" or "battle-born"
+                    
+                    if '-' in base_surname_part:
+                        # Capitalize each part of a hyphenated name like "battle-born" -> "Battle-Born"
+                        final_surname = '-'.join(word.capitalize() for word in base_surname_part.split('-'))
+                    else:
+                        # Capitalize single-word surnames like "icestorm" -> "Icestorm"
+                        final_surname = base_surname_part.capitalize()
+
+
+            if final_surname:
+                self.name = f"{first_name_base} {final_surname}"
             else:
-                self.name = first_name
+                self.name = first_name_base
 
         else: # If a specific name is provided (e.g., for quest givers)
             self.name = name
@@ -438,12 +466,50 @@ class NPC:
         base_skill_val = 5
 
         role_l = self.role.lower()
-        if any(s_role in role_l for s_role in ["mage", "scholar", "priest", "shaman", "necromancer", "cultist", "healer"]):
+        if role_l == "spectral_ally": # Specific skills for the spectral wolf
+            self.skills["one_handed"] = 20 + self.level * 2 # Represents bite/claw
+            self.skills["light_armor"] = 10 + self.level # Ethereal form might have some resilience
+            self.stats.strength = 30 + self.level * 3
+            self.stats.agility = 40 + self.level * 3
+            self.stats.endurance = 25 + self.level * 2
+            # Spectral allies might have a basic attack spell too
+            basic_attack_spell = get_spell("flames") # Example, could be a different "spirit bolt"
+            if basic_attack_spell:
+                self.known_spells.append(basic_attack_spell)
+
+        elif any(s_role in role_l for s_role in ["mage", "scholar", "priest", "shaman", "necromancer", "cultist", "healer", "mage_hostile"]):
             self.skills["destruction"] = random.randint(15, 30) + self.level * 2
             self.skills["restoration"] = random.randint(15, 30) + self.level * 2
             self.skills["alteration"] = random.randint(10, 25) + self.level
-            self.skills["conjuration"] = random.randint(10, 25) + self.level if "mage" in role_l or "necromancer" in role_l else base_skill_val
+            self.skills["conjuration"] = random.randint(10, 25) + self.level if "mage" in role_l or "necromancer" in role_l or "shaman" in role_l else base_skill_val
             self.skills["illusion"] = random.randint(10, 20) + self.level if "mage" in role_l or "illusionist_role" in role_l else base_skill_val
+            
+            # Assign some basic spells based on role
+            if "mage" in role_l or "scholar" in role_l or "mage_hostile" in role_l:
+                spell_keys = ["firebolt", "flames"]
+                if self.level > 5: spell_keys.append("lesser_ward")
+                for key in spell_keys:
+                    spell = get_spell(key)
+                    if spell: self.known_spells.append(spell)
+            elif "priest" in role_l or "healer" in role_l:
+                spell_keys = ["healing", "lesser_ward"]
+                for key in spell_keys:
+                    spell = get_spell(key)
+                    if spell: self.known_spells.append(spell)
+            elif "necromancer" in role_l or "cultist" in role_l:
+                spell_keys = ["firebolt"] # Could add a basic "drain life" or similar later
+                if self.level > 3: spell_keys.append("conjure_familiar") # Lower level necros might summon
+                for key in spell_keys:
+                    spell = get_spell(key)
+                    if spell: self.known_spells.append(spell)
+            elif "shaman" in role_l: # e.g. Forsworn Shaman
+                spell_keys = ["flames"] # Could be nature-themed later
+                if self.level > 4: spell_keys.append("healing")
+                for key in spell_keys:
+                    spell = get_spell(key)
+                    if spell: self.known_spells.append(spell)
+
+
         elif any(s_role in role_l for s_role in ["warrior", "guard", "bandit", "companion", "forsworn", "soldier", "legionnaire", "thug", "raider", "mercenary", "thalmor_justiciar"]): # Added thalmor
             self.skills["one_handed"] = random.randint(20, 35) + self.level * 2
             self.skills["block"] = random.randint(15, 30) + self.level
@@ -456,7 +522,7 @@ class NPC:
             self.skills["light_armor"] = random.randint(15, 30) + self.level
             self.skills["one_handed"] = random.randint(15,25) + self.level
             if "pickpocket" in role_l : self.skills["pickpocket"] = random.randint(25,40) + self.level * 2
-        else:
+        else: # Default for other roles
             self.skills["speech"] = random.randint(10, 30) + self.level
             self.skills[random.choice(["one_handed", "archery"])] = random.randint(5,15) + self.level
 
@@ -495,15 +561,36 @@ class NPC:
         self.add_tag("npc", "attitude", initial_attitude)
 
         # CORRECTED: These methods should be called on self after they are defined within the class
-        self.greeting = self._generate_greeting() 
+        self.greeting = self._generate_greeting()
         self.purpose = self._generate_purpose()
+        self.combat_archetype = self._determine_combat_archetype() # Call after role is set
+
+    def _determine_combat_archetype(self) -> str:
+        """Determines the NPC's combat archetype based on their role."""
+        role_l = self.role.lower()
+        if any(r in role_l for r in ["mage_hostile", "necromancer", "cultist", "court_mage", "shaman"]):
+            return "CautiousMage"
+        if any(r in role_l for r in ["priest", "healer"]):
+            return "SupportPriest"
+        if any(r in role_l for r in ["bandit_leader", "forsworn_briarheart", "warrior", "companion_warrior", "guard", "thalmor_justiciar"]):
+            return "AggressiveWarrior"
+        if any(r in role_l for r in ["bandit_archer", "forsworn_raider", "hunter", "scout", "thief_hostile"]): # Added thief_hostile
+            return "SkirmisherArcher"
+        if any(r in role_l for r in ["bandit", "bandit_thug", "forsworn_raider", "draugr_restless", "skeleton_warrior"]): # Generic melee
+            return "StandardMelee"
+        if "spectral_ally" in role_l: # Summons
+            return "AggressiveSummon"
+        if any(r in role_l for r in ["wolf", "bear", "spider", "chaurus", "_creature"]) or "creature" in role_l: # Broader creature matching
+            return "AggressiveCreature"
+        # Default archetype
+        return "StandardMelee"
 
     def __str__(self):
         return f"{self.name} ({self.role.replace('_',' ').capitalize()}, Level {self.level})"
 
     @property
-    def full_name(self):
-        return self.name
+    def full_name(self): # This property should return the formatted name
+        return self.name # self.name is now pre-formatted
 
     def add_tag(self, category, key, value):
         if category not in self.tags:
@@ -1131,6 +1218,8 @@ class NPC:
         base_purpose = random.choice(base_purposes)
         
         
+        
+        
         # Add racial modifier if applicable (30% chance)
         if race_lower in racial_modifiers and random.random() < 0.3:
             racial_addition = random.choice(racial_modifiers[race_lower])
@@ -1179,6 +1268,17 @@ class NPC:
         options_texts.append("Ask for rumors or work")
         options_texts.append("Ask about your work/purpose")
         options_texts.append("Discuss this place")
+
+        # Follower recruitment options
+        if not self.is_follower and self not in player.followers:
+            if "mercenary" in self.role.lower() and self.mercenary_hire_cost > 0:
+                options_texts.append(f"Offer to hire for {self.mercenary_hire_cost} gold")
+            elif self.role.lower() in ["adventurer", "companion_warrior", "explorer"] and self.disposition >= 65: # Example condition
+                options_texts.append("Ask to join your travels")
+        elif self.is_follower and self in player.followers:
+            options_texts.append("Dismiss from service")
+
+
         options_texts.append("Farewell")
 
         while True:
@@ -1241,7 +1341,57 @@ class NPC:
                 chosen_farewell = random.choice(farewell_messages)
                 formatted_farewell = f'"{chosen_farewell}"'
                 UI.slow_print(UI.capitalize_dialogue(formatted_farewell))
-                return # Exit dialogue
+                return
+            
+            elif chosen_option_text and "Offer to hire for" in chosen_option_text:
+                if player.stats.gold >= self.mercenary_hire_cost:
+                    player.stats.gold -= self.mercenary_hire_cost
+                    player.followers.append(self)
+                    self.is_follower = True
+                    self.disposition = min(100, self.disposition + 15)
+                    UI.slow_print(UI.capitalize_dialogue(f"\"{self.name} takes your coin. 'For this price, my blade is yours.'\""))
+                    options_texts.remove(chosen_option_text) # Remove hire option
+                    if "Ask to join your travels" in options_texts: options_texts.remove("Ask to join your travels")
+                    if "Dismiss from service" not in options_texts: options_texts.insert(-1, "Dismiss from service") # Add dismiss option before Farewell
+                else:
+                    UI.slow_print(UI.capitalize_dialogue(f"\"{self.name} scoffs. 'Come back when you have {self.mercenary_hire_cost} septims.'\""))
+                action_taken = True
+            
+            elif chosen_option_text == "Ask to join your travels":
+                # Chance-based recruitment for non-mercenaries
+                # Example: 30% base + personality bonus + disposition bonus
+                recruit_chance = 0.3 + (player.stats.personality / 200) + ((self.disposition - 50) / 100)
+                if random.random() < recruit_chance:
+                    player.followers.append(self)
+                    self.is_follower = True
+                    self.disposition = min(100, self.disposition + 20)
+                    UI.slow_print(UI.capitalize_dialogue(f"\"{self.name} considers your offer. 'Aye, the road is better with company. I'll join you!'\""))
+                    options_texts.remove(chosen_option_text)
+                    if any("Offer to hire for" in opt for opt in options_texts): # Remove hire option if it was there
+                        hire_opt_to_remove = next(opt for opt in options_texts if "Offer to hire for" in opt)
+                        options_texts.remove(hire_opt_to_remove)
+                    if "Dismiss from service" not in options_texts: options_texts.insert(-1, "Dismiss from service")
+                else:
+                    self.disposition = max(0, self.disposition - 5)
+                    UI.slow_print(UI.capitalize_dialogue(f"\"{self.name} shakes their head. 'Perhaps another time, traveler. My path lies elsewhere for now.'\""))
+                action_taken = True
+
+            elif chosen_option_text == "Dismiss from service":
+                if self in player.followers:
+                    player.followers.remove(self)
+                    self.is_follower = False
+                    self.disposition = max(0, self.disposition - 10)
+                    UI.slow_print(UI.capitalize_dialogue(f"\"{self.name} nods. 'As you wish. May our paths cross again.'\""))
+                    options_texts.remove(chosen_option_text)
+                    # Re-add recruitment options if applicable
+                    if "mercenary" in self.role.lower() and self.mercenary_hire_cost > 0 and f"Offer to hire for {self.mercenary_hire_cost} gold" not in options_texts:
+                        options_texts.insert(-1, f"Offer to hire for {self.mercenary_hire_cost} gold")
+                    elif self.role.lower() in ["adventurer", "companion_warrior", "explorer"] and "Ask to join your travels" not in options_texts:
+                         options_texts.insert(-1, "Ask to join your travels")
+                else:
+                    UI.slow_print("This person is not in your service.") # Should not happen if menu is correct
+                action_taken = True
+            
             else:
                 UI.slow_print("A clear answer is expected, traveler.")
 
@@ -1357,3 +1507,32 @@ class NPC:
                 UI.slow_print(UI.capitalize_dialogue(f"“Ah, {loc_name}. {random.choice(comments)}”")) # cite: ojflavours/tamriel-adventure/Tamriel-Adventure-7faa3d32903fe8bf60c6bcfc42234676e0ead1bf/npc.py
             else:
                 UI.slow_print(UI.capitalize_dialogue(f"“{loc_name}... It is what it is. Not much else to say about it, really.”")) # cite: ojflavours/tamriel-adventure/Tamriel-Adventure-7faa3d32903fe8bf60c6bcfc42234676e0ead1bf/npc.py
+# Assuming this is where the NPC list is generated and printed
+def display_npcs_at_location(npcs):
+    print("----------------------------------------------------------------------")
+    print("SOULS AT THE BANNERED MARE")
+    print("----------------------------------------------------------------------")
+    for i, npc in enumerate(npcs):
+        # The 'name' attribute of the NPC object (npc.name or npc.full_name)
+        # should now be correctly pre-formatted from NPC.__init__
+        # The npc object passed here is an instance of the NPC class, not a dictionary.
+        
+        # Access attributes directly from the NPC object
+        formatted_name = npc.full_name # Use the full_name property which returns the formatted self.name
+        job = npc.role.replace('_', ' ').capitalize() # Format role for display
+        race = npc.race.capitalize()
+        disposition_val = npc.tags.get("npc", {}).get("attitude", "neutral")
+        disposition_display = f"({disposition_val.capitalize()})"
+
+        print(f"[{i+1}] {formatted_name} — {job} ({race}) {disposition_display}")
+    print("----------------------------------------------------------------------")
+    print("With whom do you wish to parley? (0 to pass):")
+
+# Example usage (assuming you have a list of NPCs):
+# npcs = [
+#     {'name': 'Njada shatter-shield_332', 'job': 'Innkeeper', 'race': 'Nord', 'disposition': 'Friendly'},
+#     {'name': 'Benor sky-singer_444', 'job': 'Farmer', 'race': 'Nord', 'disposition': 'Friendly'},
+#     {'name': 'Ralof stone-fist_105', 'job': 'Farmer', 'race': 'Nord', 'disposition': 'Friendly'},
+#     {'name': 'Vorstag battle-born_976', 'job': 'Bard', 'race': 'Nord', 'disposition': 'Friendly'}
+# ]
+# display_npcs_at_location(npcs)

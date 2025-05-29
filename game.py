@@ -6,12 +6,13 @@ import traceback
 from datetime import datetime, timezone
 
 try:
-    from locations import LOCATIONS
-    from stats import Player, Stats, RACES, CLASSES
+    from locations import LOCATIONS, Location
+    from player import Player # Import Player from player.py
+    from stats import Stats, RACES, CLASSES # Import Stats, RACES, CLASSES from stats.py
     from npc import NPC, FRIENDLY_ROLES, HOSTILE_ROLES, NAME_POOLS
     from combat import Combat
     from ui import UI
-    from items import generate_random_item, Item, generate_item_from_key
+    from items import generate_random_item, Item, generate_item_from_key, Torch
     from events import trigger_random_event, explore_location # Now triggers events with more detail
     from quests import (
         QuestLog,
@@ -30,8 +31,7 @@ except ImportError as e:
     exit(1)
 
 # Globals
-known_locations = set() # Stores IDs of known locations
-known_locations_objects = [] # Stores actual location dictionaries for quest checking
+# known_locations and known_locations_objects are now player attributes
 npc_registry = {}
 game_start_time = None
 
@@ -134,16 +134,118 @@ def _find_hierarchy(loc_id):
 
 # --- Location, Exploration & Travel Functions ---
 
-def discover_connected_locations(location):
-    global known_locations
-    global known_locations_objects
+def get_hold_by_id(hold_id: int) -> Dict[str, Any] | None:
+    """Finds a hold by its ID from ALL_LOCATIONS."""
+    for loc in ALL_LOCATIONS:
+        if loc.get("id") == hold_id and "hold" in loc.get("tags", []):
+            return loc
+    return None
+
+def get_known_holds(player: Player) -> List[Dict[str, Any]]:
+    """Returns a sorted list of Hold location objects known by the player."""
+    known_holds = []
+    for loc_id in player.known_location_ids:
+        loc_obj = LOCATION_BY_ID.get(loc_id)
+        if loc_obj and "hold" in loc_obj.get("tags", []):
+            known_holds.append(loc_obj)
+    return sorted(known_holds, key=lambda x: x.get("name", ""))
+
+def get_known_primary_locations_in_hold(player: Player, hold_id: int) -> List[Dict[str, Any]]:
+    """
+    Returns a list of known primary locations (cities, towns, standalone dungeons, etc.)
+    that are direct children of the specified hold.
+    """
+    known_locs_in_hold = []
+    hold_obj = get_hold_by_id(hold_id) # Ensure we are working with the Hold object
+    if not hold_obj:
+        return []
+
+    for sub_loc_candidate in hold_obj.get("sub_locations", []):
+        if sub_loc_candidate["id"] in player.known_location_ids:
+            known_locs_in_hold.append(sub_loc_candidate)
+    
+    return sorted(known_locs_in_hold, key=lambda x: x.get("name", ""))
+
+def get_known_sub_locations(player: Player, parent_loc_id: int) -> List[Dict[str, Any]]:
+    """
+    Returns a list of known sub-locations (e.g., venues in a city)
+    for a given parent location ID.
+    """
+    known_subs = []
+    parent_loc_obj = LOCATION_BY_ID.get(parent_loc_id)
+    if not parent_loc_obj:
+        return []
+
+    for sub_loc_candidate in parent_loc_obj.get("sub_locations", []):
+        if sub_loc_candidate["id"] in player.known_location_ids:
+            known_subs.append(sub_loc_candidate)
+            
+    return sorted(known_subs, key=lambda x: x.get("name", ""))
+
+def process_travel(player: Player, destination_loc_obj: Dict[str, Any], previous_location_obj: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Handles the logic for a player arriving at a new location.
+    - Updates player's current location.
+    - Prints travel messages.
+    - Discovers connected and sub-locations.
+    - Handles tag inheritance for flavor text.
+    - Generates NPCs.
+    - Updates quest log.
+    Returns the destination_loc_obj.
+    """
+    UI.clear_screen()
+    UI.print_heading(f"Traveling to {destination_loc_obj['name']}")
+    # time.sleep(0.5) # Brief pause for travel feel
+
+    player.current_location_obj = destination_loc_obj
+    player.update_current_location_for_quest(destination_loc_obj)
+
+    # Auto-discover immediate sub-locations of the destination
+    if "sub_locations" in destination_loc_obj:
+        for sub_loc_to_discover in destination_loc_obj.get("sub_locations", []):
+            if sub_loc_to_discover["id"] not in player.known_location_ids:
+                player.known_location_ids.add(sub_loc_to_discover["id"])
+                if sub_loc_to_discover not in player.known_locations_objects:
+                    player.known_locations_objects.append(sub_loc_to_discover)
+    
+    discover_connected_locations(player, destination_loc_obj)
+
+    UI.slow_print(f"You arrive at {destination_loc_obj['name']}.")
+    UI.slow_print(destination_loc_obj['desc'])
+
+    tags_for_dest = list(destination_loc_obj.get("tags", []))
+    inheritable = tags.INHERITABLE_TAGS if hasattr(tags, 'INHERITABLE_TAGS') else set()
+    
+    parent_hold, parent_city = _find_hierarchy(destination_loc_obj["id"])
+    contextual_parent = None
+    if parent_city and parent_city["id"] != destination_loc_obj["id"]:
+        contextual_parent = parent_city
+    elif parent_hold and parent_hold["id"] != destination_loc_obj["id"]:
+        contextual_parent = parent_hold
+    
+    if contextual_parent:
+        tags_for_dest.extend([t for t in contextual_parent.get("tags", []) if t in inheritable])
+    tags_for_dest = list(set(tags_for_dest))
+
+    UI.slow_print(get_flavor_text(tags_for_dest, "location_tags", ensure_vignette=True))
+    
+    generate_npcs_for_location(destination_loc_obj)
+    
+    return destination_loc_obj
+
+def discover_connected_locations(player: Player, location_data: dict):
+    """
+    Discovers locations connected to the given location_data and updates
+    the player's known_location_ids and known_locations_objects.
+    """
     for mode in ("roads", "paths"):
-        for dest_name in location.get("travel", {}).get(mode, []):
-            dest_loc = LOCATION_BY_NAME.get(dest_name)
-            if dest_loc:
-                if dest_loc["id"] not in known_locations:
-                    known_locations.add(dest_loc["id"])
-                    known_locations_objects.append(dest_loc) # Add object to the list
+        for dest_name in location_data.get("travel", {}).get(mode, []):
+            dest_loc_obj = LOCATION_BY_NAME.get(dest_name)
+            if dest_loc_obj:
+                if dest_loc_obj["id"] not in player.known_location_ids:
+                    player.known_location_ids.add(dest_loc_obj["id"])
+                    if dest_loc_obj not in player.known_locations_objects: # Ensure no duplicates in list
+                        player.known_locations_objects.append(dest_loc_obj)
 
 def determine_city_type(city_obj):
     """Determines the display type string for a city-level location."""
@@ -177,286 +279,108 @@ def determine_venue_type(venue_obj):
     if "catacombs" in tags or "hall_of_the_dead" in tags : return "Catacombs"
     return "Point of Interest"
 
-def explore_and_travel_menu(player, current_location_param):
-    while True:
-        clear_screen()
-        UI.print_heading("Explore Known World (Map & Travel)")
-        UI.print_info(f"You are currently at: {current_location_param['name']}")
-        UI.print_line()
-
-        if not known_locations: # known_locations is a set of IDs
-            UI.slow_print("Your map remains blank, a world yet to be charted.")
-            UI.print_line()
+def explore_and_travel_menu(player: Player, current_location_param: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    New menu for exploring known locations and traveling, categorized by Hold.
+    """
+    while True: # Main travel loop (allows returning to Hold selection)
+        known_holds = get_known_holds(player)
+        if not known_holds:
+            UI.clear_screen()
+            UI.print_heading("World Map")
+            UI.print_info("You have not yet discovered any major Holds in Skyrim.")
             UI.press_enter()
             return current_location_param
 
-        # Determine player's current contextual Hold and City-level entity
-        player_contextual_hold, player_contextual_city = _find_hierarchy(current_location_param["id"])
-
-        display_map = {} # Stores [display_num_str] -> location_object
-        details_map = {} # Stores [display_num_str] -> {"parent_name": str, "type": str}
-        major_loc_counter = 0
-
-        # Sort all top-level holds in the game alphabetically for consistent display order
-        sorted_all_holds_in_game = sorted(
-            (loc for loc in ALL_LOCATIONS if "hold" in loc.get("tags", [])),
-            key=lambda x: x["name"]
+        # Stage 1: Select a Hold
+        selected_hold = UI.select_from_paginated_list(
+            options=[{"name": h["name"], "id": h["id"], "obj": h} for h in known_holds],
+            prompt_message="Select a Hold to view its locations (or 0 to cancel):"
         )
+        if not selected_hold: # Player cancelled Hold selection
+            return current_location_param
+        
+        selected_hold_obj = selected_hold["obj"]
 
-        for hold_obj_iterated in sorted_all_holds_in_game:
-            # Condition for displaying a Hold: It must be known by the player.
-            if hold_obj_iterated["id"] not in known_locations:
-                continue
+        while True: # Loop for selecting locations within the chosen Hold
+            known_primary_locs = get_known_primary_locations_in_hold(player, selected_hold_obj["id"])
+            
+            if not known_primary_locs:
+                UI.clear_screen()
+                UI.print_heading(f"Locations in {selected_hold_obj['name']}")
+                UI.print_info(f"You have not discovered any specific locations within {selected_hold_obj['name']} yet, beyond the Hold itself.")
+                # Option to "explore" the Hold generally, or travel to it if not already there.
+                options_for_empty_hold = [{"name": f"Explore {selected_hold_obj['name']} (General Area)", "id": selected_hold_obj["id"], "obj": selected_hold_obj, "is_general_hold": True}]
+                
+                # Add "Back to Hold Selection"
+                # No, select_from_paginated_list handles cancel with '0' which will break this inner loop.
 
-            major_loc_counter += 1
-            hold_num_str = str(major_loc_counter)
-            display_map[hold_num_str] = hold_obj_iterated
-            details_map[hold_num_str] = {"parent_name": None, "type": "Hold"}
+                chosen_action_for_empty_hold = UI.select_from_paginated_list(
+                    options=options_for_empty_hold,
+                    prompt_message=f"Choose an action for {selected_hold_obj['name']} (or 0 to go back to Hold selection):"
+                )
+                if not chosen_action_for_empty_hold: # Cancelled from empty hold options
+                    break # Break from inner loop, back to Hold selection
+                
+                # If "Explore General Area" is chosen
+                if chosen_action_for_empty_hold.get("is_general_hold"):
+                    if current_location_param["id"] == selected_hold_obj["id"]:
+                        UI.print_info(f"You are already in the general area of {selected_hold_obj['name']}.")
+                        UI.press_enter()
+                        # Stay in this menu, perhaps allow re-selection or examining the hold itself.
+                        # For now, just break to re-prompt hold selection.
+                        break
+                    else:
+                        return process_travel(player, selected_hold_obj, current_location_param)
+                else: # Should not happen with current logic for empty hold
+                    break
 
-            # --- Condition for displaying cities/towns/villages within this iterated_hold_obj ---
-            # Only show these if the iterated_hold_obj is the player's current contextual_hold.
-            # Or, if the player is at the hold level itself (player_contextual_city is None)
-            # and the iterated hold is the one they are in.
-            if player_contextual_hold and hold_obj_iterated["id"] == player_contextual_hold["id"]:
-                city_counter = 0
-                # Sort known city-level locations within this hold
-                sorted_cities_in_player_context_hold = sorted(
-                    (city for city in hold_obj_iterated.get("sub_locations", []) if city["id"] in known_locations),
-                    key=lambda x: x["name"]
+            # Stage 2: Select a Primary Location within the Hold
+            primary_loc_options = [{"name": f"{loc['name']} ({determine_city_type(loc)})", "id": loc["id"], "obj": loc} for loc in known_primary_locs]
+            
+            selected_primary_loc_choice = UI.select_from_paginated_list(
+                options=primary_loc_options,
+                prompt_message=f"Locations in {selected_hold_obj['name']} (or 0 to go back to Hold selection):"
+            )
+
+            if not selected_primary_loc_choice: # Player cancelled primary location selection
+                break # Break from inner loop, back to Hold selection
+            
+            selected_primary_loc_obj = selected_primary_loc_choice["obj"]
+            final_destination_obj = selected_primary_loc_obj # Default to this
+
+            # Stage 3: Select a Sub-Location (if applicable)
+            known_sub_locs = get_known_sub_locations(player, selected_primary_loc_obj["id"])
+            
+            if known_sub_locs:
+                sub_loc_options = [{"name": f"{sub['name']} ({determine_venue_type(sub)})", "id": sub["id"], "obj": sub} for sub in known_sub_locs]
+                # Add option to select the parent primary location itself
+                sub_loc_options.insert(0, {"name": f"{selected_primary_loc_obj['name']} (Main Area)", "id": selected_primary_loc_obj["id"], "obj": selected_primary_loc_obj, "is_main_area": True})
+
+                selected_sub_loc_choice = UI.select_from_paginated_list(
+                    options=sub_loc_options,
+                    prompt_message=f"Specific places within {selected_primary_loc_obj['name']} (or 0 to go back to locations in {selected_hold_obj['name']}):"
                 )
 
-                for city_obj_iterated in sorted_cities_in_player_context_hold:
-                    city_counter += 1
-                    city_num_str = f"{hold_num_str}.{city_counter}"
-                    display_map[city_num_str] = city_obj_iterated
-                    city_type_str = determine_city_type(city_obj_iterated)
-                    details_map[city_num_str] = {"parent_name": hold_obj_iterated["name"], "type": city_type_str}
-
-                    # --- Condition for displaying venues within this iterated_city_obj ---
-                    # Only show these if the iterated_city_obj is the player's current contextual_city.
-                    if player_contextual_city and city_obj_iterated["id"] == player_contextual_city["id"]:
-                        venue_counter = 0
-                        # Sort known venues within this city context
-                        sorted_venues_in_player_context_city = sorted(
-                            (venue for venue in city_obj_iterated.get("sub_locations", []) if venue["id"] in known_locations),
-                            key=lambda x: x["name"]
-                        )
-                        for venue_obj_iterated in sorted_venues_in_player_context_city:
-                            venue_counter += 1
-                            venue_num_str = f"{city_num_str}.{venue_counter}"
-                            display_map[venue_num_str] = venue_obj_iterated
-                            venue_type_str = determine_venue_type(venue_obj_iterated)
-                            details_map[venue_num_str] = {"parent_name": city_obj_iterated["name"], "type": venue_type_str}
-        
-        if not display_map:
-            UI.slow_print("You know of no specific mapped locations relevant to your current position or discovery level.")
-            UI.press_enter()
-            return current_location_param
-
-        UI.print_subheading("Known Locations:")
-        try:
-            # Sort keys for hierarchical display (e.g., 1, 1.1, 1.1.1, 2)
-            sorted_map_keys = sorted(display_map.keys(), key=lambda x: tuple(map(int, x.split('.'))))
-        except ValueError:
-            # Fallback sort if keys are not purely numeric dot-separated (should not happen with current logic)
-            sorted_map_keys = sorted(display_map.keys())
-
-        for num_str in sorted_map_keys:
-            loc_obj_to_display = display_map[num_str]
-            indent_level = num_str.count('.')
-            indent = "  " * indent_level # Two spaces per indent level
+                if not selected_sub_loc_choice: # Player cancelled sub-location selection
+                    continue # Continue inner loop (back to primary location selection for this hold)
+                
+                final_destination_obj = selected_sub_loc_choice["obj"]
             
-            # Construct a brief description, taking the first sentence.
-            desc_sentences = loc_obj_to_display["desc"].split(".")
-            brief_desc = desc_sentences[0] + "." if desc_sentences else loc_obj_to_display["desc"]
-            if len(desc_sentences) > 1 and brief_desc.count(' ') < 5 : # if first sentence is too short, add next
-                brief_desc += " " + desc_sentences[1].strip() + "."
-
-
-            type_display = details_map[num_str]["type"]
-            
-            # Formatting the line: Indent, Number, Name (padded), Type, Description
-            # Adjust padding for name as needed based on typical name lengths
-            UI.print_info(f"{indent}[{num_str}] {loc_obj_to_display['name']:<35} ({type_display}) — {brief_desc}")
-        UI.print_line()
-
-        loc_choice_str = UI.print_prompt("Enter location number to interact with (or 0 to go back)")
-
-        if loc_choice_str == "0":
-            return current_location_param
-
-        if loc_choice_str in display_map:
-            selected_loc_obj_for_action = display_map[loc_choice_str]
-            selected_loc_details_for_action = details_map[loc_choice_str]
-            
-            action_result_loc = prompt_examine_or_travel(
-                selected_loc_obj_for_action,
-                selected_loc_details_for_action,
-                player,
-                current_location_param, # Pass current location for context if needed by prompt_examine_or_travel
-                loc_choice_str # Pass the selection string for context
-            )
-            
-            if action_result_loc == "REPROMPT_MAP": # Special string to indicate reprompting the map
-                continue
-            elif isinstance(action_result_loc, dict) and "id" in action_result_loc: # Check if it's a location object
-                return action_result_loc # Return the new current location if travel occurred
-            # If it's neither, it might be an error or an unhandled case, loop again.
-        else:
-            UI.slow_print("Invalid location number. Please try again.")
-            UI.press_enter()
-
-def prompt_examine_or_travel(loc_to_interact, loc_details, player, current_location, selection_prefix_str):
-    while True:
-        clear_screen()
-        UI.print_heading(f"Location: {loc_to_interact['name']}")
-        UI.print_info(f"Type: {loc_details['type']}")
-        if loc_details['parent_name']:
-            UI.print_info(f"Part of: {loc_details['parent_name']}")
-        UI.print_line('-')
-        UI.slow_print(loc_to_interact['desc'])
-        UI.print_line('-')
-
-        UI.print_menu([
-            "Examine in More Detail",
-            "Travel to this Location",
-            "Back to Map"
-        ])
-        action_choice = UI.print_prompt("Choose action (1, 2, or 0)")
-
-        if action_choice == "1":
-            clear_screen()
-            UI.print_heading(f"Examining: {loc_to_interact['name']}")
-            UI.print_info(f"Full Description: {loc_to_interact['desc']}")
-            UI.print_info(f"Tags: {', '.join(loc_to_interact.get('tags', []))}")
-            if loc_details['parent_name']:
-                UI.print_info(f"Context: Located within {loc_details['parent_name']}.")
-
-            known_sub_locations_names = [
-                sub['name'] for sub in loc_to_interact.get("sub_locations", []) if sub["id"] in known_locations
-            ]
-            if known_sub_locations_names:
-                UI.print_subheading("Known Sub-Locations / Points of Interest Here:")
-                for name in known_sub_locations_names:
-                    UI.print_info(f"- {name}")
-            
-            npcs_at_this_loc = [npc.name for npc in npc_registry.get(loc_to_interact["id"], []) if npc.stats.is_alive()]
-            if npcs_at_this_loc:
-                UI.print_subheading("Known Souls Present:")
-                for name in npcs_at_this_loc:
-                    UI.print_info(f"- {name}")
+            # Now, travel to final_destination_obj
+            if current_location_param["id"] == final_destination_obj["id"]:
+                UI.clear_screen()
+                UI.print_info(f"You are already at {final_destination_obj['name']}.")
+                UI.press_enter()
+                # Player is already at the location. We can either return them to the game loop
+                # or allow them to re-select. For now, let's return to the game loop.
+                return current_location_param
             else:
-                UI.print_info("You observe no one of particular note here at the moment.")
-            
-            UI.press_enter()
-            return "REPROMPT_MAP"
+                return process_travel(player, final_destination_obj, current_location_param)
+        # End of inner while loop (location selection within a hold)
+    # End of outer while loop (hold selection)
+    return current_location_param # Should be unreachable if logic is correct, but as a fallback.
 
-        elif action_choice == "2":
-            return enter_location_or_prompt_sub(loc_to_interact, player, current_location, selection_prefix_str)
-
-        elif action_choice == "0":
-            return "REPROMPT_MAP"
-        else:
-            UI.slow_print("Invalid choice. Please select an option.")
-            UI.press_enter()
-
-def enter_location_or_prompt_sub(chosen_destination, player, previous_location, selection_prefix):
-    global known_locations
-    global known_locations_objects
-
-    # Initial discovery of travel connections FOR the chosen_destination itself
-    known_locations.add(chosen_destination["id"])
-    if chosen_destination not in known_locations_objects:
-        known_locations_objects.append(chosen_destination)
-    discover_connected_locations(chosen_destination)
-
-    # Check for known sub-locations WITHIN chosen_destination to potentially prompt the player
-    known_sub_locs_to_prompt = [
-        sub for sub in chosen_destination.get("sub_locations", []) if sub["id"] in known_locations
-    ]
-
-    final_destination = None # This will be the location the player actually ends up in
-
-    if known_sub_locs_to_prompt: # If there are known sub-locations to choose from
-        clear_screen()
-        UI.print_heading(f"Realms Within {chosen_destination['name']}")
-        
-        sub_option_map = {}
-        # Option to explore the container (chosen_destination) itself
-        explore_container_option_num = f"{selection_prefix}.0"
-        UI.print_info(f"[{explore_container_option_num}] Explore {chosen_destination['name']} itself")
-        sub_option_map[explore_container_option_num] = chosen_destination
-
-        sorted_known_sub_locs_to_prompt = sorted(known_sub_locs_to_prompt, key=lambda x: x["name"])
-        for i, sub_loc_item in enumerate(sorted_known_sub_locs_to_prompt, start=1):
-            display_num = f"{selection_prefix}.{i}"
-            brief_desc = sub_loc_item["desc"].split(".")[0] + "."
-            
-            sub_loc_type = determine_venue_type(sub_loc_item)
-            UI.print_info(f"[{display_num}] {sub_loc_item['name']:<30} ({sub_loc_type}) — {brief_desc}")
-            sub_option_map[display_num] = sub_loc_item
-        UI.print_line()
-
-        sub_sel = UI.print_prompt(f"Your choice? (Enter number, 00 to cancel and return to {previous_location['name']})").strip()
-
-        if sub_sel == "00":
-            return previous_location # Player cancels, returns to where they were
-
-        if sub_sel in sub_option_map:
-            final_destination = sub_option_map[sub_sel]
-            
-            if final_destination["id"] == chosen_destination["id"]:
-                UI.slow_print(f"You focus your attention on {final_destination['name']}.")
-            else:
-                UI.slow_print(f"You venture into {final_destination['name']} (within {chosen_destination['name']}).")
-        else:
-            # Invalid selection from prompt, or player chose to explore the container (if "0" was used for that)
-            # Default to exploring the container (chosen_destination)
-            UI.slow_print(f"Invalid choice or exploring {chosen_destination['name']} directly.")
-            final_destination = chosen_destination
-    else:
-        # No known sub-locations to prompt, so player is directly entering chosen_destination
-        final_destination = chosen_destination
-        UI.slow_print(f"You travel to {final_destination['name']}.")
-
-    # At this point, final_destination is set to the location the player is entering.
-    UI.slow_print(final_destination["desc"])
-
-    # --- Auto-discover immediate sub-locations (venues/points of interest) of the final_destination ---
-    if "sub_locations" in final_destination and final_destination.get("sub_locations"):
-        for sub_loc_to_discover in final_destination.get("sub_locations", []):
-            if sub_loc_to_discover["id"] not in known_locations:
-                known_locations.add(sub_loc_to_discover["id"])
-                if sub_loc_to_discover not in known_locations_objects:
-                    known_locations_objects.append(sub_loc_to_discover)
-    
-    # --- Tag Inheritance Logic ---
-    tags_for_final_dest = list(final_destination.get("tags", []))
-    inheritable = {"nordic","imperial","stormcloak","thieves","corrupt","military","bards","city","town","village","hold", "plains", "central", "snow", "coastal", "magic", "marsh", "swamp", "forest", "southern", "mountain", "dwemer", "volcanic", "water"}
-    
-    # Determine the correct parent for tag inheritance based on final_destination
-    parent_hold_for_tags, parent_city_for_tags = _find_hierarchy(final_destination["id"])
-    contextual_parent_for_tags = None
-
-    if parent_city_for_tags and parent_city_for_tags["id"] != final_destination["id"]:
-        contextual_parent_for_tags = parent_city_for_tags
-    elif parent_hold_for_tags and parent_hold_for_tags["id"] != final_destination["id"]:
-        contextual_parent_for_tags = parent_hold_for_tags
-    
-    if contextual_parent_for_tags:
-        tags_for_final_dest.extend([t for t in contextual_parent_for_tags.get("tags", []) if t in inheritable])
-    tags_for_final_dest = list(set(tags_for_final_dest)) # Remove duplicates
-
-    # --- Continue with game logic for the entered location ---
-    UI.slow_print(get_flavor_text(tags_for_final_dest, "location_tags", ensure_vignette=True))
-    
-    # Pass player to explore_location to allow skill checks and item adds.
-    explore_location(player, final_destination, {}, npc_registry, ALL_LOCATIONS, UI) 
-    
-    generate_npcs_for_location(final_destination)
-    player.update_current_location_for_quest(final_destination)
-    
-    return final_destination
 
 def look_around_area(player, current_location_param, npc_registry_param, all_locs_param, ui_param):
     UI.slow_print(f"You take a moment to observe your surroundings in {current_location_param['name']}...")
@@ -709,7 +633,8 @@ def list_npcs_at_location(location, player):
             npc_info_tags = npc.tags.get("npc", {})
             attitude_display_val = npc_info_tags.get("attitude", "neutral")
             attitude_display = f"({attitude_display_val.capitalize()})" if attitude_display_val else ""
-            UI.print_info(f"[{i}] {npc.full_name.capitalize()} — {npc.role.capitalize()} ({npc.race.capitalize()}) {attitude_display}")
+            # npc.full_name is already correctly capitalized from NPC.__init__
+            UI.print_info(f"[{i}] {npc.full_name} — {npc.role.replace('_', ' ').capitalize()} ({npc.race.capitalize()}) {attitude_display}")
         UI.print_line()
 
         sel = UI.print_prompt("With whom do you wish to parley? (0 to pass)").strip()
@@ -777,7 +702,7 @@ def combat_demo(player, current_location_obj):
             race=enemy_race,
             role=enemy_role
         )
-        enemy.unique_id = enemy_unique_id # Ensure unique_id is set for tracking
+        enemy.unique_id = f"{enemy_role}_{random.randint(1000,9999)}" # More unique ID for demo enemies
         
         if "bandit" in enemy_role or "draugr" in enemy_role or "skeleton" in enemy_role or "falmer" in enemy_role:
             weapon_keys = ["iron_sword", "steel_axe_old", "iron_mace_rusty", "ancient_nord_sword_chipped", "falmer_sword_crude"]
@@ -790,22 +715,46 @@ def combat_demo(player, current_location_obj):
                 enemy_armor = generate_item_from_key(random.choice(armor_keys), enemy.level)
                 if enemy_armor: enemy.stats.inventory.append(enemy_armor)
         
-        UI.slow_print(f"Suddenly, a hostile {enemy.name} ({enemy.race} {enemy.role}) emerges from the shadows and attacks!")
+        enemies_for_combat = [enemy]
+        num_additional_enemies = random.randint(0, 2) # Spawn 0 to 2 additional enemies
+
+        for _ in range(num_additional_enemies):
+            additional_enemy_level = max(1, player.level + random.randint(-2, 0))
+            # Slightly vary additional enemy roles/races for more dynamic encounters
+            additional_enemy_role = random.choice(["bandit_thug", "bandit_scout", "wolf_creature"]) # Example roles
+            additional_enemy_race = determine_npc_culture(demographics_source.get("demographics", {"Nord": 70, "Orc": 15, "Khajiit":15 }))
+            if "wolf" in additional_enemy_role: additional_enemy_race = "wolf_creature"
+
+            additional_enemy = NPC(
+                name=None, # Let NPC class generate a name
+                level=additional_enemy_level,
+                race=additional_enemy_race,
+                role=additional_enemy_role
+            )
+            additional_enemy.unique_id = f"{additional_enemy_role}_{random.randint(1000,9999)}"
+            enemies_for_combat.append(additional_enemy)
+
+        enemy_names = ", ".join([e.name for e in enemies_for_combat])
+        UI.slow_print(f"Suddenly, hostile figures emerge: {enemy_names}!")
 
         if player.combat is None:
-            combat_instance = Combat(player, [enemy], current_location_obj)
-            player.combat = combat_instance
+            combat_instance = Combat(player, enemies_for_combat, current_location_obj)
+            player.combat = combat_instance # Assign combat instance to player
             combat_instance.run()
-            # If combat ended and enemy is dead, update player's defeated enemies tracker
-            if not enemy.stats.is_alive():
-                player.update_defeated_enemies_tracker(enemy.unique_id) # Updates player's defeated enemies tracker
-                player.gain_experience(enemy.level * 10) # Grant XP for defeating enemy
+            
+            # Grant XP for all defeated enemies in this combat session
+            for defeated_enemy in enemies_for_combat:
+                if not defeated_enemy.stats.is_alive():
+                    player.update_defeated_enemies_tracker(defeated_enemy.unique_id)
+                    player.gain_experience(defeated_enemy.level * 10)
         else:
+            # This call to print_warning was the source of the error.
+            # UI.print_warning is now defined.
             UI.print_warning("Cannot initiate demo combat: Player already in combat.")
         
         return current_location_obj
     except Exception as e:
-        UI.print_failure(f"Error in combat_demo: {e}")
+        UI.print_failure(f"Error in combat_demo: {e}") # This will now use the defined UI.print_failure
         return current_location_obj
 
 # --- Inventory & Item Functions ---
@@ -1026,7 +975,7 @@ def handle_player_choice(choice, player, current_loc_param, menu_options_list):
     clear_screen()
 
     if action == "explore known world":
-        new_current_location = explore_and_travel_menu(player, current_loc_param)
+        new_current_location = explore_and_travel_menu(player, current_loc_param) # Calls the new menu
     elif action == "parley with souls":
         if current_loc_param:
             list_npcs_at_location(current_loc_param, player)
@@ -1389,14 +1338,21 @@ def initialize_player():
                 actual_skill_name = skill_key.replace("_skill", "")
                 player_skills[actual_skill_name] = player_skills.get(actual_skill_name, 5) + bonus_value
 
+        starting_spell_keys_for_subclass = selected_subclass_final_data.get("starting_spells", [])
+
         player = Player(
             name=player_name,
             race=player_race_str,
-            subclass=selected_subclass_final_data["name"],
-            stats=player_stats_instance,
-            skills=player_skills
+            subclass_name=selected_subclass_final_data["name"], # Pass subclass_name
+            stats_instance=player_stats_instance,
+            skills=player_skills,
+            starting_spell_keys=starting_spell_keys_for_subclass # Pass starting spell keys
         )
         player.combat = None
+        # Initialize player's known locations (will be populated by initialize_starting_location)
+        player.known_location_ids = set()
+        player.known_locations_objects = []
+
 
         UI.slow_print("Preparing your starting gear...")
         for item_key_from_subclass in selected_subclass_final_data["inventory"]:
@@ -1425,8 +1381,8 @@ def initialize_player():
         traceback.print_exc()
         return None
 
-def initialize_starting_location():
-    global known_locations, known_locations_objects, ALL_LOCATIONS # Make sure ALL_LOCATIONS is available
+def initialize_starting_location(player: Player): # Pass player object
+    # global known_locations, known_locations_objects, ALL_LOCATIONS # Globals no longer needed here for known_locations
     start_tavern_name = "The Bannered Mare"
     start_city_name = "Whiterun"
     start_hold_name = "Whiterun Hold"
@@ -1461,34 +1417,44 @@ def initialize_starting_location():
 
     # --- Initial Discovery Enhancement ---
     # Always add the hold, city, and specific start point
+    # Populate player's known locations directly
     for loc_obj in [parent_hold_obj, parent_city_obj, starting_loc_obj]:
-        if loc_obj and loc_obj["id"] not in known_locations:
-            known_locations.add(loc_obj["id"])
-            if loc_obj not in known_locations_objects: # Avoid duplicates in list
-                 known_locations_objects.append(loc_obj)
+        if loc_obj and loc_obj["id"] not in player.known_location_ids:
+            player.known_location_ids.add(loc_obj["id"])
+            if loc_obj not in player.known_locations_objects:
+                 player.known_locations_objects.append(loc_obj)
+
+   
+
+
 
     # Discover locations connected by travel from the hold and city
     if parent_hold_obj:
-        discover_connected_locations(parent_hold_obj) #
-   
-    # If the city itself has travel links (it could, for exits or unique connections)
-    if parent_city_obj and parent_city_obj["id"] != parent_hold_obj["id"]: # Avoid re-processing hold if city is the hold
-        discover_connected_locations(parent_city_obj) #
-    
-    # *** NEW: Discover all sub-locations (points of interest) within the starting city ***
+        discover_connected_locations(player, parent_hold_obj)
+
+    # If the city itself has travel links
+    if parent_city_obj and parent_city_obj["id"] != parent_hold_obj["id"]:
+        discover_connected_locations(player, parent_city_obj)
+
+    # Discover all sub-locations within the starting city
     if parent_city_obj and "sub_locations" in parent_city_obj:
         for sub_loc_in_city in parent_city_obj["sub_locations"]:
-            if sub_loc_in_city["id"] not in known_locations:
-                known_locations.add(sub_loc_in_city["id"])
-                if sub_loc_in_city not in known_locations_objects: # Avoid duplicates
-                    known_locations_objects.append(sub_loc_in_city)
-            # OPTIONAL: If these PoIs can have their own distinct sub-locations not part of normal city navigation,
-            # you could recursively discover them here or upon entering that PoI.
-            # For now, this discovers all first-level PoIs within the starting city.
+            if sub_loc_in_city["id"] not in player.known_location_ids:
+                player.known_location_ids.add(sub_loc_in_city["id"])
+                if sub_loc_in_city not in player.known_locations_objects:
+                    player.known_locations_objects.append(sub_loc_in_city)
 
-    # Discover connections from the specific starting location (e.g., if a tavern has a secret back exit defined in its "travel" attribute)
-    if starting_loc_obj and starting_loc_obj["id"] != parent_city_obj["id"]: # Avoid re-processing city if start_loc is the city
-         discover_connected_locations(starting_loc_obj) #
+    # Discover all direct sub-locations of the starting Hold
+    if parent_hold_obj and "sub_locations" in parent_hold_obj:
+        for sub_loc_in_hold in parent_hold_obj["sub_locations"]:
+            if sub_loc_in_hold["id"] not in player.known_location_ids:
+                player.known_location_ids.add(sub_loc_in_hold["id"])
+                if sub_loc_in_hold not in player.known_locations_objects: # Ensure no duplicates in list
+                    player.known_locations_objects.append(sub_loc_in_hold)
+
+    # Discover connections from the specific starting location
+    if starting_loc_obj and starting_loc_obj["id"] != parent_city_obj["id"]:
+         discover_connected_locations(player, starting_loc_obj)
 
 
     message = f"You awaken in {starting_loc_obj['name']}, a seemingly cozy establishment in {parent_city_obj['name']}, within the lands of {parent_hold_obj['name']}..."
@@ -1500,11 +1466,11 @@ def initialize_starting_location():
     generate_npcs_for_location(starting_loc_obj) #
     return starting_loc_obj
 
-def initialize_game_state():
-    global game_start_time, known_locations, known_locations_objects, npc_registry
+def initialize_game_state(player: Player): # Pass player to clear its known locations
+    global game_start_time, npc_registry # npc_registry is still global for now
     game_start_time = datetime.now(timezone.utc)
-    known_locations.clear()
-    known_locations_objects.clear()
+    player.known_location_ids.clear()
+    player.known_locations_objects.clear()
     npc_registry.clear()
 
 # --- Main Game Loop ---
@@ -1512,15 +1478,16 @@ def initialize_game_state():
 def start_game():
     current_location_global = None
     try:
-        initialize_game_state()
-        player = initialize_player()
+        player = initialize_player() # Player is created first
         if not player:
             UI.print_failure("Failed to initialize player. Exiting.")
             return
 
-        current_location_global = initialize_starting_location()
+        initialize_game_state(player) # Then game state (including player's known locs) is cleared/set up
+
+        current_location_global = initialize_starting_location(player) # Pass player to init starting loc
         player.update_current_location_for_quest(current_location_global)
-        player.known_locations_objects = known_locations_objects # Pass this list to player for quest checking
+        # player.known_locations_objects is already managed by the player object itself now.
         
         main_loop_running = True
         while main_loop_running:

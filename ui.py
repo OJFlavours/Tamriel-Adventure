@@ -89,6 +89,12 @@ class UI:
         print(f"{FAILURE_COLOR}{UI.wrap_text(text)}{Style.RESET_ALL}")
 
     @staticmethod
+    def print_warning(text):
+        """Prints a warning message."""
+        # Using YELLOW for warnings, similar to HIGHLIGHT_COLOR
+        print(f"{HIGHLIGHT_COLOR}{UI.wrap_text(text)}{Style.RESET_ALL}")
+
+    @staticmethod
     def print_menu(options):
         """Prints a formatted menu of options."""
         print(MENU_COLOR)
@@ -206,6 +212,81 @@ class UI:
     def press_enter():
         """Prompts the user to press Enter to continue."""
         input(f"{PROMPT_COLOR}Press Enter to continue...{Style.RESET_ALL}")
+
+    @staticmethod
+    def select_from_paginated_list(options: List[Dict[str, Any]], prompt_message: str, page_size: int = 7) -> Any | None:
+        """
+        Displays a list of options in a paginated format and allows the user to select one.
+        Each option in the 'options' list is expected to be a dictionary with at least a 'name' key.
+        Returns the selected option (dictionary) or None if the user cancels or input is invalid.
+        """
+        if not options:
+            UI.print_info("No options available.")
+            return None
+
+        current_page = 0
+        total_pages = (len(options) + page_size - 1) // page_size
+
+        while True:
+            UI.clear_screen()
+            UI.print_subheading(prompt_message)
+            
+            start_index = current_page * page_size
+            end_index = start_index + page_size
+            current_options_page = options[start_index:end_index]
+
+            for i, option_item in enumerate(current_options_page):
+                # Ensure option_item is a dict and has 'name'
+                item_name = option_item.get('name', 'Unnamed Option') if isinstance(option_item, dict) else str(option_item)
+                UI.print_info(f"  [{start_index + i + 1}] {item_name}")
+            
+            UI.print_line('-')
+            page_info = f"Page {current_page + 1} of {total_pages}"
+            nav_prompt = "Enter number, (N)ext, (P)revious, or (0) to Cancel: "
+            
+            if total_pages == 1: # No pagination needed for a single page
+                nav_prompt = "Enter number or (0) to Cancel: "
+                UI.print_info(page_info) # Still show page info for consistency
+            elif current_page == 0: # First page
+                nav_prompt = "Enter number, (N)ext, or (0) to Cancel: "
+                UI.print_info(f"{page_info} (N for Next)")
+            elif current_page == total_pages - 1: # Last page
+                nav_prompt = "Enter number, (P)revious, or (0) to Cancel: "
+                UI.print_info(f"{page_info} (P for Previous)")
+            else: # Middle pages
+                UI.print_info(f"{page_info} (N for Next, P for Previous)")
+
+            choice_input = UI.print_prompt(nav_prompt).strip().lower()
+
+            if choice_input == 'n':
+                if current_page < total_pages - 1:
+                    current_page += 1
+                else:
+                    UI.print_warning("Already on the last page.")
+                    UI.press_enter()
+            elif choice_input == 'p':
+                if current_page > 0:
+                    current_page -= 1
+                else:
+                    UI.print_warning("Already on the first page.")
+                    UI.press_enter()
+            elif choice_input == '0':
+                return None # Cancel
+            elif choice_input.isdigit():
+                try:
+                    selection_num = int(choice_input)
+                    if 1 <= selection_num <= len(options):
+                        # Adjust for 0-based indexing from 1-based user input
+                        return options[selection_num - 1]
+                    else:
+                        UI.print_warning("Invalid selection number.")
+                        UI.press_enter()
+                except ValueError:
+                    UI.print_warning("Invalid input. Please enter a number, N, P, or 0.")
+                    UI.press_enter()
+            else:
+                UI.print_warning("Invalid command.")
+                UI.press_enter()
 
 # --- Example Usage (can be removed later) ---
 if __name__ == "__main__":

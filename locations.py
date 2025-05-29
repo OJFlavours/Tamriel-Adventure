@@ -4,7 +4,7 @@ LOCATIONS = [
         "id": 1,
         "name": "Whiterun Hold",
         "desc": "The fertile heartland of Skyrim, marked by golden plains and the bustling city of Whiterun. A center of commerce, Imperial influence, and ancient Nordic tradition.",
-        "tags": ["hold", "plains", "central", "commerce", "nordic", "imperial_influence_moderate"],
+        "tags": ["hold", "climate_temperate", "terrain_plains", "environment_rural", "economic_activity_farming_crops", "economic_activity_farming_livestock", "economic_activity_trade_hub_regional", "nordic_culture_local", "imperial_influence_moderate", "politically_stable", "central_location"],
         "demographics": {"Nord": 85, "Imperial": 10, "Others": 5},
         "travel": {
             "roads": ["The Rift", "Eastmarch", "The Reach", "Haafingar", "Falkreath Hold", "The Pale"],
@@ -15,91 +15,91 @@ LOCATIONS = [
                 "id": 10,
                 "name": "Whiterun",
                 "desc": "A thriving trade city built around the great keep Dragonsreach, seat of Jarl Balgruuf the Greater. Its bustling market and legendary mead hall form the heart of the hold.",
-                "tags": ["city", "capital", "trade", "whiterun", "market", "jarls_seat", "companions_guild", "temple", "imperial_presence"],
+                "tags": ["populated_city", "city_affiliation_whiterun_hold_capital", "economic_activity_trade_hub_major", "settlement_features_market_square", "settlement_features_jarls_longhouse", "settlement_features_companions_guild_hall", "settlement_features_temple_divines", "imperial_influence_strong", "nordic_settlement_ancient", "structure_type_fortified_city_wall", "cultural_historical_significance_ysgramor_related_site", "urban_issues_or_atmosphere_bustling_trade_atmosphere", "environment_urban"],
                 "sub_locations": [
                     {
                         "id": 1001,
                         "name": "Dragonsreach",
                         "desc": "The imposing keep of the Jarl, an iconic symbol of Nord authority and power, once used to imprison the dragon Numinex in ages past.",
-                        "tags": ["keep", "government", "historic", "jarls_seat"]
+                        "tags": ["structure_type_fortified_keep", "settlement_features_jarls_longhouse", "cultural_historical_significance_historic_site", "government_local", "unique_landmark_iconic", "dragon_lore_ancient_site", "interior_large", "ruling_class_residence"],
                     },
                     {
                         "id": 1002,
                         "name": "Jorrvaskr",
                         "desc": "The ancient mead hall and headquarters of the Companions, where warriors forge bonds in battle and honor tradition.",
-                        "tags": ["meadhall", "companions_guild", "warrior_guild", "historic"]
+                        "tags": ["structure_type_guild_hall_building", "settlement_features_companions_guild_hall", "cultural_historical_significance_historic_site", "warrior_culture_strong", "nordic_settlement_ancient", "interior_large", "guild_hq_prominent"]
                     },
                     {
                         "id": 1003,
                         "name": "The Bannered Mare",
                         "desc": "A lively tavern where travelers and locals share stories over hearty ale, a central hub of Whiterun's social life.",
-                        "tags": ["tavern", "social", "inn"]
+                        "tags": ["structure_type_inn_building", "settlement_features_tavern", "social_hub_popular", "rumor_source", "food_drink_vendor", "interior_medium", "lodging_available"]
                     },
                     {
                         "id": 1004,
                         "name": "Warmaiden's",
                         "desc": "A masterful smithy known for crafting sturdy weapons and armor, run by Adrianne Avenicci and Ulfberth War-Bear.",
-                        "tags": ["blacksmith", "shop", "crafting"]
+                        "tags": ["structure_type_shop_building", "settlement_features_blacksmith_forge_active", "economic_activity_smithing_production", "item_type_weapon_vendor", "item_type_armor_vendor", "interior_small", "crafting_tools"]
                     },
                     {
                         "id": 1005,
                         "name": "Arcadia's Cauldron",
                         "desc": "A cozy apothecary brimming with ingredients and potions, run by the alchemist Arcadia.",
-                        "tags": ["alchemy", "shop", "magic_vendor"]
+                        "tags": ["structure_type_shop_building", "settlement_features_alchemy_shop_notable", "economic_activity_alchemy_ingredient_source_rich", "item_type_potion_vendor", "item_type_ingredient_vendor", "interior_small", "alchemy_equipment"]
                     },
                     {
                         "id": 1006,
                         "name": "Temple of Kynareth",
                         "desc": "A serene temple devoted to the wind and healing, centered around the ancient Gildergreen tree and frequented by worshippers.",
-                        "tags": ["temple", "religious", "healer", "kynareth"]
+                        "tags": ["structure_type_temple_building", "settlement_features_temple_specific_god", "religious_site_aedric", "magical_properties_holy_ground_aedric", "healing_services", "kynareth_shrine", "unique_landmark_iconic"]
                     },
                     {
                         "id": 1007,
                         "name": "Plains District Market",
                         "desc": "Bustling stalls offering regional produce, crafts, and curiosities, the commercial heart of Whiterun.",
-                        "tags": ["market", "trade"]
+                        "tags": ["settlement_features_market_square", "economic_activity_trade_hub_local", "social_hub_popular"]
                     },
                     {
                         "id": 1008,
                         "name": "The Drunken Huntsman",
                         "desc": "A tavern popular with hunters and adventurers, known for its rustic charm and owned by Elrindir.",
-                        "tags": ["tavern", "social"]
+                        "tags": ["structure_type_inn_building", "settlement_features_tavern", "social_hub_popular", "hunter_gathering_spot", "bosmer_influence_minor"]
                     },
                     {
                         "id": 1009,
                         "name": "Belethor's General Goods",
                         "desc": "A shop stocking a wide variety of items, where Belethor claims everything is for sale... if the price is right.",
-                        "tags": ["shop", "general"]
+                        "tags": ["structure_type_shop_building", "shop_general_goods", "trade_variety", "eccentric_merchant_owner"]
                     },
                     {
                         "id": 1010,
                         "name": "Hall of the Dead",
                         "desc": "A solemn place beneath the Temple of Kynareth where the Nords of Whiterun honor their ancestors and inter their dead.",
-                        "tags": ["catacombs", "religious", "undead_potential_low"]
+                        "tags": ["structure_type_catacombs_structure", "religious_site_aedric", "nordic_burial_site_major", "arkay_presence", "undead_presence_rumored_low"]
                     },
                     {
                         "id": 1011,
                         "name": "Carlotta Valentia's House",
                         "desc": "The home of Carlotta Valentia, a food vendor in the market, and her daughter Mila.",
-                        "tags": ["residence"]
+                        "tags": ["structure_type_residence", "commoner_dwelling"]
                     },
                     {
                         "id": 1012,
                         "name": "House Gray-Mane",
                         "desc": "A prominent and respected Nord family in Whiterun, known for their traditional values and quiet concerns about Imperial policies.",
-                        "tags": ["residence", "noble_house", "nord_traditionalist"]
+                        "tags": ["structure_type_residence", "noble_estate_district", "nordic_culture_strong", "political_tension_high", "stormcloak_sympathizers_potential"]
                     },
                     {
                         "id": 1013,
                         "name": "House Battle-Born",
                         "desc": "A wealthy and influential Nord family in Whiterun, strong supporters of the Empire and Imperial traditions.",
-                        "tags": ["residence", "noble_house", "imperial_sympathizers"]
+                        "tags": ["structure_type_residence", "noble_estate_district", "imperial_influence_strong", "political_tension_high"]
                     },
                     {
                         "id": 1014,
                         "name": "Breezehome",
                         "desc": "A modest but cozy home available for purchase in Whiterun, conveniently located near the city gates.",
-                        "tags": ["residence", "player_home_potential"]
+                        "tags": ["structure_type_residence", "player_home_available", "urban_dwelling_modest"]
                     }
                 ]
             },
@@ -107,37 +107,37 @@ LOCATIONS = [
                 "id": 11,
                 "name": "Riverwood",
                 "desc": "A quaint logging village along the White River, known for its simplicity and rustic charm, often the first stop for travelers from the south.",
-                "tags": ["village", "lumber", "river"],
+                "tags": ["populated_village", "settlement_minor", "economic_activity_logging_timber", "terrain_river_delta", "climate_temperate", "forested_area", "travel_hub_minor"],
                 "sub_locations": [
                     {
                         "id": 1101,
                         "name": "Sleeping Giant Inn",
                         "desc": "A warm inn that serves as a gathering point for weary travelers and locals, run by Orgnar.",
-                        "tags": ["inn", "tavern", "social"]
+                        "tags": ["structure_type_inn_building", "settlement_features_tavern", "social_hub_popular", "rumor_source", "food_drink_vendor", "lodging_available"]
                     },
                     {
                         "id": 1102,
                         "name": "Riverwood Trader",
                         "desc": "A modest shop offering a variety of everyday goods, run by Lucan Valerius and his sister Camilla.",
-                        "tags": ["shop", "general"]
+                        "tags": ["structure_type_shop_building", "shop_general_goods", "trade_variety", "quest_location_golden_claw"]
                     },
                     {
                         "id": 1103,
                         "name": "Alvor's Smithy",
                         "desc": "The local blacksmith renowned for practical and durable tools, run by Alvor.",
-                        "tags": ["blacksmith", "shop", "crafting"]
+                        "tags": ["structure_type_shop_building", "settlement_features_blacksmith_forge_active", "economic_activity_smithing_production", "crafting_tools", "imperial_sympathizers_potential"]
                     },
                     {
                         "id": 1104,
                         "name": "Faendal's House",
                         "desc": "The home of Faendal, a Bosmer archer and lumberjack in Riverwood.",
-                        "tags": ["residence"]
+                        "tags": ["structure_type_residence", "commoner_dwelling", "wood_elf_architecture_influence_minor"]
                     },
                     {
                         "id": 1105,
                         "name": "Sven and Hilde's House",
                         "desc": "The home of Sven, a local bard, and his mother Hilde.",
-                        "tags": ["residence"]
+                        "tags": ["structure_type_residence", "commoner_dwelling", "bard_dwelling"]
                     }
                 ]
             },
@@ -145,31 +145,31 @@ LOCATIONS = [
                 "id": 12,
                 "name": "Rorikstead",
                 "desc": "A fertile farming village that supplies Whiterun with produce. Despite its prosperity, some whisper of strange pacts or hidden influences behind its unusual success.",
-                "tags": ["village", "farm", "mysterious_prosperity"], # Changed mysterious tag
+                "tags": ["populated_village", "settlement_minor", "economic_activity_farming_crops", "terrain_plains", "climate_temperate", "magical_properties_enchanted_neutral", "daedric_influence_subtle_rumor"],
                 "sub_locations": [
                     {
                         "id": 1201,
                         "name": "Frostfruit Inn",
                         "desc": "A cozy inn known for its warm hearth and local cider, run by Mralki.",
-                        "tags": ["inn", "tavern", "social"]
+                        "tags": ["structure_type_inn_building", "settlement_features_tavern", "social_hub_popular", "food_drink_vendor", "lodging_available"]
                     },
                     {
                         "id": 1202,
                         "name": "Rorikstead General Supplies",
                         "desc": "A small stall or shop run by a local, offering essential supplies and some farm produce.",
-                        "tags": ["shop", "general"]
+                        "tags": ["structure_type_shop_building", "shop_general_goods", "trade_variety_limited"]
                     },
                     {
                         "id": 1203,
                         "name": "Lemkil's Farmhouse",
                         "desc": "The farmstead of Lemkil, a local farmer in Rorikstead with two daughters.",
-                        "tags": ["farm", "residence"]
+                        "tags": ["structure_type_farmstead", "structure_type_residence", "economic_activity_farming_crops", "social_issue_child_abuse_potential"]
                     },
                     {
                         "id": 1204,
                         "name": "Jouane Manette's House",
                         "desc": "The home of Jouane Manette, a Breton farmer in Rorikstead.",
-                        "tags": ["residence", "farm"]
+                        "tags": ["structure_type_farmstead", "structure_type_residence", "economic_activity_farming_crops", "breton_settler"]
                     }
                 ]
             },
@@ -177,92 +177,224 @@ LOCATIONS = [
                 "id": 13,
                 "name": "Honningbrew Meadery",
                 "desc": "Famed for its exceptionally smooth mead, a visit here is both a taste of history and local culture. It has recently faced competition and sabotage.",
-                "tags": ["meadery", "brewery", "shop", "quest_location"]
+                "tags": ["structure_type_meadery_building", "economic_activity_brewing_mead_ale", "shop_specialty_goods", "quest_location_thieves_guild", "sabotage_target_potential"]
             },
             {
                 "id": 14,
                 "name": "Western Watchtower",
-                "desc": "An old, ruined guard tower on the outskirts of Whiterun, fallen into disrepair over the years. It stands as a lonely sentinel over the plains, a relic of past conflicts.", # Corrected
-                "tags": ["watchtower", "ruin", "historic_site"] # Corrected
+                "desc": "An old, ruined guard tower on the outskirts of Whiterun, fallen into disrepair over the years. It stands as a lonely sentinel over the plains, a relic of past conflicts.",
+                "tags": ["structure_type_ruined_tower", "cultural_historical_significance_historic_site", "dragon_sighting_recent_rumor", "state_or_condition_current_recently_attacked_recovering", "battlefield_minor_historic"]
             },
             {
                 "id": 15,
                 "name": "Bleak Falls Barrow",
                 "desc": "An ancient Nordic tomb high among the mountains overlooking Riverwood, crawling with draugr and secrets of old, including a Word Wall.",
-                "tags": ["barrow", "dungeon", "undead", "nordic_ruin", "dragon_word_ancient", "quest_location"] # dragon_word changed
+                "tags": ["nordic_burial_site_major", "dungeon_major", "undead_presence_strong", "draugr_heavy", "specific_landmark_type_word_wall_location", "quest_location_main_story_early", "puzzle_dragon_claw", "cultural_historical_significance_nordic_ancient_site"]
             },
             {
                 "id": 16,
                 "name": "Silent Moons Camp",
                 "desc": "A clandestine bandit camp hidden in the wilderness north-west of Whiterun, known for its lunar-enchanted weapons.",
-                "tags": ["bandit_camp", "ruin", "dungeon", "lunar_forge"]
+                "tags": ["bandit_minor_camp", "structure_type_ruined_settlement", "dungeon_minor", "magical_properties_enchanted_neutral", "specific_landmark_type_lunar_forge", "weapon_enchanting_site"]
             },
             {
                 "id": 17,
                 "name": "Lund's Hut",
                 "desc": "A small, isolated hut north of Rorikstead, once home to the unfortunate Lund.",
-                "tags": ["hut", "abandoned", "wilderness"]
+                "tags": ["structure_type_shack_or_hut", "structure_condition_abandoned", "wilderness", "tragedy_site_minor", "ghost_encounter_potential"]
             },
             {
                 "id": 18,
                 "name": "Gjukar's Monument",
                 "desc": "A stone monument south of Rorikstead, marking the site of an ancient battle and the resting place of the warrior Gjukar.",
-                "tags": ["monument", "historic", "ghost_encounter_potential"] # ghost_encounter changed
+                "tags": ["structure_type_monument_historic_site", "cultural_historical_significance_battlefield_historic", "ghost_encounter_potential", "nordic_burial_site_major_nearby"]
             },
             {
                 "id": 19,
                 "name": "Secunda's Kiss",
                 "desc": "A giant's camp located west of Whiterun, named for the nearby moon Secunda.",
-                "tags": ["giant_camp", "wilderness"]
+                "tags": ["specific_landmark_type_giant_camp_established", "wilderness", "terrain_plains", "mammoth_herd_grazing"]
             },
             {
                 "id": 10001,
                 "name": "Sleeping Tree Camp",
                 "desc": "A giant's camp west of Whiterun, notable for a strange, glowing tree and the potent sap it produces.",
-                "tags": ["giant_camp", "unique_flora", "alchemy_ingredient", "mystery"]
+                "tags": ["specific_landmark_type_giant_camp_established", "unique_natural_formation", "alchemy_ingredient_source_rich", "magical_properties_enchanted_neutral", "mystery_local"]
             },
             {
                 "id": 10002,
                 "name": "Swindler's Den",
                 "desc": "A cave system west of Whiterun, serving as a hideout for bandits and perhaps some Alik'r warriors if circumstances align.",
-                "tags": ["cave", "bandit_hideout", "dungeon", "quest_location_potential"] # quest_location made potential
+                "tags": ["structure_type_natural_cave", "bandit_main_stronghold", "dungeon_multi_level", "quest_location_main_story_early", "alikr_warriors_presence_potential"]
             },
             {
                 "id": 10003,
                 "name": "White River Watch",
                 "desc": "A small cave east of Honningbrew Meadery, inhabited by bandits led by Hajvarr Iron-Hand.",
-                "tags": ["cave", "bandit_hideout", "dungeon"]
+                "tags": ["structure_type_natural_cave", "bandit_minor_camp", "dungeon_minor", "overlook_strategic"]
             },
             {
                 "id": 10004,
                 "name": "Halted Stream Camp",
                 "desc": "A bandit-occupied iron mine north of Whiterun, containing a spell tome for Transmute Ore.",
-                "tags": ["mine", "bandit_camp", "dungeon", "spell_tome_alteration"] # spell_tome specified
+                "tags": ["structure_type_mine_active", "economic_activity_mining_iron", "bandit_controlled_area", "dungeon_minor", "magical_properties_arcane_focus", "spell_tome_location"]
             },
             # New Whiterun Hold Locations
             {
                 "id": 10005,
                 "name": "Chillfurrow Farm",
                 "desc": "A prosperous farm run by Wilmuth and his family, just outside Whiterun's walls, known for its diverse crops.",
-                "tags": ["farm", "residence", "agriculture", "whiterun_outskirts"]
+                "tags": ["structure_type_farmstead", "structure_type_residence", "economic_activity_farming_crops", "economic_activity_farming_livestock", "settlement_minor", "whiterun_plains"]
             },
             {
                 "id": 10006,
                 "name": "Pelagia Farm",
                 "desc": "The farmstead of Severio Pelagia, located near Whiterun, contributing to the city's food supply.",
-                "tags": ["farm", "residence", "agriculture", "whiterun_outskirts"]
+                "tags": ["structure_type_farmstead", "structure_type_residence", "economic_activity_farming_crops", "settlement_minor", "whiterun_plains"]
             },
             {
                 "id": 10007,
                 "name": "Valtheim Towers",
                 "desc": "A pair of fortified towers spanning the White River east of Whiterun, often occupied by bandits demanding tolls.",
-                "tags": ["tower_fortified", "bandit_camp", "river_crossing_strategic", "dungeon"]
+                "tags": ["structure_type_tower_structure", "structure_condition_ruined_extensively", "bandit_minor_camp", "terrain_river_delta", "dungeon_minor", "strategic_lookout_decayed", "toll_road_illegal"]
             },
             {
                 "id": 10008,
                 "name": "Greenspring Hollow",
                 "desc": "A small, secluded cave known for its natural spring and unique mosses, sometimes used as a hunter's shelter or a troll's den.",
-                "tags": ["cave", "natural_spring", "alchemy_ingredients", "monster_den_potential", "wilderness"]
+                "tags": ["structure_type_natural_cave", "unique_natural_formation", "alchemy_ingredient_source_rich", "monster_den_troll_potential", "wilderness", "secluded_nature_spot"]
+            },
+            {
+                "id": 10009,
+                "name": "Redoran's Retreat",
+                "desc": "A small, damp cave west of Whiterun, often used as a hideout by a lone bandit or a small group of outcasts.",
+                "tags": ["structure_type_natural_cave", "bandit_minor_camp", "dungeon_minor", "wilderness", "terrain_hilly"]
+            },
+            {
+                "id": 10010,
+                "name": "Guldun Rock Overlook",
+                "desc": "A rocky outcrop near the Whiterun plains, offering a strategic view. Sometimes used by hunters as a lookout or temporarily inhabited by wildlife.",
+                "tags": ["terrain_hilly", "wilderness", "scenic_vista_panoramic", "hunter_gathering_spot", "animal_den_wolf_potential"]
+            },
+            {
+                "id": 10011,
+                "name": "Dustman's Cairn",
+                "desc": "An ancient Nordic barrow west of Whiterun, a significant site for the Companions and haunted by draugr.",
+                "tags": ["nordic_burial_site_major", "dungeon_major", "undead_presence_strong", "draugr_heavy", "companions_guild_hall_related", "cultural_historical_significance_nordic_ancient_site", "ysgramor_related_site_potential", "silver_hand_lair_potential"]
+            },
+            {
+                "id": 10012,
+                "name": "Fellglow Keep",
+                "desc": "A ruined fort east of Whiterun, now overrun by necromancers and their experiments. It holds forbidden knowledge and dangerous foes.",
+                "tags": ["structure_type_ruined_fort", "specific_landmark_type_necromancer_tower_or_lair", "magical_properties_tainted_by_dark_magic", "dungeon_major", "college_of_winterhold_main_related", "forbidden_knowledge_dangerous", "undead_experiments"]
+            },
+            {
+                "id": 10013,
+                "name": "Battle-Born Farm",
+                "desc": "A prosperous farm outside Whiterun, owned and operated by the Battle-Born family, known for its crops and livestock.",
+                "tags": ["structure_type_farmstead", "economic_activity_farming_crops", "economic_activity_farming_livestock", "noble_estate_district_outskirts", "imperial_influence_strong", "political_family_imperial"]
+            },
+            {
+                "id": 10014,
+                "name": "Gray-Mane Farm",
+                "desc": "A traditional Nord farmstead near Whiterun, belonging to the Gray-Mane family, reflecting their more rustic and independent values.",
+                "tags": ["structure_type_farmstead", "economic_activity_farming_crops", "economic_activity_farming_livestock", "nordic_culture_strong", "whiterun_plains", "political_family_stormcloak_sympathizers"]
+            },
+            {
+                "id": 10015,
+                "name": "Whiterun Pass Cave",
+                "desc": "A small cave system that cuts through the hills near Whiterun, sometimes used by travelers as a shortcut or by creatures as a den.",
+                "tags": ["structure_type_natural_cave", "terrain_mountain_pass", "monster_den_bear_potential", "travel_route_alternative_dangerous"]
+            },
+            {
+                "id": 10016,
+                "name": "Granite Hill Redoubt",
+                "desc": "A fortified bandit encampment built into the rocky hills west of Whiterun, a source of trouble for local farms and travelers.",
+                "tags": ["bandit_main_stronghold", "structure_type_fortified_keep", "dungeon_major", "state_or_condition_current_bandit_controlled_area", "terrain_hilly", "economic_activity_mining_gems_potential"]
+            },
+            {
+                "id": 10017,
+                "name": "Lone Hunter's Shack",
+                "desc": "A small, isolated shack in the plains of Whiterun Hold, home to a reclusive hunter or trapper.",
+                "tags": ["structure_type_shack_or_hut", "structure_condition_weathered", "wilderness", "hunter_gathering_spot", "hermit_lair_potential", "terrain_plains"]
+            },
+            {
+                "id": 10018,
+                "name": "Shrine of Talos (Wilderness - Whiterun)",
+                "desc": "A small, weathered outdoor shrine dedicated to Talos, hidden among the rocks and trees of Whiterun's plains, a place of quiet worship for loyal Nords.",
+                "tags": ["structure_type_shrine_outdoor_structure", "religious_site_aedric", "talos_worship_banned", "nordic_culture_strong", "secluded_nature_spot", "magical_properties_holy_ground_aedric"]
+            },
+            {
+                "id": 10019,
+                "name": "Tundra Homestead",
+                "desc": "A modest farmstead with a sturdy house on the plains east of Whiterun, offering a peaceful life for those who can work the land. (Potential player home)",
+                "tags": ["structure_type_farmstead", "player_home_available", "economic_activity_farming_crops", "terrain_plains", "settlement_minor", "peaceful_area"]
+            },
+            {
+                "id": 10020,
+                "name": "North Skybound Watch",
+                "desc": "A ruined Nordic watchtower and barrow complex on a cliff overlooking the northern plains of Whiterun Hold, containing an ancient Word Wall.",
+                "tags": ["structure_type_ruined_tower", "nordic_burial_site_major", "specific_landmark_type_word_wall_location", "dungeon_major", "undead_presence_strong", "draugr_heavy", "terrain_cliffside", "dragon_lore_ancient_site"]
+            },
+            {
+                "id": 10021,
+                "name": "Whitewatch Mill",
+                "desc": "A small, independent lumber mill on the plains of Whiterun Hold, supplying timber for local construction and repairs.",
+                "tags": ["structure_type_lumber_mill_site", "economic_activity_logging_timber", "settlement_minor", "terrain_plains"]
+            },
+            {
+                "id": 10022,
+                "name": "Honey-Hand Farm",
+                "desc": "A quaint farmstead and apiary known for its uniquely flavored honey, run by a reclusive family.",
+                "tags": ["structure_type_farmstead", "structure_type_apiary_location", "economic_activity_farming_crops", "unique_produce_honey", "settlement_minor", "isolated_location"]
+            },
+            {
+                "id": 10023,
+                "name": "Whispering Creek Cave",
+                "desc": "A small, damp cave system carved by an underground creek, often home to mudcrabs or other cave dwellers. Sometimes used by bandits as a temporary hideout.",
+                "tags": ["structure_type_natural_cave", "dungeon_minor", "monster_den_mudcrab", "bandit_minor_camp_potential", "terrain_river_delta_nearby"]
+            },
+            {
+                "id": 10024,
+                "name": "Old Kynesgrove Road Ruin",
+                "desc": "The crumbling stone remnants of an ancient watchpost or small shrine along a disused stretch of road near the path to Kynesgrove. It offers little shelter but hints at older conflicts.",
+                "tags": ["structure_type_ruined_shrine", "cultural_historical_significance_nordic_ancient_site", "structure_condition_ruined_extensively", "bandit_minor_camp_potential", "roadside_encounter_point"]
+            },
+            {
+                "id": 10025,
+                "name": "Broken Fang Cave",
+                "desc": "A dark, fetid cave that has become a den for a small coven of vampires or their thralls, preying on unwary travelers on the plains.",
+                "tags": ["structure_type_natural_cave", "dungeon_minor", "specific_landmark_type_vampire_coven_minor", "undead_presence_strong", "wilderness", "magical_properties_tainted_by_dark_magic"]
+            },
+            {
+                "id": 10026,
+                "name": "Shrine of Stendarr (Whiterun Plains)",
+                "desc": "A modest, weathered shrine to Stendarr, the God of Mercy and Justice, offering a place for quiet contemplation and prayer on the open plains.",
+                "tags": ["structure_type_shrine_outdoor_structure", "religious_site_aedric", "stendarr_shrine", "magical_properties_holy_ground_aedric", "travel_route_marker", "vigilant_of_stendarr_outpost_potential_minor"]
+            },
+            {
+                "id": 10027,
+                "name": "The Ritual Stone",
+                "desc": "An ancient Standing Stone east of Whiterun, near the road to Windhelm. It grants the power to reanimate nearby corpses to fight for the activator, once per day.",
+                "tags": ["specific_landmark_type_standing_stone_magical", "magical_properties_arcane_nexus", "necromancy_focus", "cultural_historical_significance_ancient_magical_site", "terrain_plains"]
+            },
+            {
+                "id": 10028,
+                "name": "Gallows Hall",
+                "desc": "A secluded and ominous ruin near the road west of Windhelm, but technically within Whiterun's old borders. It is rumored to be a former place of execution now haunted and possibly used by necromancers.",
+                "tags": ["structure_type_ruined_fort", "specific_landmark_type_necromancer_tower_or_lair", "dungeon_minor", "cultural_historical_significance_historic_site", "magical_properties_tainted_by_dark_magic", "undead_presence_strong", "haunted_aura"]
+            },
+            {
+                "id": 10029,
+                "name": "Shimmermist Grotto",
+                "desc": "A damp cave system northeast of Whiterun, containing both Falmer inhabitants and ancient Dwemer ruins deep within. Known for its glowing mushrooms.",
+                "tags": ["structure_type_natural_cave", "dwemer_outpost_minor", "falmer_presence_strong", "dungeon_major", "unique_natural_formation", "alchemy_ingredient_source_rich", "chaurus_nest_potential", "bioluminescent_flora"]
+            },
+            {
+                "id": 10030,
+                "name": "Hamvir's Rest",
+                "desc": "An ancient, desecrated Nordic graveyard and small cairn north-west of Whiterun, now haunted by skeletons and a necromancer.",
+                "tags": ["nordic_burial_site_major", "dungeon_minor", "undead_presence_strong", "specific_landmark_type_necromancer_hideout", "structure_condition_desecrated", "ghost_encounter_potential"]
             }
         ]
     },
@@ -272,7 +404,7 @@ LOCATIONS = [
         "id": 2,
         "name": "The Pale",
         "desc": "A frozen hold of bleak beauty, stretching from snow-tipped plains to the Sea of Ghosts. Harsh and unforgiving, known for its mining town of Dawnstar and dangerous wildlife. Strong Stormcloak sentiment prevails here.",
-        "tags": ["hold", "snow", "coastal", "mining", "nordic", "stormcloak_leaning"], # stormcloak_territory changed
+        "tags": ["hold", "climate_arctic", "terrain_ice_field", "terrain_tundra_plains", "environment_coastal", "economic_activity_mining_quicksilver", "economic_activity_mining_iron", "nordic_culture_strong", "stormcloak_leaning", "state_or_condition_current_isolated_and_forgotten", "dangerous_wildlife"],
         "demographics": {"Nord": 90, "Imperial": 5, "Others": 5},
         "travel": {
             "roads": ["Whiterun Hold", "Winterhold", "Eastmarch", "Hjaalmarch"],
@@ -283,136 +415,208 @@ LOCATIONS = [
                 "id": 20,
                 "name": "Dawnstar",
                 "desc": "A resilient port town on the northern coast, thriving on fishing and mining. It is currently plagued by mysterious nightmares affecting its populace.",
-                "tags": ["town", "port", "dawnstar", "isolated", "mining_town", "nightmares_ongoing", "daedric_quest_potential", "jarls_seat"], # daedric_quest specified as potential, added jarls_seat
+                "tags": ["populated_town", "settlement_features_docks_harbor", "city_affiliation_dawnstar_town", "state_or_condition_current_isolated_and_forgotten", "economic_activity_mining_quicksilver", "economic_activity_fishing_industry_local", "urban_issues_or_atmosphere_haunted_rumors_strong", "daedric_influence_subtle_rumor", "settlement_features_jarls_longhouse", "climate_arctic", "environment_coastal"],
                 "sub_locations": [
                     {
                         "id": 2001,
                         "name": "Windpeak Inn",
                         "desc": "The cozy inn of Dawnstar, offering respite from the icy winds and a place for locals to gather and discuss the unsettling dreams.",
-                        "tags": ["inn", "tavern", "social", "rumor_hub"]
+                        "tags": ["structure_type_inn_building", "settlement_features_tavern", "social_hub_popular", "rumor_source", "food_drink_vendor", "lodging_available", "urban_issues_or_atmosphere_fear_and_superstition"]
                     },
                     {
                         "id": 2002,
                         "name": "Quicksilver Mine",
                         "desc": "A productive quicksilver mine that is vital to Dawnstar's economy, though some miners report strange occurrences.",
-                        "tags": ["mine", "resource", "economy", "unease"]
+                        "tags": ["structure_type_mine_active", "economic_activity_mining_quicksilver", "economic_activity_trade_hub_local", "urban_issues_or_atmosphere_haunted_rumors_strong"]
                     },
                     {
                         "id": 2003,
                         "name": "The Mortar and Pestle",
                         "desc": "Frida's alchemy shop, where local brews and potions are concocted. Frida may seek rare ingredients.",
-                        "tags": ["alchemy", "shop", "magic_vendor", "quest_giver_potential"]
+                        "tags": ["structure_type_shop_building", "settlement_features_alchemy_shop_notable", "item_type_potion_vendor", "item_type_ingredient_vendor", "quest_giver_potential"]
                     },
                     {
                         "id": 2004,
                         "name": "The White Hall",
                         "desc": "The seat of Dawnstar's Jarl, Skald the Elder, a staunch supporter of Ulfric Stormcloak.",
-                        "tags": ["government", "jarls_seat", "stormcloak_stronghold"]
+                        "tags": ["structure_type_palace_or_manor", "settlement_features_jarls_longhouse", "government_local", "stormcloak_presence_strong", "political_family_stormcloak"]
                     },
                     {
                         "id": 2005,
                         "name": "Rustleif's House and Smithy",
                         "desc": "The home and workshop of Rustleif, Dawnstar's blacksmith, who dreams of returning to his homeland.",
-                        "tags": ["blacksmith", "shop", "crafting", "residence"]
+                        "tags": ["structure_type_shop_building", "structure_type_residence", "settlement_features_blacksmith_forge_active", "economic_activity_smithing_production", "crafting_tools"]
                     },
                     {
                         "id": 2006,
                         "name": "Dawnstar Sanctuary",
-                        "desc": "A forgotten and ruined sanctuary of the Dark Brotherhood, hidden near Dawnstar. Its secrets lie buried in snow and shadow.", # Changed state for 4E 200
-                        "tags": ["dark_brotherhood_ruin", "secret_location_abandoned", "dungeon_potential"]
+                        "desc": "A forgotten and ruined sanctuary of the Dark Brotherhood, hidden near Dawnstar. Its secrets lie buried in snow and shadow.",
+                        "tags": ["structure_type_ruined_shrine", "specific_landmark_type_assassin_guild_hq_abandoned", "dungeon_minor", "secret_location", "magical_properties_tainted_by_dark_magic", "structure_condition_collapsed"]
                     }
                 ]
             },
             {
                 "id": 21,
                 "name": "Nightcaller Temple",
-                "desc": "An eerie, abandoned temple on a clifftop overlooking Dawnstar. It is sealed, but dark whispers and nightmares emanate from it, hinting at the Daedric Prince Vaermina's influence.", # Made more foreboding
-                "tags": ["temple_sealed", "daedric_influence_vaermina", "ruin", "dungeon_potential", "quest_location_major", "nightmare_source"]
+                "desc": "An eerie, abandoned temple on a clifftop overlooking Dawnstar. It is sealed, but dark whispers and nightmares emanate from it, hinting at the Daedric Prince Vaermina's influence.",
+                "tags": ["structure_type_temple_building", "structure_condition_ruined_extensively", "magical_properties_daedric_influence_overt", "dungeon_major", "quest_location_daedric_vaermina", "urban_issues_or_atmosphere_haunted_rumors_strong", "specific_landmark_type_daedric_shrine_prominent"]
             },
             {
                 "id": 22,
                 "name": "Iron-Breaker Mine",
                 "desc": "An iron mine located just outside Dawnstar, contributing to the town's resources.",
-                "tags": ["mine", "resource_iron"]
+                "tags": ["structure_type_mine_active", "economic_activity_mining_iron", "resource_node", "dawnstar_outskirts"]
             },
             {
                 "id": 23,
                 "name": "Wreck of the Brinehammer",
                 "desc": "The ghostly remains of a long-forgotten shipwreck scattered along the storm-battered coast south of Dawnstar. Rumored to hold lost treasures and spectral guardians.",
-                "tags": ["wreck", "ruin", "dungeon", "coastal", "undead_potential"]
+                "tags": ["structure_type_shipwreck_site", "structure_condition_ruined_extensively", "dungeon_minor", "environment_coastal", "undead_presence_rumored_strong", "treasure_cache_rumored"]
             },
             {
                 "id": 24,
                 "name": "Frostflow Lighthouse",
                 "desc": "A solitary lighthouse west of Dawnstar. Its light has recently gone out, and chilling screams were heard from within. A dark mystery involving Falmer awaits discovery.",
-                "tags": ["lighthouse", "mystery_recent", "dungeon", "falmer_presence", "quest_location_investigation"] # More active description
+                "tags": ["structure_type_lighthouse_structure", "structure_condition_abandoned", "dungeon_major", "falmer_presence_strong", "quest_location_investigation", "tragedy_site_family", "chaurus_nest_potential"]
             },
             {
                 "id": 25,
                 "name": "Loreius Farm",
                 "desc": "A small farmstead south of Dawnstar, owned by Vantus Loreius, often struggling against the harsh climate.",
-                "tags": ["farm", "residence", "isolated_dwelling"]
+                "tags": ["structure_type_farmstead", "structure_type_residence", "economic_activity_farming_crops", "state_or_condition_current_isolated_and_forgotten", "climate_arctic_edge"]
             },
             {
                 "id": 26,
                 "name": "Nightgate Inn",
                 "desc": "An isolated inn located at a pass on the road between The Pale and Eastmarch, a lonely refuge for travelers.",
-                "tags": ["inn", "tavern", "isolated", "travel_stop"]
+                "tags": ["structure_type_inn_building", "settlement_features_tavern", "state_or_condition_current_isolated_and_forgotten", "travel_route_marker", "lodging_available", "food_drink_vendor", "rumor_source_travelers"]
             },
             {
                 "id": 27,
                 "name": "Red Road Pass",
                 "desc": "A bandit-infested pass through the mountains in the southern part of The Pale, dangerous for unwary travelers.",
-                "tags": ["mountain_pass", "bandit_camp", "dungeon"]
+                "tags": ["terrain_mountain_pass", "bandit_main_stronghold", "dungeon_major", "travel_route_alternative_dangerous", "state_or_condition_current_bandit_controlled_area"]
             },
             {
                 "id": 28,
                 "name": "Shearpoint",
                 "desc": "A mountain peak in The Pale, home to an ancient dragon lair, a Word Wall, and the tomb of the Dragon Priest Krosis.",
-                "tags": ["dragon_lair_ancient", "dragon_word_ancient", "dragon_priest_tomb_krosis", "mountain_peak", "dungeon"] # Specified ancient
+                "tags": ["specific_landmark_type_dragon_lair_ancient_inactive", "specific_landmark_type_word_wall_location", "cultural_historical_significance_dragon_cult_lair_priest", "terrain_mountain_peak", "dungeon_major", "undead_presence_strong", "dragon_priest_krosis"]
             },
             {
                 "id": 29,
                 "name": "Shrouded Grove",
                 "desc": "A small, hidden grove in The Pale, sometimes a site for unusual encounters, minor Daedric worship, or hidden alchemical ingredients.",
-                "tags": ["grove", "wilderness", "mysterious", "ritual_site_potential"]
+                "tags": ["environment_wilderness", "terrain_forest", "magical_properties_enchanted_neutral", "ritual_site_minor_potential", "alchemy_ingredient_source_rich", "secluded_nature_spot"]
             },
             {
                 "id": 20001,
                 "name": "Silverdrift Lair",
                 "desc": "A Nordic ruin west of Nightgate Inn, overrun by draugr and ancient guardians.",
-                "tags": ["nordic_ruin", "dungeon", "undead"]
+                "tags": ["nordic_burial_site_major", "dungeon_major", "undead_presence_strong", "draugr_heavy", "cultural_historical_significance_nordic_ancient_site"]
             },
             {
                 "id": 20002,
                 "name": "Weynon Stones",
                 "desc": "A small ruin southeast of Dawnstar, a circle of ancient stones that hum with faint magical energy, sometimes attracting bandits or mages.",
-                "tags": ["ruin", "minor_landmark", "magic_faint", "bandit_outpost_potential"]
+                "tags": ["structure_type_standing_stone_circle", "cultural_historical_significance_ancient_magical_site", "magical_properties_arcane_nexus_minor", "bandit_minor_camp_potential", "terrain_tundra_plains"]
             },
             {
                 "id": 20003,
                 "name": "Fort Dunstad",
                 "desc": "A large fort in The Pale, strategically important. Currently garrisoned by Imperial soldiers, but its loyalty could shift with the rising political tensions.",
-                "tags": ["fort", "military", "imperial_garrison", "dungeon_potential", "strategic_location"] # Civil War not active, so state it as Imperial
+                "tags": ["structure_type_fortified_keep", "military_presence", "imperial_influence_strong", "dungeon_major", "state_or_condition_current_contested_by_factions_potential", "civil_war_quest_historic_site_potential"]
             },
             # New Pale Locations
             {
                 "id": 20004,
                 "name": "Windward Ruins",
                 "desc": "Crumbling Nordic ruins on a windswept hill overlooking the Sea of Ghosts, rumored to be haunted by sailors lost to the ice.",
-                "tags": ["nordic_ruin", "coastal_ruin", "haunted_potential", "undead_skeletons", "dungeon_minor"]
+                "tags": ["structure_type_ruined_tower", "nordic_burial_site_minor", "environment_coastal", "structure_condition_ruined_extensively", "magical_properties_haunted_aura", "undead_presence_skeletons", "dungeon_minor"]
             },
             {
                 "id": 20005,
                 "name": "Pale Pass",
                 "desc": "A treacherous mountain pass leading towards Cyrodiil from the southern Pale, known for blizzards and ice trolls. Currently lightly patrolled by Imperials.",
-                "tags": ["mountain_pass_major", "cyrodiil_border_route", "dangerous_terrain", "imperial_patrol_light", "monster_den_ice_troll"]
+                "tags": ["terrain_mountain_pass", "cultural_historical_significance_historic_site", "state_or_condition_current_contested_by_factions_potential", "imperial_influence_moderate", "monster_den_ice_troll", "climate_arctic", "travel_route_major_dangerous"]
             },
             {
                 "id": 20006,
                 "name": "Great Henge of the Ice-Speakers",
                 "desc": "An ancient and massive stone circle on the northern tundra, believed to have been used by early Atmoran settlers for sky-worship. Rarely visited.",
-                "tags": ["ancient_monument", "stone_circle", "atmora_lore", "historic_site", "isolated_landmark", "magic_faint"]
+                "tags": ["structure_type_standing_stone_circle", "cultural_historical_significance_nordic_ancient_site", "magical_properties_arcane_nexus_minor", "state_or_condition_current_isolated_and_forgotten", "terrain_tundra_plains", "climate_arctic"]
+            },
+            {
+                "id": 20007,
+                "name": "Snowpoint Overlook Cave",
+                "desc": "A small ice cave high in the mountains of The Pale, offering a chilling view. It might be used by smugglers or serve as a den for ice wraiths.",
+                "tags": ["structure_type_natural_cave", "climate_glacial", "economic_activity_smuggling_route_active_potential", "monster_den_ice_wraith", "terrain_mountain_peak", "dungeon_minor", "scenic_vista_panoramic"]
+            },
+            {
+                "id": 20008,
+                "name": "Forgotten Stones of the North",
+                "desc": "A small, weathered circle of ancient stones on the tundra of The Pale. Their original purpose is lost to time, but they emanate a faint, cold energy.",
+                "tags": ["structure_type_standing_stone_circle", "cultural_historical_significance_nordic_ancient_site", "structure_condition_weathered", "terrain_tundra_plains", "magical_properties_enchanted_neutral", "mystery_local"]
+            },
+            {
+                "id": 20009,
+                "name": "Icerunner's Rest",
+                "desc": "A tiny, wind-battered fishing hamlet clinging to the icy northern coast of The Pale. Its few inhabitants are hardy folk, accustomed to the harsh sea.",
+                "tags": ["populated_village", "settlement_minor", "economic_activity_fishing_industry_local", "environment_coastal", "climate_glacial", "state_or_condition_current_isolated_and_forgotten"]
+            },
+            {
+                "id": 20010,
+                "name": "Snowdrift Cabin",
+                "desc": "A solitary trapper's cabin, half-buried in snowdrifts for much of the year, located deep within the snowy plains of The Pale.",
+                "tags": ["structure_type_shack_or_hut", "structure_condition_weathered", "economic_activity_hunting_furs_meat", "climate_arctic", "terrain_tundra_plains", "hermit_lair_potential"]
+            },
+            {
+                "id": 20011,
+                "name": "Frostmoon Crag Cave",
+                "desc": "An icy cave system high on a crag in The Pale, often glittering with frost and home to ice wraiths or frost trolls.",
+                "tags": ["structure_type_natural_cave", "climate_glacial", "dungeon_minor", "monster_den_frost_troll", "monster_den_ice_wraith", "terrain_mountain_peak"]
+            },
+            {
+                "id": 20012,
+                "name": "Ruins of the Lost Patrol",
+                "desc": "A scatter of weathered stones and a broken standard on the bleak tundra, marking the last stand of a forgotten Imperial or Stormcloak patrol from a past conflict.",
+                "tags": ["structure_type_ruined_settlement", "cultural_historical_significance_battlefield_historic", "magical_properties_haunted_aura", "terrain_tundra_plains", "state_or_condition_current_isolated_and_forgotten"]
+            },
+            {
+                "id": 20013,
+                "name": "Yorgrim's Overlook",
+                "desc": "The crumbling ruins of an ancient Nordic watchtower, named after a forgotten hero. It offers a commanding view of the surrounding tundra but is now home to bandits or wildlife.",
+                "tags": ["structure_type_ruined_tower", "nordic_burial_site_minor", "dungeon_minor", "bandit_minor_camp_potential", "scenic_vista_panoramic", "cultural_historical_significance_nordic_ancient_site"]
+            },
+            {
+                "id": 20014,
+                "name": "Stillborn Cave (The Pale)",
+                "desc": "A small, cold cave system in The Pale, named for a local tragedy or perhaps the eerie silence within. Often inhabited by frost spiders or other cold-dwelling creatures.",
+                "tags": ["structure_type_natural_cave", "climate_arctic", "dungeon_minor", "monster_den_frost_spider", "urban_issues_or_atmosphere_haunted_rumors_strong", "tragedy_site_minor"]
+            },
+            {
+                "id": 20015,
+                "name": "The Lord Stone",
+                "desc": "Found high in the mountains on the border of The Pale, east of Morthal, this Standing Stone grants increased physical resilience and resistance to magical attacks.",
+                "tags": ["specific_landmark_type_standing_stone_magical", "magical_properties_enchanted_positive", "terrain_mountain_peak", "cultural_historical_significance_ancient_magical_site", "climate_arctic"]
+            },
+            {
+                "id": 20016,
+                "name": "Korvanjund",
+                "desc": "A large Nordic ruin in The Pale, south of Dawnstar. It is an ancient burial site of Nord heroes and kings, rumored to hold significant historical artifacts, possibly including a crown of legend. Heavily guarded by draugr.",
+                "tags": ["nordic_burial_site_major", "dungeon_major", "undead_presence_strong", "draugr_heavy", "cultural_historical_significance_nordic_ancient_site", "quest_location_civil_war_jagged_crown", "specific_landmark_type_word_wall_location_potential", "artifact_location_rumored"]
+            },
+            {
+                "id": 20017,
+                "name": "Irkngthand",
+                "desc": "A massive and ancient Dwemer ruin in The Pale, west of Nightgate Inn. It is a sprawling complex with many dangers, including Falmer and Dwemer constructs. Rumored to hold significant Dwemer artifacts.",
+                "tags": ["dwemer_ruin_major_city", "dungeon_major", "falmer_presence_strong", "mechanical_constructs_dwemer_heavy", "quest_location_thieves_guild", "cultural_historical_significance_dwemer_ruin_site", "blackreach_elevator_access_potential", "chaurus_nest_potential"]
+            },
+            {
+                "id": 20018,
+                "name": "Duskglow Crevice",
+                "desc": "A dark, winding cave system in The Pale, south of Dawnstar, infested with Falmer and their chaurus companions. It is a dangerous place, shunned by locals.",
+                "tags": ["structure_type_natural_cave", "falmer_presence_strong", "chaurus_nest_major", "dungeon_major", "environment_underground", "state_or_condition_current_lawless_area"]
             }
         ]
     },
@@ -422,7 +626,7 @@ LOCATIONS = [
         "id": 3,
         "name": "Winterhold Hold",
         "desc": "A shattered hold on the northern coast, defined by icy gales, ancient ruins, and the dominant presence of the College of Winterhold. Much of the original city was lost to the Great Collapse centuries ago.",
-        "tags": ["hold", "snow", "coastal", "magic_focus", "ruined_city_environs", "nordic_ancient", "college_of_winterhold"], # Adjusted tags
+        "tags": ["hold", "climate_glacial", "terrain_ice_field", "environment_coastal", "magical_properties_arcane_nexus", "cultural_historical_significance_great_collapse_affected_site", "nordic_culture_ancient", "college_of_winterhold_main_related", "state_or_condition_current_economically_depressed", "structure_condition_ruined_extensively"],
         "demographics": {"Nord": 75, "Altmer": 10, "Dunmer": 10, "Others": 5},
         "travel": {
             "roads": ["The Pale", "Eastmarch"],
@@ -431,33 +635,41 @@ LOCATIONS = [
         "sub_locations": [
             {
                 "id": 30,
-                "name": "Winterhold (Town Remnants)", # Renamed for clarity
+                "name": "Winterhold (Town Remnants)",
                 "desc": "A shadow of its former self, this small, windswept town clings to the cliffs, overshadowed by the imposing College. Most of the original grand city now lies beneath the waves due to the Great Collapse.",
-                "tags": ["town_remnants", "ruined_city_context", "winterhold", "magical_presence", "great_collapse_site", "isolated", "jarls_seat"],
+                "tags": ["populated_town", "structure_condition_ruined_extensively", "city_affiliation_winterhold_town_ruined", "magical_properties_arcane_nexus", "cultural_historical_significance_great_collapse_affected_site", "state_or_condition_current_isolated_and_forgotten", "settlement_features_jarls_longhouse", "urban_issues_or_atmosphere_fear_and_superstition", "climate_glacial"],
                 "sub_locations": [
                     {
                         "id": 3001,
                         "name": "The Frozen Hearth",
                         "desc": "The sole remaining inn in Winterhold, offering shelter and rumors to travelers and College members, run by Dagur.",
-                        "tags": ["inn", "tavern", "social", "rumor_hub"]
+                        "tags": ["structure_type_inn_building", "settlement_features_tavern", "social_hub_popular", "rumor_source", "food_drink_vendor", "lodging_available", "structure_condition_weathered"]
                     },
                     {
                         "id": 3002,
                         "name": "College of Winterhold",
                         "desc": "A venerable institution of magic, perched precariously on a separated clifftop, a beacon for mages across Tamriel. Led by Arch-Mage Savos Aren.",
-                        "tags": ["college", "magic_guild", "mages_guild", "learning_center", "historic", "arcane_stronghold"]
+                        "tags": ["structure_type_guild_hall_building", "settlement_features_college_of_winterhold_main", "magical_properties_arcane_nexus", "cultural_historical_significance_ancient_magical_site", "political_tension_high", "unique_landmark_iconic", "quest_line_college_of_winterhold"],
+                        "sub_locations": [
+                            {
+                                "id": 30021,
+                                "name": "The Midden",
+                                "desc": "The dark, forgotten underbelly of the College of Winterhold, a network of icy tunnels and chambers. Used for refuse, dangerous experiments, and rumored to hide darker secrets, including the Atronach Forge.",
+                                "tags": ["environment_underground", "dungeon_major", "magical_properties_tainted_by_dark_magic", "specific_landmark_type_atronach_forge_location", "undead_presence_rumored_strong", "secret_location", "college_of_winterhold_main_related"]
+                            }
+                        ]
                     },
                     {
                         "id": 3003,
                         "name": "Jarl's Longhouse (Winterhold)",
                         "desc": "The modest seat of Winterhold's Jarl Korir, a man bitter about the College's perceived indifference to the town's plight.",
-                        "tags": ["government", "jarls_seat"]
+                        "tags": ["structure_type_palace_or_manor", "settlement_features_jarls_longhouse", "government_local", "structure_condition_weathered", "political_tension_high"]
                     },
                     {
                         "id": 3004,
                         "name": "Birna's Oddments",
                         "desc": "A small shop run by Birna, offering a curious selection of goods, often scavenged or of questionable origin.",
-                        "tags": ["shop", "general", "unique_finds_potential"]
+                        "tags": ["structure_type_shop_building", "shop_general_goods", "trade_variety_limited", "economic_activity_trade_hub_minor", "structure_condition_weathered"]
                     }
                 ]
             },
@@ -465,43 +677,43 @@ LOCATIONS = [
                 "id": 31,
                 "name": "Saarthal",
                 "desc": "The excavated ruins of one of Skyrim's first human settlements, a site of great magical power and ancient Nordic mysteries, closely tied to the College of Winterhold's studies.",
-                "tags": ["nordic_ruin_major", "dungeon", "undead", "magic_artifact_potential", "college_quest_location", "historic_settlement"]
+                "tags": ["nordic_burial_site_major", "dungeon_major", "undead_presence_strong", "draugr_heavy", "magical_properties_arcane_nexus", "college_of_winterhold_main_related", "cultural_historical_significance_nordic_ancient_site", "artifact_location_powerful", "puzzle_ancient_magic"]
             },
             {
                 "id": 32,
                 "name": "Hob's Fall Cave",
                 "desc": "A shadowy coastal cave north of Winterhold, a den for necromancers and their unholy experiments, or perhaps desperate smugglers.",
-                "tags": ["cave", "necromancer_lair_potential", "smuggler_den_potential", "dungeon", "coastal"]
+                "tags": ["structure_type_natural_cave", "specific_landmark_type_necromancer_tower_or_lair_potential", "economic_activity_smuggling_route_active_potential", "dungeon_minor", "environment_coastal", "magical_properties_tainted_by_dark_magic_potential", "undead_presence_skeletons_potential"]
             },
             {
                 "id": 33,
                 "name": "Yngol Barrow",
                 "desc": "A mournful Nordic tomb east of Windhelm (close to Winterhold's border), where ancient magics linger and the ghost of Yngol's shade may be found by those seeking its secrets.",
-                "tags": ["barrow", "nordic_ruin", "undead", "dungeon", "ghost_encounter", "helm_of_yngol_legend"]
+                "tags": ["nordic_burial_site_major", "dungeon_major", "undead_presence_strong", "magical_properties_haunted_aura", "cultural_historical_significance_legendary_hero_location", "artifact_location_unique_item", "puzzle_ancient_nordic"]
             },
             {
                 "id": 34,
                 "name": "Alftand",
                 "desc": "A vast and treacherous Dwemer ruin deep within the mountains of Winterhold, one of the primary known entrances to the subterranean realm of Blackreach. It is a dangerous place, still patrolled by ancient constructs and inhabited by Falmer.",
-                "tags": ["dwemer_ruin_major", "dungeon", "mechanical_constructs", "falmer_presence", "blackreach_entrance", "quest_location_exploration"],
+                "tags": ["dwemer_ruin_major_city", "dungeon_large_complex", "mechanical_constructs_dwemer_heavy", "falmer_presence_strong", "specific_landmark_type_blackreach_elevator_access", "quest_location_main_story_potential", "cultural_historical_significance_dwemer_ruin_site", "chaurus_nest_potential", "structure_condition_ruined_extensively"],
                 "sub_locations": [
                     {
                         "id": 3401,
                         "name": "Alftand Glacial Ruins",
                         "desc": "The icy, upper exterior sections of Alftand, often patrolled by Falmer and ice wraiths.",
-                        "tags": ["ruin_exterior", "snow", "ice_elementals"]
+                        "tags": ["dwemer_ruin_minor_outpost", "climate_glacial", "monster_den_ice_wraith", "falmer_presence_scouts", "structure_condition_ruined_extensively"]
                     },
                     {
                         "id": 3402,
                         "name": "Alftand Animonculory",
                         "desc": "The main Dwemer manufactory within Alftand, filled with constructs, traps, and remnants of Dwemer machinery.",
-                        "tags": ["dwemer_constructs", "traps", "dwemer_machinery"]
+                        "tags": ["dwemer_ruin_major_city_section", "mechanical_constructs_dwemer_heavy", "trap_heavy_environment", "ancient_technology_dwemer", "falmer_presence_strong"]
                     },
                     {
                         "id": 3403,
                         "name": "Alftand Cathedral",
                         "desc": "The grand central chamber of Alftand, leading deeper into the earth towards Blackreach. A place of significant Dwemer engineering.",
-                        "tags": ["dwemer_architecture_grand", "boss_area_potential", "blackreach_access_point"]
+                        "tags": ["dwemer_ruin_major_city_section", "structure_type_temple_building_dwemer", "specific_landmark_type_blackreach_elevator_access", "mechanical_constructs_dwemer_boss_potential", "falmer_presence_strong"]
                     }
                 ]
             },
@@ -509,69 +721,135 @@ LOCATIONS = [
                 "id": 35,
                 "name": "Frostmere Crypt",
                 "desc": "A Nordic barrow on the border between The Pale and Winterhold, rumored to be home to bandits and a legendary spectral weapon known as 'The Pale Blade'.",
-                "tags": ["nordic_ruin", "dungeon", "undead_presence", "bandit_lair_potential", "quest_location_artifact", "ghostly_blade_legend"]
+                "tags": ["nordic_burial_site_major", "dungeon_major", "undead_presence_strong", "bandit_minor_camp_potential", "quest_location_local_legend", "artifact_location_unique_item", "magical_properties_haunted_aura"]
             },
             {
                 "id": 36,
                 "name": "Pilgrim's Trench",
                 "desc": "A shipwreck graveyard in the icy waters north of Winterhold, a treacherous area for sailors, rumored to hold lost cargo and attract scavengers.",
-                "tags": ["shipwreck_site", "underwater_danger", "coastal", "salvage_potential", "ice_floes"]
+                "tags": ["structure_type_shipwreck_site", "environment_coastal", "climate_glacial", "treasure_cache_rumored", "dangerous_underwater_exploration", "monster_den_slaughterfish_potential"]
             },
             {
                 "id": 37,
                 "name": "Sightless Pit",
                 "desc": "A deep, dark chasm leading into a Falmer-infested cave system, located in the southwestern mountains of Winterhold. A place of utter darkness and terror.",
-                "tags": ["cave", "falmer_den_major", "dungeon", "chasm_deep", "dangerous_exploration"]
+                "tags": ["structure_type_natural_cave", "falmer_presence_strong", "dungeon_major", "terrain_canyon", "environment_underground", "chaurus_nest_major", "state_or_condition_current_lawless_area"]
             },
             {
                 "id": 38,
                 "name": "Skytemple Ruins",
                 "desc": "Ruined Nordic towers atop a desolate mountain, offering a commanding view of Winterhold's icy expanse but little shelter from the biting winds.",
-                "tags": ["nordic_ruin", "tower_ancient", "mountain_peak", "exposed_ruin"]
+                "tags": ["structure_type_ruined_tower", "nordic_burial_site_minor", "terrain_mountain_peak", "structure_condition_ruined_extensively", "climate_glacial", "scenic_vista_panoramic"]
             },
             {
                 "id": 39,
                 "name": "Snowpoint Beacon",
                 "desc": "A ruined watchtower on the northern coast of Winterhold, now a desolate landmark against the frozen sea.",
-                "tags": ["watchtower_ruined", "coastal_landmark", "desolate_location"]
+                "tags": ["structure_type_ruined_tower", "environment_coastal", "structure_condition_abandoned", "state_or_condition_current_isolated_and_forgotten", "climate_glacial"]
             },
             {
                 "id": 30001,
                 "name": "Ysgramor's Tomb",
                 "desc": "The final resting place of the legendary Ysgramor, founder of the Companions and leader of the Five Hundred Companions. A revered and dangerous Nordic tomb, closely guarded by the spirits of ancient heroes.",
-                "tags": ["nordic_ruin_sacred", "tomb_legendary", "historic_figure_ysgramor", "companions_lore", "undead_guardians", "dungeon_major", "quest_location_companions"]
+                "tags": ["nordic_burial_site_major", "cultural_historical_significance_legendary_hero_location", "companions_guild_hall_related", "undead_presence_strong", "draugr_heavy", "dungeon_major", "quest_location_companions_guild_hall", "artifact_location_powerful"]
             },
             {
                 "id": 30002,
                 "name": "The Serpent Stone",
                 "desc": "A Standing Stone located on an island in the Sea of Ghosts, north of the College of Winterhold, granting a unique paralytic magical power once per day.",
-                "tags": ["standing_stone", "magic_buff_paralysis", "island_remote", "coastal", "sea_of_ghosts"]
+                "tags": ["specific_landmark_type_standing_stone_magical", "magical_properties_enchanted_neutral", "terrain_island", "environment_coastal", "climate_glacial", "power_paralysis_ranged"]
             },
             {
                 "id": 30003,
                 "name": "Driftshade Refuge",
                 "desc": "An abandoned fort in Winterhold, which rumors say was once used by a renegade group of mages or, more recently, became a den for ice wraiths or desperate bandits.",
-                "tags": ["fort_abandoned", "ruin", "monster_den_potential", "bandit_lair_potential", "dungeon"]
+                "tags": ["structure_type_ruined_fort", "structure_condition_abandoned", "monster_den_ice_wraith_potential", "bandit_minor_camp_potential", "dungeon_minor", "silver_hand_lair_potential_alt"]
             },
             # New Winterhold Hold Locations
             {
                 "id": 30004,
                 "name": "Bleakcoast Cave",
                 "desc": "A desolate ice cave on the northern coast, home to frost trolls and other hardy creatures adapted to the extreme cold.",
-                "tags": ["cave_ice", "monster_den_frost_troll", "coastal_cave", "dungeon_minor", "extreme_cold"]
+                "tags": ["structure_type_natural_cave", "climate_glacial", "monster_den_frost_troll", "environment_coastal", "dungeon_minor", "terrain_ice_field"]
             },
             {
                 "id": 30005,
                 "name": "The Wreck of the Winter Warbler",
                 "desc": "A shipwreck frozen in the ice along Winterhold's northern coast, its treasures and the fate of its crew preserved in the cold.",
-                "tags": ["shipwreck_site", "frozen_ruin", "coastal_exploration", "treasure_potential", "undead_sailors_potential"]
+                "tags": ["structure_type_shipwreck_site", "structure_condition_ruined_extensively", "environment_coastal", "climate_glacial", "treasure_cache_rumored", "undead_presence_skeletons_potential", "dungeon_minor"]
             },
             {
                 "id": 30006,
                 "name": "Japhet's Folly",
                 "desc": "A small, isolated tower on an island far off the coast of Winterhold, rumored to be the retreat of a mad wizard or a hidden pirate cache. Currently, it is mostly a ruin battered by storms.",
-                "tags": ["tower_ruined_remote", "island_isolated", "wizard_hermitage_legend", "pirate_cache_rumor", "sea_of_ghosts", "dangerous_approach"]
+                "tags": ["structure_type_ruined_tower", "terrain_island", "state_or_condition_current_isolated_and_forgotten", "magical_properties_enchanted_neutral_potential", "pirate_cove_hidden_potential", "environment_coastal", "climate_glacial", "quest_location_college_of_winterhold_potential"]
             },
+            {
+                "id": 30007,
+                "name": "Frostedge Fishery",
+                "desc": "A struggling fishing outpost on the treacherous icy coast of Winterhold, where a few hardy souls attempt to make a living from the frozen sea.",
+                "tags": ["populated_village", "settlement_minor", "economic_activity_fishing_industry_local", "environment_coastal", "climate_glacial", "state_or_condition_current_economically_depressed"]
+            },
+            {
+                "id": 30008,
+                "name": "Hermit's Peak Cave",
+                "desc": "A small, somewhat habitable ice cave high in the mountains of Winterhold, rumored to be the dwelling of a reclusive mage or a forgotten scholar.",
+                "tags": ["structure_type_natural_cave", "climate_glacial", "terrain_mountain_peak", "hermit_lair_potential", "magical_properties_arcane_focus_minor_potential", "dungeon_minor"]
+            },
+            {
+                "id": 30009,
+                "name": "Glacial Crevice",
+                "desc": "A narrow, icy fissure in the mountains of Winterhold, leading to a small, frigid cave system. Often home to ice wraiths or other cold-dwelling creatures.",
+                "tags": ["structure_type_natural_cave", "climate_glacial", "dungeon_minor", "monster_den_ice_wraith", "terrain_mountain_pass", "natural_formation_unique"]
+            },
+            {
+                "id": 30010,
+                "name": "Forgotten Scholar's Hovel",
+                "desc": "The collapsed remains of a small, ancient stone hovel, half-buried in snow. A few weathered books or scrolls might hint at its former occupant.",
+                "tags": ["structure_type_ruined_shack", "cultural_historical_significance_historic_site", "structure_condition_collapsed", "lore_clue_potential", "climate_glacial", "terrain_ice_field"]
+            },
+            {
+                "id": 30011,
+                "name": "Snow-Shod Stables & Farm (Winterhold Outskirts)",
+                "desc": "A surprisingly resilient farm and stables on the very edge of Winterhold's domain, perhaps benefiting from minor College enchantments to ward off the worst of the cold. They breed hardy northern ponies.",
+                "tags": ["structure_type_farmstead", "structure_type_stable_building", "economic_activity_farming_livestock", "settlement_minor", "climate_arctic_edge", "magical_properties_enchanted_neutral_potential"]
+            },
+            {
+                "id": 30012,
+                "name": "Whistling Mine",
+                "desc": "A tiny, struggling mining outpost in the northern cliffs of Winterhold, where miners brave the biting winds to extract a rare, ice-infused ore said to hum faintly.",
+                "tags": ["populated_village", "settlement_minor", "economic_activity_mining_gems", "structure_type_mine_active", "climate_glacial", "state_or_condition_current_isolated_and_forgotten", "magical_properties_enchanted_neutral_potential"]
+            },
+            {
+                "id": 30013,
+                "name": "Shrine of Jhunal (Lost)",
+                "desc": "The snow-swept, crumbling ruins of an ancient shrine dedicated to Jhunal, the Nordic god of knowledge and runes, predating the College's dominance. A few weathered carvings remain.",
+                "tags": ["structure_type_ruined_shrine", "religious_site_aedric", "cultural_historical_significance_nordic_ancient_site", "magical_properties_arcane_focus_minor_potential", "lore_clue_potential", "climate_glacial", "terrain_ice_field"]
+            },
+            {
+                "id": 30014,
+                "name": "Frozen Mammoth Cave",
+                "desc": "A glacial cave where an ancient mammoth was flash-frozen millennia ago. The cave is now home to ice wraiths and other frost creatures, drawn to its intense cold.",
+                "tags": ["structure_type_natural_cave", "climate_glacial", "dungeon_minor", "monster_den_ice_wraith", "unique_natural_formation", "cultural_historical_significance_historic_site"]
+            },
+            {
+                "id": 30015,
+                "name": "The Tower Stone",
+                "desc": "Located on a windswept clifftop along Winterhold's icy coast, this Standing Stone grants the power to once a day open any expert-level or lower lock.",
+                "tags": ["specific_landmark_type_standing_stone_magical", "magical_properties_enchanted_neutral", "environment_coastal", "terrain_cliffside", "cultural_historical_significance_ancient_magical_site", "utility_buff_lockpicking"]
+            },
+            {
+                "id": 30016,
+                "name": "Mount Anthor",
+                "desc": "A high mountain peak on the border of Winterhold and The Pale, known in ancient legends as a dragon lair. While no dragons have been seen for centuries, it holds an ancient Word Wall.",
+                "tags": ["terrain_mountain_peak", "specific_landmark_type_dragon_lair_ancient_inactive", "specific_landmark_type_word_wall_location", "dungeon_minor", "cultural_historical_significance_dragon_lore_site_ancient", "climate_glacial", "state_or_condition_current_isolated_and_forgotten"]
+            },
+            {
+                "id": 30018,
+                "name": "Yngvild",
+                "desc": "An icy Nordic ruin on an island northeast of Dawnstar (near Winterhold border). It is haunted by the ghosts of women enthralled by the necromancer Arondil.",
+                "tags": ["nordic_burial_site_major", "structure_condition_ruined_extensively", "dungeon_major", "specific_landmark_type_necromancer_tower_or_lair", "magical_properties_haunted_aura", "undead_presence_strong", "quest_location_investigation", "terrain_island", "environment_coastal", "climate_glacial"]
+            }
         ]
     },
 
@@ -579,81 +857,81 @@ LOCATIONS = [
     {
         "id": 4,
         "name": "Hjaalmarch",
-        "desc": "A bleak, marshy hold shrouded in perpetual mist and steeped in superstition. Its capital, Morthal, is known for its reclusive nature and recent troubles with strange occurrences and whispers of vampirism.", # Adjusted for 4E 200
-        "tags": ["hold", "marsh", "swamp", "isolated", "nordic", "superstition", "vampire_rumors", "misty"], # vampire_threat to rumors
+        "desc": "A bleak, marshy hold shrouded in perpetual mist and steeped in superstition. Its capital, Morthal, is known for its reclusive nature and recent troubles with strange occurrences and whispers of vampirism.",
+        "tags": ["hold", "terrain_marsh", "terrain_swamp", "state_or_condition_current_isolated_and_forgotten", "nordic_culture_local", "urban_issues_or_atmosphere_fear_and_superstition", "magical_properties_daedric_influence_subtle_rumor", "climate_swampy", "environment_wilderness", "political_tension_high_potential"],
         "demographics": {"Nord": 95, "Others": 5},
         "travel": {
             "roads": ["The Pale", "The Reach", "Haafingar"],
-            "paths": ["Stonehills Trail", "Drajkmyr Marsh Path"] # Path added
+            "paths": ["Stonehills Trail", "Drajkmyr Marsh Path"]
         },
         "sub_locations": [
             {
                 "id": 40,
                 "name": "Morthal",
-                "desc": "A somber town built on the edge of the Drajkmyr Marsh, wrapped in fog and mystery. Its Jarl, Idgrod Ravencrone, is a seer, and the town is currently dealing with unease from a recent fire and talk of vampires.", # More specific to Laid to Rest intro
-                "tags": ["town", "marsh", "morthal", "superstitious", "vampire_quest_brewing", "jarls_seat", "isolated_community"],
+                "desc": "A somber town built on the edge of the Drajkmyr Marsh, wrapped in fog and mystery. Its Jarl, Idgrod Ravencrone, is a seer, and the town is currently dealing with unease from a recent fire and talk of vampires.",
+                "tags": ["populated_town", "terrain_marsh", "city_affiliation_morthal_town", "urban_issues_or_atmosphere_fear_and_superstition", "magical_properties_daedric_influence_subtle_rumor", "settlement_features_jarls_longhouse", "state_or_condition_current_isolated_and_forgotten", "quest_location_vampire_investigation", "climate_swampy"],
                 "sub_locations": [
                     {
                         "id": 4001,
                         "name": "Highmoon Hall",
                         "desc": "The austere residence of Jarl Idgrod Ravencrone and her family, where she contemplates her visions.",
-                        "tags": ["government", "jarls_seat", "mystic_jarl"]
+                        "tags": ["structure_type_palace_or_manor", "settlement_features_jarls_longhouse", "government_local", "magical_properties_arcane_focus_minor_potential", "political_family_seer"]
                     },
                     {
                         "id": 4002,
                         "name": "Moorside Inn",
                         "desc": "A humble inn providing shelter for travelers daring to brave the murky swamps, run by Jonna.",
-                        "tags": ["inn", "tavern", "social"]
+                        "tags": ["structure_type_inn_building", "settlement_features_tavern", "social_hub_popular", "rumor_source", "food_drink_vendor", "lodging_available", "structure_condition_weathered"]
                     },
                     {
                         "id": 4003,
                         "name": "Thaumaturgist's Hut (Falion's House)",
                         "desc": "The home of Falion, Morthal's resident wizard and expert on all things arcane, including vampirism. He is viewed with suspicion by some.",
-                        "tags": ["shop", "alchemy", "magic_vendor", "residence", "quest_giver_potential", "arcane_expert"]
+                        "tags": ["structure_type_shop_building", "structure_type_residence", "settlement_features_alchemy_shop_notable", "item_type_potion_vendor", "item_type_ingredient_vendor", "magical_properties_arcane_focus", "quest_giver_vampire_cure", "scholar_retreat_rumor"]
                     },
                     {
                         "id": 4004,
                         "name": "Jorgen and Lami's House",
                         "desc": "The home of Jorgen and Lami, who work at the local lumber mill. Lami is an aspiring alchemist.",
-                        "tags": ["residence", "lumber_mill_worker", "alchemy_apprentice_potential"]
+                        "tags": ["structure_type_residence", "commoner_dwelling", "economic_activity_logging_timber_worker", "alchemy_apprentice_potential"]
                     },
-                    { # Added Burned House for 'Laid to Rest'
+                    {
                         "id": 4005,
                         "name": "Burned House",
                         "desc": "The charred ruins of Hroggar's house, site of a recent tragedy that has the town on edge and fuels rumors of dark magic.",
-                        "tags": ["ruin_recent", "fire_tragedy", "quest_location_investigation", "vampire_plot_clue"]
+                        "tags": ["structure_type_ruined_shack", "structure_condition_collapsed", "tragedy_site_family", "quest_location_vampire_investigation", "urban_issues_or_atmosphere_haunted_rumors_strong"]
                     }
                 ]
             },
             {
                 "id": 41,
                 "name": "Movarth's Lair",
-                "desc": "A dank cave north of Morthal, rumored to be the den of the master vampire Movarth Piquine and his thralls. Its discovery is key to resolving Morthal's troubles.", # Updated to reflect it's part of a quest to find
-                "tags": ["cave", "vampire_lair", "dungeon", "quest_location_major", "undead_stronghold"]
+                "desc": "A dank cave north of Morthal, rumored to be the den of the master vampire Movarth Piquine and his thralls. Its discovery is key to resolving Morthal's troubles.",
+                "tags": ["structure_type_natural_cave", "specific_landmark_type_vampire_ancient_lair", "dungeon_major", "quest_location_vampire_investigation", "undead_presence_strong", "magical_properties_tainted_by_dark_magic", "boss_fight_vampire_lord_potential"]
             },
             {
                 "id": 42,
                 "name": "Ustengrav",
                 "desc": "A sprawling ancient Nordic tomb deep within Hjaalmarch's marshes, said to hold the Horn of Jurgen Windcaller, a significant relic sought by the Greybeards.",
-                "tags": ["barrow", "nordic_ruin_major", "dungeon", "undead", "greybeards_quest", "dragon_word_ancient", "historic_artifact"]
+                "tags": ["nordic_burial_site_major", "dungeon_large_complex", "undead_presence_strong", "draugr_heavy", "quest_location_main_story_early", "specific_landmark_type_word_wall_location", "artifact_location_unique_item", "puzzle_ancient_nordic", "terrain_marsh_edge"]
             },
             {
                 "id": 43,
                 "name": "Stonehills",
                 "desc": "A modest mining outpost in Hjaalmarch, focused on excavating iron ore, managed by Pactur.",
-                "tags": ["village", "mine_iron", "resource_node"],
+                "tags": ["populated_village", "settlement_minor", "economic_activity_mining_iron", "resource_node", "terrain_hilly_marsh_edge", "climate_swampy_edge"],
                 "sub_locations": [
                     {
                         "id": 4301,
                         "name": "Rockwallow Mine",
                         "desc": "The iron mine that sustains the small settlement of Stonehills.",
-                        "tags": ["mine", "resource_iron"]
+                        "tags": ["structure_type_mine_active", "economic_activity_mining_iron", "resource_node"]
                     },
                     {
                         "id": 4302,
                         "name": "Sorli's House",
                         "desc": "The residence of Sorli the Builder, an important figure in Stonehills who hopes to see the mine prosper.",
-                        "tags": ["residence", "community_leader_potential"]
+                        "tags": ["structure_type_residence", "commoner_dwelling", "community_leader_potential"]
                     }
                 ]
             },
@@ -661,69 +939,141 @@ LOCATIONS = [
                 "id": 44,
                 "name": "Apprentice Stone",
                 "desc": "A Standing Stone located in the marshes northwest of Morthal, granting faster Magicka regeneration but also increased susceptibility to magic.",
-                "tags": ["standing_stone", "magic_buff_regen", "magic_debuff_weakness", "marsh_island"]
+                "tags": ["specific_landmark_type_standing_stone_magical", "magical_properties_enchanted_neutral", "terrain_marsh", "terrain_island", "buff_magicka_regen_increased", "debuff_magic_weakness_increased"]
             },
             {
                 "id": 45,
                 "name": "Brood Cavern",
                 "desc": "A small cave in Hjaalmarch, often infested with spiders, chaurus, or other venomous creatures.",
-                "tags": ["cave", "monster_den_spider_chaurus", "dungeon_minor", "poisonous_creatures"]
+                "tags": ["structure_type_natural_cave", "monster_den_spider", "monster_den_chaurus_potential", "dungeon_minor", "terrain_marsh", "alchemy_ingredient_source_rich_potential"]
             },
             {
                 "id": 46,
                 "name": "Chillwind Depths",
                 "desc": "A large cave system south of Dragon Bridge (near Hjaalmarch border), inhabited by Falmer, Chaurus, and other subterranean horrors.",
-                "tags": ["cave_major", "falmer_den", "chaurus_nest", "dungeon_dangerous"]
+                "tags": ["structure_type_natural_cave", "falmer_presence_strong", "chaurus_nest_major", "dungeon_major", "environment_underground", "terrain_mountain_cave_remote", "state_or_condition_current_lawless_area"]
             },
             {
                 "id": 47,
                 "name": "Dead Men's Respite",
                 "desc": "A Nordic ruin southwest of Morthal, connected to the Bards College and the legend of King Olaf One-Eye. It is guarded by draugr and holds ancient secrets.",
-                "tags": ["nordic_ruin", "dungeon", "undead", "bards_college_quest", "dragon_word_ancient", "historic_lore"]
+                "tags": ["nordic_burial_site_major", "dungeon_major", "undead_presence_strong", "draugr_heavy", "bards_college_location_related", "specific_landmark_type_word_wall_location", "cultural_historical_significance_legendary_hero_location", "puzzle_ancient_nordic"]
             },
             {
                 "id": 48,
                 "name": "Folgunthur",
                 "desc": "An ancient Nordic ruin south of Solitude, near the Hjaalmarch border, where a fragment of the legendary Gauldur Amulet is sought, guarded by Mikrul Gauldurson.",
-                "tags": ["nordic_ruin", "dungeon", "undead", "quest_location_artifact", "gauldur_amulet_fragment", "dragon_priest_relative"]
+                "tags": ["nordic_burial_site_major", "dungeon_major", "undead_presence_strong", "draugr_heavy", "quest_location_artifact_gauldur_amulet", "cultural_historical_significance_ancient_magical_site", "puzzle_dragon_claw"]
             },
             {
                 "id": 49,
                 "name": "Kjenstag Ruins",
                 "desc": "Ruined Nordic structures in the marshes, sometimes haunted by restless spirits or occupied by desperate bandits seeking shelter.",
-                "tags": ["nordic_ruin_minor", "marsh_ruin", "haunted_potential", "bandit_outpost_potential"]
+                "tags": ["structure_type_ruined_tower", "nordic_burial_site_minor", "terrain_marsh", "magical_properties_haunted_aura_potential", "bandit_minor_camp_potential", "structure_condition_ruined_extensively"]
             },
             {
                 "id": 40001,
                 "name": "Meeko's Shack",
                 "desc": "A small, abandoned shack south of Solitude Sawmill, near the Hjaalmarch border. A loyal dog named Meeko waits here for his deceased master.",
-                "tags": ["hut", "abandoned", "animal_companion_potential", "tragic_story"]
+                "tags": ["structure_type_shack_or_hut", "structure_condition_abandoned", "animal_companion_unique", "tragedy_site_minor", "terrain_forested_area_edge"]
             },
             {
                 "id": 40002,
                 "name": "Robber's Gorge",
                 "desc": "A bandit-controlled ravine and bridge southwest of Rorikstead, on the edge of Hjaalmarch, a notorious spot for ambushes.",
-                "tags": ["bandit_camp", "ravine_fortified", "dungeon", "road_ambush_site"]
+                "tags": ["bandit_main_stronghold", "terrain_canyon", "structure_type_bridge_structure", "dungeon_major", "state_or_condition_current_bandit_controlled_area", "toll_road_illegal"]
             },
             {
                 "id": 40003,
                 "name": "Wreck of the Icerunner",
                 "desc": "A shipwreck on the northern coast of Hjaalmarch, west of Solitude. It is now a den for bandits or pirates who prey on coastal traffic.",
-                "tags": ["shipwreck_site", "bandit_lair_pirate", "coastal", "dungeon", "treasure_potential"]
+                "tags": ["structure_type_shipwreck_site", "specific_landmark_type_pirate_cove_hidden", "environment_coastal", "dungeon_minor", "treasure_cache_rumored", "bandit_minor_camp_potential"]
             },
             # New Hjaalmarch Locations
             {
                 "id": 40004,
                 "name": "The Stumbling Sabrecat",
                 "desc": "A rickety, half-sunken shack in the deepest part of the Drajkmyr Marsh, rumored to be the home of a reclusive (and possibly mad) alchemist or a coven of witches.",
-                "tags": ["shack_isolated", "swamp_dwelling", "alchemist_hermit_potential", "witch_coven_rumor", "dangerous_marsh"]
+                "tags": ["structure_type_shack_or_hut", "structure_condition_ruined_extensively", "terrain_marsh", "hermit_lair_potential", "magical_properties_tainted_by_dark_magic_potential", "alchemy_ingredient_source_rich_potential", "witch_coven_potential"]
             },
             {
                 "id": 40005,
                 "name": "Folkvar's Folly",
                 "desc": "A small, abandoned watchtower slowly sinking into the marsh. Local legend says it was built by a foolish Thane who ignored warnings about the unstable ground.",
-                "tags": ["watchtower_ruined_sinking", "marsh_landmark", "local_legend", "bandit_outpost_potential"]
+                "tags": ["structure_type_ruined_tower", "structure_condition_collapsed", "terrain_marsh", "cultural_historical_significance_local_legend", "bandit_minor_camp_potential", "state_or_condition_current_isolated_and_forgotten"]
             },
+            {
+                "id": 40006,
+                "name": "Drajkmyr Crossing",
+                "desc": "A tiny, precarious stilt-village built over the murky waters on the edge of the Drajkmyr marsh, known for its unique eel fishing techniques.",
+                "tags": ["populated_village", "settlement_minor", "economic_activity_fishing_industry_local", "terrain_marsh", "structure_type_settlement_minor", "unique_culture_local", "state_or_condition_current_isolated_and_forgotten"]
+            },
+            {
+                "id": 40007,
+                "name": "Peatbogger's Hut",
+                "desc": "The isolated hut of a solitary peat farmer, who harvests the rich soil of Hjaalmarch for fuel and fertilizer.",
+                "tags": ["structure_type_shack_or_hut", "economic_activity_farming_crops", "terrain_marsh", "hermit_lair_potential", "state_or_condition_current_isolated_and_forgotten"]
+            },
+            {
+                "id": 40008,
+                "name": "Murkwater Hollow",
+                "desc": "A muddy, flooded cave system deep within Hjaalmarch's swamps, likely home to chaurus, mudcrabs, or even a reclusive giant snake if such existed.",
+                "tags": ["structure_type_natural_cave", "terrain_marsh", "dungeon_minor", "monster_den_chaurus", "monster_den_mudcrab", "structure_condition_flooded"]
+            },
+            {
+                "id": 40009,
+                "name": "Sinking Stones of the Marsh",
+                "desc": "A small, barely visible ruin of ancient stones half-sunk in the swamp, perhaps part of an old Nordic watchtower or shrine, now reclaimed by the marsh.",
+                "tags": ["structure_type_ruined_shrine", "nordic_burial_site_minor", "terrain_marsh", "structure_condition_collapsed", "treasure_cache_rumored", "cultural_historical_significance_nordic_ancient_site"]
+            },
+            {
+                "id": 40010,
+                "name": "Misty Grove Farm",
+                "desc": "A small, struggling farm on the edge of the Drajkmyr Marsh, where the farmer battles constant dampness and swamp pests to grow hardy root vegetables.",
+                "tags": ["structure_type_farmstead", "economic_activity_farming_crops", "terrain_marsh_edge", "state_or_condition_current_isolated_and_forgotten", "structure_condition_weathered"]
+            },
+            {
+                "id": 40011,
+                "name": "Fort Snowhawk (Ruined)",
+                "desc": "The dilapidated ruins of an old Imperial fort, now largely swallowed by the marsh. Rumored to be haunted by its former garrison or used as a hideout by bog bandits.",
+                "tags": ["structure_type_ruined_fort", "terrain_marsh", "dungeon_minor", "magical_properties_haunted_aura_potential", "bandit_minor_camp_potential", "cultural_historical_significance_historic_site", "structure_condition_ruined_extensively"]
+            },
+            {
+                "id": 40012,
+                "name": "Shrine of Herma-Mora (Hidden Marsh Shrine)",
+                "desc": "A small, hidden shrine of crudely piled stones and waterlogged tomes dedicated to Hermaeus Mora, tucked away in a particularly dense and foggy part of Hjaalmarch. Only those seeking forbidden knowledge would find it.",
+                "tags": ["structure_type_shrine_outdoor_structure", "magical_properties_daedric_influence_overt", "terrain_marsh", "secret_location", "forbidden_knowledge_dangerous", "cult_activity_potential_minor", "hermaeus_mora_shrine"]
+            },
+            {
+                "id": 40013,
+                "name": "Bogbound Barrow",
+                "desc": "A small, partially flooded Nordic barrow slowly being reclaimed by the swamp. It's likely home to draugr who guard meager treasures.",
+                "tags": ["nordic_burial_site_minor", "structure_condition_flooded", "dungeon_minor", "undead_presence_strong", "draugr_heavy", "terrain_marsh"]
+            },
+            {
+                "id": 40014,
+                "name": "Lost Echo Cave",
+                "desc": "A large cave system in Hjaalmarch, west of Morthal, known for its unusual acoustics. It is now a den for Falmer and their chaurus, and contains an ancient Word Wall.",
+                "tags": ["structure_type_natural_cave", "falmer_presence_strong", "chaurus_nest_major", "dungeon_major", "specific_landmark_type_word_wall_location", "unique_natural_formation", "state_or_condition_current_lawless_area"]
+            },
+            {
+                "id": 40015,
+                "name": "Ragnvald",
+                "desc": "An ancient Nordic ruin in the mountains of Hjaalmarch, north of Markarth. It is a burial site guarded by powerful draugr and the Dragon Priest Otar the Mad.",
+                "tags": ["nordic_burial_site_major", "dungeon_large_complex", "cultural_historical_significance_dragon_cult_lair_priest", "undead_presence_strong", "draugr_heavy", "specific_landmark_type_word_wall_location", "magical_properties_arcane_nexus", "dragon_priest_otar"]
+            },
+            {
+                "id": 40016,
+                "name": "Orotheim",
+                "desc": "A small cave system in the western part of Hjaalmarch, often used as a hideout by a desperate group of bandits preying on the sparse traffic through the marshes.",
+                "tags": ["structure_type_natural_cave", "bandit_minor_camp", "dungeon_minor", "terrain_marsh_edge", "state_or_condition_current_bandit_controlled_area"]
+            },
+            {
+                "id": 40017,
+                "name": "Mzinchaleft",
+                "desc": "A large Dwemer ruin in Hjaalmarch, south of Dawnstar (near The Pale border). It is a dangerous complex filled with Dwemer constructs, Falmer, and a Great Lift providing access to Blackreach.",
+                "tags": ["dwemer_ruin_major_city", "dungeon_large_complex", "mechanical_constructs_dwemer_heavy", "falmer_presence_strong", "specific_landmark_type_blackreach_elevator_access", "cultural_historical_significance_dwemer_ruin_site", "ancient_technology_dwemer", "chaurus_nest_potential"]
+            }
         ]
     },
 
@@ -732,10 +1082,10 @@ LOCATIONS = [
         "id": 5,
         "name": "Falkreath Hold",
         "desc": "A heavily forested hold in southern Skyrim, known for its ancient woods, towering mountains, and the somber town of Falkreath with its large graveyard. It borders Cyrodiil and is an important Imperial territory.",
-        "tags": ["hold", "forest_ancient", "southern_skyrim", "graveyard_prominent", "mountain_region", "cyrodiil_border", "nordic_culture", "imperial_territory"], # Added imperial_territory
+        "tags": ["hold", "terrain_forest", "climate_temperate", "cultural_historical_significance_graveyard_town", "terrain_mountainous", "cyrodiil_border_region", "nordic_culture_local", "imperial_influence_strong", "economic_activity_logging_timber", "state_or_condition_current_politically_stable"],
         "demographics": {"Nord": 85, "Imperial": 10, "Others": 5},
         "travel": {
-            "roads": ["Whiterun Hold", "The Reach", "Cyrodiil (Fort Neugrad Pass)"], # More specific pass
+            "roads": ["Whiterun Hold", "The Reach", "Cyrodiil (Fort Neugrad Pass)"],
             "paths": ["Helgen Pass (functional)", "Pine Forest Trail", "Jerall Mountains Path"]
         },
         "sub_locations": [
@@ -743,49 +1093,49 @@ LOCATIONS = [
                 "id": 50,
                 "name": "Falkreath (Town)",
                 "desc": "A quiet, somewhat gloomy town nestled in the southern forests, known for its extensive graveyard and timber industry. It is the seat of Jarl Siddgeir, an Imperial appointee.",
-                "tags": ["town", "forest_settlement", "falkreath", "lore_heavy", "graveyard_town", "jarls_seat", "daedric_quest_barbas", "timber_industry"],
+                "tags": ["populated_town", "terrain_forest", "city_affiliation_falkreath_town", "cultural_historical_significance_graveyard_town", "settlement_features_jarls_longhouse", "daedric_influence_subtle_rumor", "economic_activity_logging_timber", "urban_issues_or_atmosphere_oppressive_atmosphere", "imperial_influence_strong"],
                 "sub_locations": [
                     {
                         "id": 5001,
                         "name": "Dead Man's Drink",
                         "desc": "The local tavern in Falkreath, a place for locals and weary travelers to find mead and solace, run by Valga Vinicia.",
-                        "tags": ["tavern", "social", "inn"]
+                        "tags": ["structure_type_inn_building", "settlement_features_tavern", "social_hub_popular", "rumor_source", "food_drink_vendor", "lodging_available"]
                     },
                     {
                         "id": 5002,
                         "name": "Jarl's Longhouse (Falkreath)",
                         "desc": "The seat of authority in Falkreath Hold, residence of Jarl Siddgeir.",
-                        "tags": ["government", "jarls_seat"]
+                        "tags": ["structure_type_palace_or_manor", "settlement_features_jarls_longhouse", "government_local", "imperial_influence_strong"]
                     },
                     {
                         "id": 5003,
                         "name": "Falkreath Graveyard",
                         "desc": "An expansive and ancient cemetery, the largest in Skyrim, where many Nords, both heroes and common folk, are laid to rest. Restless spirits are sometimes rumored here.",
-                        "tags": ["graveyard_large", "historic_burial_ground", "undead_rumors", "arkay_presence"]
+                        "tags": ["cultural_historical_significance_historic_burial_site_major", "religious_site_aedric", "arkay_presence", "undead_presence_rumored_low", "unique_landmark_iconic", "urban_issues_or_atmosphere_haunted_rumors_strong"]
                     },
                     {
                         "id": 5004,
                         "name": "Gray Pine Goods",
                         "desc": "Solaf's shop in Falkreath, offering general supplies, hunting gear, and lumber from the local mill.",
-                        "tags": ["shop", "general", "hunting_supply", "lumber_products"]
+                        "tags": ["structure_type_shop_building", "shop_general_goods", "trade_variety", "economic_activity_hunting_furs_meat_vendor", "economic_activity_logging_timber_vendor"]
                     },
                     {
                         "id": 5005,
                         "name": "Lod's House and Smithy",
                         "desc": "The home and workshop of Lod, Falkreath's blacksmith, who can often be found working his forge, sometimes seeking a particular dog.",
-                        "tags": ["blacksmith", "shop", "crafting", "residence", "quest_giver_barbas"]
+                        "tags": ["structure_type_shop_building", "structure_type_residence", "settlement_features_blacksmith_forge_active", "economic_activity_smithing_production", "quest_giver_daedric_clues"]
                     },
                     {
                         "id": 5006,
                         "name": "Hall of the Dead (Falkreath)",
                         "desc": "Falkreath's hall for honoring the dead, managed by Runil, a priest of Arkay, who also tends the graveyard.",
-                        "tags": ["temple_minor", "religious", "arkay_shrine", "graveyard_keeper"]
+                        "tags": ["structure_type_temple_building", "religious_site_aedric", "arkay_shrine", "settlement_features_catacombs_burial_access_potential"]
                     },
                     {
                         "id": 5007,
                         "name": "Dark Brotherhood Sanctuary (Falkreath Entrance)",
-                        "desc": "A hidden sanctuary of the Dark Brotherhood, concealed within the pine forests near Falkreath. Its door is marked by a sinister black hand.", # Slightly more evocative
-                        "tags": ["dark_brotherhood_active", "assassin_guild_hq", "secret_location", "dungeon_entrance", "forest_hidden"] # Active for 4E 200
+                        "desc": "A hidden sanctuary of the Dark Brotherhood, concealed within the pine forests near Falkreath. Its door is marked by a sinister black hand.",
+                        "tags": ["specific_landmark_type_assassin_guild_hq_active", "secret_location", "dungeon_major_entrance", "terrain_forest", "magical_properties_tainted_by_dark_magic_potential"]
                     }
                 ]
             },
@@ -793,130 +1143,130 @@ LOCATIONS = [
                 "id": 51,
                 "name": "Pinewatch",
                 "desc": "A secluded farmhouse north of Falkreath. While appearing innocent, it serves as a well-concealed front for a secret bandit hideout and smuggling operation.",
-                "tags": ["farm_facade", "bandit_hideout_secret", "dungeon", "quest_location_thieves", "smuggling_ring"]
+                "tags": ["structure_type_farmstead", "bandit_main_stronghold", "dungeon_major", "quest_location_thieves_guild", "economic_activity_smuggling_route_active", "secret_location", "terrain_forest"]
             },
             {
                 "id": 52,
                 "name": "Halldir's Cairn",
                 "desc": "A solemn Nordic barrow southwest of Falkreath, haunted by the powerful draugr sorcerer Halldir and his elemental thralls.",
-                "tags": ["barrow", "nordic_ruin", "dungeon", "ghost_mage", "elemental_magic_focus", "undead_powerful"]
+                "tags": ["nordic_burial_site_major", "dungeon_major", "undead_presence_strong", "magical_properties_arcane_nexus", "monster_den_elemental", "draugr_heavy", "boss_fight_mage_powerful"]
             },
             {
                 "id": 53,
                 "name": "Helgen",
-                "desc": "A modest but strategically important Imperial fortified town at the southern border of Whiterun Hold, known for its lumber trade and guarding the pass to Cyrodiil. It is currently a functional settlement.", # Corrected
-                "tags": ["village", "imperial_outpost", "lumber_town", "cyrodiil_border_pass", "quest_start_location_potential", "functional_settlement"], # Corrected
+                "desc": "A modest but strategically important Imperial fortified town at the southern border of Whiterun Hold, known for its lumber trade and guarding the pass to Cyrodiil. It is currently a functional settlement.",
+                "tags": ["village", "imperial_outpost", "lumber_town", "cyrodiil_border_pass", "quest_start_location_potential", "functional_settlement"],
                  "sub_locations": [
                     {
                         "id": 5301,
                         "name": "Helgen Keep",
-                        "desc": "The main keep of Helgen, garrisoned by Imperial soldiers. It serves as the town's primary defense and administrative center.", # Corrected
-                        "tags": ["keep", "functional_keep", "imperial_garrison"] # Corrected
+                        "desc": "The main keep of Helgen, garrisoned by Imperial soldiers. It serves as the town's primary defense and administrative center.",
+                        "tags": ["structure_type_fortified_keep", "military_presence", "imperial_influence_strong", "government_local", "structure_condition_pristine"]
                     },
                     {
                         "id": 5302,
                         "name": "Helgen Homestead",
-                        "desc": "One of the sturdy wooden homes within the town of Helgen.", # Corrected
-                        "tags": ["residence"] # Corrected
+                        "desc": "One of the sturdy wooden homes within the town of Helgen.",
+                        "tags": ["structure_type_residence", "commoner_dwelling", "settlement_minor"]
                     },
-                    { # Adding an Inn for Helgen
+                    {
                         "id": 5303,
                         "name": "The Dragon's Rest Inn (Helgen)",
                         "desc": "A small, welcoming inn in Helgen, catering to local loggers and Imperial soldiers passing through.",
-                        "tags": ["inn", "tavern", "social"]
+                        "tags": ["structure_type_inn_building", "settlement_features_tavern", "social_hub_popular", "food_drink_vendor", "lodging_available"]
                     }
                 ]
             },
             {
                 "id": 54,
                 "name": "Ancestor Glade",
-                "desc": "A hidden, serene glade sacred to the Moth Priests, located in the southern mountains of Falkreath Hold. It's a place of profound natural beauty and ancient ritual, though its significance is known to few.", # More mysterious for pre-Dawnguard
-                "tags": ["sacred_grove_hidden", "unique_location", "moth_priest_lore_ancient", "natural_beauty", "ancient_ritual_site"] # Dawnguard tags removed/adjusted
+                "desc": "A hidden, serene glade sacred to the Moth Priests, located in the southern mountains of Falkreath Hold. It's a place of profound natural beauty and ancient ritual, though its significance is known to few.",
+                "tags": ["cultural_historical_significance_sacred_grove_kynareth", "unique_natural_formation", "magical_properties_aedric_blessing_active", "secluded_nature_spot", "quest_location_dawnguard_potential", "alchemy_ingredient_source_rich_unique"]
             },
             {
                 "id": 55,
                 "name": "Bloodlet Throne",
                 "desc": "A ruined fort atop a mountain in Falkreath, now a lair for a powerful coven of vampires who prey on unwary travelers.",
-                "tags": ["fort_ruined", "vampire_lair_strong", "dungeon", "mountain_peak", "dangerous_area"]
+                "tags": ["structure_type_ruined_fort", "specific_landmark_type_vampire_ancient_lair", "dungeon_major", "terrain_mountain_peak", "state_or_condition_current_lawless_area", "undead_presence_strong", "magical_properties_tainted_by_dark_magic"]
             },
             {
                 "id": 56,
                 "name": "Brittleshin Pass",
                 "desc": "A small cave system serving as a pass through the mountains south of Falkreath, often inhabited by necromancers, undead, or desperate bandits.",
-                "tags": ["cave", "mountain_pass", "necromancer_lair_potential", "undead_presence", "bandit_outpost_potential", "dungeon_minor"]
+                "tags": ["structure_type_natural_cave", "terrain_mountain_pass", "specific_landmark_type_necromancer_hideout_potential", "undead_presence_skeletons_potential", "bandit_minor_camp_potential", "dungeon_minor", "travel_route_alternative_dangerous"]
             },
             {
                 "id": 57,
                 "name": "Embershard Mine",
                 "desc": "An iron mine located between Riverwood and Helgen, currently occupied by a band of opportunistic bandits.",
-                "tags": ["mine_iron", "bandit_camp_active", "dungeon", "resource_iron_contested"]
+                "tags": ["structure_type_mine_active", "economic_activity_mining_iron", "bandit_minor_camp", "dungeon_minor", "state_or_condition_current_bandit_controlled_area", "resource_node"]
             },
             {
                 "id": 58,
                 "name": "Evergreen Grove",
                 "desc": "A small, secluded grove west of Falkreath, known for its spriggans and natural tranquility. Alchemists sometimes seek rare herbs here.",
-                "tags": ["grove", "spriggan_den", "wilderness", "alchemy_ingredients_rare", "secluded_nature_spot"]
+                "tags": ["environment_wilderness", "terrain_forest", "specific_landmark_type_spriggan_sanctuary", "alchemy_ingredient_source_rich", "secluded_nature_spot", "magical_properties_enchanted_neutral"]
             },
             {
                 "id": 59,
                 "name": "Knifepoint Ridge",
                 "desc": "A bandit-occupied mine and camp in the northwestern part of Falkreath Hold, from which raids are launched. Rumored to be connected to a Daedric artifact.",
-                "tags": ["mine_contested", "bandit_stronghold", "dungeon", "quest_location_daedric_boethiah_potential"] # More specific Daedric hint
+                "tags": ["structure_type_mine_active", "economic_activity_mining_corundum_potential", "bandit_main_stronghold", "dungeon_major", "quest_location_daedric_boethiah", "state_or_condition_current_bandit_controlled_area"]
             },
             {
                 "id": 50001,
                 "name": "Moss Mother Cavern",
                 "desc": "A cave system east of Falkreath, home to various creatures like spriggans and bears, and connected to local legends of nature spirits.",
-                "tags": ["cave", "monster_den_spriggan_bear", "quest_location_local_legend", "dungeon", "natural_spring_hidden"]
+                "tags": ["structure_type_natural_cave", "monster_den_spriggan", "monster_den_bear", "quest_location_local_legend", "dungeon_minor", "unique_natural_formation", "alchemy_ingredient_source_rich"]
             },
             {
                 "id": 50002,
                 "name": "Peak's Shade Tower",
                 "desc": "A ruined tower south of Falkreath, often a lair for hagravens or other malevolent creatures who perform dark rituals under the forest canopy.",
-                "tags": ["tower_ruined", "hagraven_lair_potential", "dark_ritual_site", "wilderness_danger_spot"]
+                "tags": ["structure_type_ruined_tower", "specific_landmark_type_hagraven_coven_lair_main_potential", "magical_properties_tainted_by_dark_magic", "dungeon_minor", "terrain_forest", "ritual_site_dark_magic"]
             },
             {
                 "id": 50003,
                 "name": "Roadside Ruins",
                 "desc": "Crumbling Nordic ruins along the road in Falkreath Hold, sometimes attracting spriggans guarding their territory or bandits lying in ambush.",
-                "tags": ["nordic_ruin_minor", "roadside_encounter_point", "spriggan_ambush_potential", "bandit_ambush_potential"]
+                "tags": ["structure_type_ruined_shrine", "nordic_burial_site_minor", "roadside_encounter_point", "monster_den_spriggan_potential", "bandit_minor_camp_potential", "structure_condition_ruined_extensively"]
             },
             {
                 "id": 50004,
                 "name": "Sunderstone Gorge",
                 "desc": "A large cave system in the southern mountains of Falkreath, housing an ancient Word Wall and various magical inhabitants, including fire-wielding mages or atronachs.",
-                "tags": ["cave_major", "dungeon", "dragon_word_ancient", "magic_users_hostile", "fire_elementals_presence"]
+                "tags": ["structure_type_natural_cave", "dungeon_major", "specific_landmark_type_word_wall_location", "magical_properties_elemental_fire_dominant", "monster_den_fire_atronach", "mage_lair_hostile_fire"]
             },
             {
                 "id": 50005,
                 "name": "Cracked Tusk Keep",
                 "desc": "A ruined fort in Falkreath Hold, now occupied by a fierce band of Orc bandits. Rumor has it they guard a fragment of a powerful Daedric artifact.",
-                "tags": ["fort_ruined", "orc_camp_bandit", "bandit_lair_strong", "daedric_artifact_mehrunes_razor_piece", "dungeon_fort"]
+                "tags": ["structure_type_ruined_fort", "bandit_main_stronghold", "orc_presence_hostile", "dungeon_major", "quest_location_daedric_mehrunes_razor", "artifact_location_daedric"]
             },
             # New Falkreath Hold Locations
             {
                 "id": 50006,
                 "name": "Angi's Camp",
                 "desc": "A secluded cabin in the southern mountains of Falkreath, home to Angi, a skilled archer offering training to those who find her.",
-                "tags": ["cabin_isolated", "archer_hermitage", "skill_trainer_archery", "mountain_dwelling"]
+                "tags": ["structure_type_shack_or_hut", "hermit_lair", "skill_trainer_archery", "terrain_mountainous", "state_or_condition_current_isolated_and_forgotten", "hunter_gathering_spot"]
             },
             {
                 "id": 50007,
                 "name": "Fort Neugrad",
                 "desc": "A large Imperial fort near the Cyrodiilic border, guarding a key mountain pass. Currently well-garrisoned and a symbol of Imperial authority in the region.",
-                "tags": ["fort_major", "imperial_garrison_strong", "cyrodiil_border_defense", "military_stronghold", "dungeon_potential_if_hostile"]
+                "tags": ["structure_type_fortified_keep", "military_presence", "imperial_influence_strong", "cyrodiil_border_region", "dungeon_major", "state_or_condition_current_contested_by_factions_potential", "civil_war_quest_historic_site_potential"]
             },
             {
                 "id": 50008,
                 "name": "Lake Ilinalta",
                 "desc": "A large, deep lake in western Falkreath Hold, shrouded in mist and legend. Its depths are said to hold ancient secrets and perhaps even a sunken ruin.",
-                "tags": ["lake_large", "misty_waters", "local_legends", "sunken_ruin_rumor", "fishing_spot", "natural_landmark"],
+                "tags": ["terrain_lake_large", "climate_temperate", "cultural_historical_significance_local_legend", "structure_type_ruined_fort_submerged_potential", "economic_activity_fishing_industry_local", "unique_natural_formation", "quest_location_daedric_azura_star_related"],
                 "sub_locations": [
                     {
                         "id": 500081,
                         "name": "Ilinalta's Deep",
                         "desc": "The treacherous, flooded ruins of an ancient fort or temple within Lake Ilinalta, rumored to be haunted and guarded by necromancers or dark creatures.",
-                        "tags": ["sunken_ruin_dungeon", "necromancer_lair_potential", "undead_presence", "dangerous_underwater_exploration", "quest_location_daedric_azura_star_related"]
+                        "tags": ["structure_type_ruined_fort_submerged", "specific_landmark_type_necromancer_tower_or_lair", "undead_presence_strong", "dungeon_major", "quest_location_daedric_azura_star", "magical_properties_tainted_by_dark_magic", "structure_condition_flooded"]
                     }
                 ]
             },
@@ -924,7 +1274,79 @@ LOCATIONS = [
                 "id": 50009,
                 "name": "The Lady Stone",
                 "desc": "A Standing Stone located on an island in Lake Ilinalta, granting enhanced health and stamina regeneration.",
-                "tags": ["standing_stone", "utility_buff_regeneration", "lake_island"]
+                "tags": ["specific_landmark_type_standing_stone_magical", "magical_properties_enchanted_positive", "terrain_island", "terrain_lake_large_nearby", "buff_health_regen_increased", "buff_stamina_regen_increased"]
+            },
+            {
+                "id": 50010,
+                "name": "Hunter's Rest Clearing",
+                "desc": "A small, secluded clearing deep in the forests of Falkreath, often used by hunters as a temporary camp. Signs of recent use are common.",
+                "tags": ["hunter_gathering_spot", "environment_wilderness", "terrain_forest", "secluded_nature_spot", "bandit_minor_camp_potential"]
+            },
+            {
+                "id": 50011,
+                "name": "Wolfstooth Den",
+                "desc": "A shallow cave system within Falkreath's dense woods, currently serving as a den for a pack of territorial wolves.",
+                "tags": ["structure_type_natural_cave", "monster_den_wolf", "terrain_forest", "dungeon_minor", "animal_den_wolf_major"]
+            },
+            {
+                "id": 50012,
+                "name": "Half-Moon Mill",
+                "desc": "A lumber mill owned by Hert and Hern, a reclusive couple. Rumors persist about their nocturnal activities and connections to darker elements.",
+                "tags": ["structure_type_lumber_mill_site", "settlement_minor", "economic_activity_logging_timber", "specific_landmark_type_vampire_coven_minor_potential", "isolated_location", "mystery_local", "terrain_lake_large_nearby"]
+            },
+            {
+                "id": 50013,
+                "name": "Granitehall Farm",
+                "desc": "A small, hardy farm nestled near the mountains of Falkreath, known for its resilient goats and strong mead.",
+                "tags": ["structure_type_farmstead", "economic_activity_farming_livestock", "economic_activity_brewing_mead_ale", "terrain_mountainous", "isolated_location", "settlement_minor"]
+            },
+            {
+                "id": 50014,
+                "name": "Shadowed Path Cave",
+                "desc": "A dark, winding cave often used by smugglers as a discreet route through Falkreath's forests, or as a den for bears and other forest predators.",
+                "tags": ["structure_type_natural_cave", "terrain_forest", "dungeon_minor", "economic_activity_smuggling_route_active_potential", "monster_den_bear_potential", "monster_den_wolf_potential"]
+            },
+            {
+                "id": 50015,
+                "name": "Crumbling Border Watch",
+                "desc": "The ruins of a small Imperial watchtower near the Cyrodiil border in Falkreath Hold, now overgrown and sometimes used by bandits as a lookout.",
+                "tags": ["structure_type_ruined_tower", "military_presence", "terrain_mountainous", "structure_condition_ruined_extensively", "bandit_minor_camp_potential", "cyrodiil_border_region"]
+            },
+            {
+                "id": 50018,
+                "name": "South Skybound Watch",
+                "desc": "A ruined Nordic watchtower and barrow complex, similar to its northern counterpart, located in the southern mountains of Falkreath Hold. It contains an ancient Word Wall and is guarded by draugr.",
+                "tags": ["structure_type_ruined_tower", "nordic_burial_site_major", "specific_landmark_type_word_wall_location", "dungeon_major", "undead_presence_strong", "draugr_heavy", "terrain_mountainous"]
+            },
+            {
+                "id": 50019,
+                "name": "Shor's Watchtower",
+                "desc": "A ruined watchtower near the border of Falkreath and The Rift, overlooking the road to Shor's Stone. Often occupied by bandits.",
+                "tags": ["watchtower_ruined", "bandit_outpost_potential", "roadside_ruin", "strategic_lookout_decayed"]
+            },
+            {
+                "id": 50020,
+                "name": "Bleakwind Basin",
+                "desc": "A large, open basin in Falkreath Hold, west of Whiterun, known as a traditional gathering place for giants and their mammoth herds.",
+                "tags": ["giant_camp_major", "mammoth_herd_grazing", "plains_landmark_open", "neutral_encounter_large_potential"]
+            },
+            {
+                "id": 50021,
+                "name": "Shor's Watchtower",
+                "desc": "A ruined watchtower near the border of Falkreath and The Rift, overlooking the road to Shor's Stone. Often occupied by bandits.",
+                "tags": ["structure_type_ruined_tower", "bandit_minor_camp_potential", "roadside_ruin", "strategic_lookout_decayed"]
+            },
+            {
+                "id": 50022,
+                "name": "Bannermist Tower",
+                "desc": "A ruined watchtower south of Lake Ilinalta in Falkreath Hold, now occupied by bandits who use it to prey on travelers.",
+                "tags": ["watchtower_ruined_bandit", "bandit_camp_tower", "dungeon_minor", "roadside_danger_spot"]
+            },
+            {
+                "id": 50023,
+                "name": "Anise's Cabin",
+                "desc": "A small, seemingly innocent cabin located near Riverwood, on the edge of Falkreath Hold. Anise is an elderly woman with a hidden cellar revealing her dabbling in witchcraft.",
+                "tags": ["cabin_isolated_witch", "secret_cellar_witchcraft", "alchemy_ingredients_cabin", "neutral_encounter_secret_hostile_potential"]
             }
         ]
     },
@@ -957,7 +1379,15 @@ LOCATIONS = [
                         "id": 6002,
                         "name": "Understone Keep",
                         "desc": "An ancient Dwemer fortification carved into the rock, serving as the Jarl's palace. It also houses a Dwemer museum managed by Calcelmo and provides access to the ruins of Nchuand-Zel.",
-                        "tags": ["keep", "government", "dwemer_ruin_integrated", "museum_dwemer", "jarls_seat", "nchuand_zel_access", "calcelmo_research_site"]
+                        "tags": ["keep", "government", "dwemer_ruin_integrated", "museum_dwemer", "jarls_seat", "nchuand_zel_access", "calcelmo_research_site"],
+                        "sub_locations": [
+                            {
+                                "id": 60028, # Corrected ID from previous thought process, ensuring it's unique within The Reach
+                                "name": "Nchuand-Zel",
+                                "desc": "The vast and ancient Dwemer city ruins located directly beneath Understone Keep in Markarth. It is a dangerous labyrinth of crumbling halls, active Dwemer machinery, Falmer, and potentially a slumbering Centurion.",
+                                "tags": ["dwemer_ruin_city_subterranean", "dungeon_major_underkeep", "mechanical_constructs_dwemer_heavy", "falmer_presence_deep", "ancient_city_excavation", "markarth_secret_depths"]
+                            }
+                        ]
                     },
                     {
                         "id": 6003,
@@ -1210,6 +1640,84 @@ LOCATIONS = [
                 "name": "Reachwind Crag",
                 "desc": "A series of treacherous, wind-swept cliffs and narrow paths, home to territorial hagravens and offering perilous views over the Karth River valley.",
                 "tags": ["cliff_network", "hagraven_territory", "dangerous_terrain", "scenic_vista_perilous", "windy_location"]
+            },
+            {
+                "id": 60016,
+                "name": "Reachwater Rock",
+                "desc": "A cave system behind a waterfall in the Reach, containing ancient Nordic ruins and playing a part in the legend of the Gauldur Amulet.",
+                "tags": ["cave_waterfall_hidden", "nordic_ruin_interior", "dungeon", "quest_location_artifact", "gauldur_amulet_related", "ancient_magic_site"]
+            },
+            {
+                "id": 60017,
+                "name": "Four Skull Lookout",
+                "desc": "A ruined Nordic tower and small barrow complex in the Reach, often occupied by bandits or Forsworn, guarding an ancient Word Wall.",
+                "tags": ["nordic_ruin_tower", "barrow_minor", "bandit_outpost_potential", "forsworn_camp_potential", "dragon_word_ancient", "dungeon_minor"]
+            },
+            {
+                "id": 60018,
+                "name": "Karthside Hovel",
+                "desc": "A tiny, impoverished hamlet of Reach natives clinging to the cliffs near the Karth River, often harassed by both Forsworn and Markarth guards.",
+                "tags": ["village_reach_native_poor", "cliffside_dwelling_precarious", "forsworn_sympathizers_potential", "conflict_zone_civilian"]
+            },
+            {
+                "id": 60019,
+                "name": "Eagles' Nest Farm",
+                "desc": "A very remote and high-altitude farm in The Reach, accessible only by treacherous paths, known for its hardy livestock and reclusive owners.",
+                "tags": ["farm_mountain_extreme_remote", "agriculture_high_altitude", "isolated_community_self_sufficient", "dangerous_access_route"]
+            },
+            {
+                "id": 60020,
+                "name": "Cliffside Crevice",
+                "desc": "A narrow cave system hidden within the steep cliffs of The Reach, a perfect natural hideout for Forsworn scouts or a den for cliff-dwelling creatures.",
+                "tags": ["cave_cliffside_narrow", "dungeon_minor", "forsworn_hideout_potential_scout", "creature_den_cliff", "natural_fortification"]
+            },
+            {
+                "id": 60021,
+                "name": "Ruined Dwemer Outpost (Minor)",
+                "desc": "The scattered, collapsed remains of a small Dwemer outpost or monitoring station, likely picked clean of valuables long ago but still hinting at their ancient presence.",
+                "tags": ["dwemer_ruin_minor_outpost", "historic_site_dwemer_small", "ancient_technology_remnants", "exploration_point_minor_lore"]
+            },
+            {
+                "id": 60022,
+                "name": "Fort Sungard (Contested Ruin)",
+                "desc": "A large, strategically important fort in the Reach, now mostly in ruins. It's a frequent point of conflict, with Forsworn, bandits, or even small Imperial/Stormcloak scouting parties vying for control of its crumbling walls.",
+                "tags": ["fort_ruined_major", "dungeon_major", "forsworn_conflict_zone", "bandit_stronghold_potential", "contested_territory_military", "historic_fort_skyrim"]
+            },
+            {
+                "id": 60023,
+                "name": "Old Gods' Clearing (Reach Wilderness)",
+                "desc": "A secluded clearing deep in the Reach wilderness, marked by weathered, primitive stone carvings and arrangements hinting at ancient Reach native worship, pre-dating even the Nords.",
+                "tags": ["shrine_ancient_native_reach", "historic_site_religious_primitive", "forsworn_sacred_site_potential", "wilderness_landmark_hidden", "ritual_site_old_gods"]
+            },
+            {
+                "id": 60024,
+                "name": "Briarheart Warren",
+                "desc": "A small, thorny cave system hidden in the rugged hills of the Reach, rumored to be a place where Forsworn Briarhearts are created or where they retreat to recover.",
+                "tags": ["cave_forsworn_ritual", "dungeon_minor", "briarheart_creation_site_rumor", "forsworn_hideout_secret", "dangerous_flora_thorns"]
+            },
+            {
+                "id": 60025,
+                "name": "The Lover Stone",
+                "desc": "An ancient Standing Stone found in the rugged hills east of Markarth, said to grant those who touch it a quicker aptitude in all endeavors.",
+                "tags": ["standing_stone", "buff_skill_learning_all", "reach_wilderness_shrine", "ancient_magic_site"]
+            },
+            {
+                "id": 60026,
+                "name": "Valthume",
+                "desc": "An ancient and sprawling Nordic ruin deep in the mountains of The Reach, southeast of Markarth. It is the burial place of the Dragon Priest Hevnoraak and a site of significant old power.",
+                "tags": ["nordic_ruin_major", "dungeon_large_complex", "dragon_priest_tomb_hevnoraak", "undead_heavy_powerful", "ancient_magic_site", "dragon_word_ancient", "quest_location_dragon_priest"]
+            },
+            {
+                "id": 60029,
+                "name": "Rebel's Cairn",
+                "desc": "An ancient cairn in the Reach, west of Karthwasten, said to be the burial site of a legendary Forsworn hero. It is a sacred place for some Reachmen and may hold ancient secrets or guardians.",
+                "tags": ["cairn_ancient_forsworn", "forsworn_sacred_site", "dungeon_minor_historic", "undead_guardian_potential", "reach_lore_heroic_figure"]
+            },
+            {
+                "id": 60030,
+                "name": "Blind Cliff Bastion",
+                "desc": "A ruined Nordic tower complex built into the cliffs of the Reach, now a formidable Forsworn stronghold. Distinct from Blind Cliff Cave.",
+                "tags": ["nordic_ruin_tower_complex", "forsworn_stronghold_cliffside", "dungeon_major_vertical", "dangerous_approach_forsworn", "reach_fortification_native"]
             }
         ]
     },
@@ -1474,6 +1982,104 @@ LOCATIONS = [
                 "name": "Abandoned Lodge of the Nine Holds",
                 "desc": "A once-grand hunting lodge in the eastern forests, now fallen into disrepair and rumored to be haunted by its former occupants or used by bandits.",
                 "tags": ["lodge_abandoned", "ruin_hunting", "haunted_potential", "bandit_lair_potential", "forest_isolated"]
+            },
+            {
+                "id": 70016,
+                "name": "Witchmist Grove Cave",
+                "desc": "A damp, mossy cave system connected to or near Witchmist Grove, likely sharing its magical and dangerous nature, possibly extending the spriggan or hagraven territory.",
+                "tags": ["cave_magical", "spriggan_den_extension", "hagraven_lair_nearby", "dungeon_natural_magic", "hot_springs_area_cave"]
+            },
+            {
+                "id": 70017,
+                "name": "Dunmer Refugee Camp (Eastmarch)",
+                "desc": "A small, struggling camp of Dunmer refugees who have fled Morrowind, located in a less hospitable part of Eastmarch, seeking safety but finding hardship.",
+                "tags": ["refugee_camp_dunmer", "settlement_makeshift_poor", "social_issue_displacement", "morrowind_border_region_life"]
+            },
+            {
+                "id": 70018,
+                "name": "Ashfall Farm",
+                "desc": "A small, struggling farm in the volcanic tundra of Eastmarch, where hardy Nords attempt to grow crops despite the harsh ashfall and geothermal activity.",
+                "tags": ["farm_volcanic_tundra", "agriculture_struggling_harsh_environment", "ashfall_impacted_settlement", "geothermal_proximity"]
+            },
+            {
+                "id": 70019,
+                "name": "Boiling Springs Camp",
+                "desc": "A tiny settlement of hunters and trappers who have made their camp near Eastmarch's famous hot springs, utilizing the warm waters and local game.",
+                "tags": ["hunter_camp_hot_springs", "trapper_outpost_volcanic", "settlement_minor_resourceful", "geothermal_feature_nearby"]
+            },
+            {
+                "id": 70020,
+                "name": "Sulfur-Spring Grotto",
+                "desc": "A small cave system near Eastmarch's volcanic hot springs, filled with sulfurous fumes and often home to creatures adapted to the heat, or desperate outcasts.",
+                "tags": ["cave_volcanic_hot_springs", "dungeon_minor", "geothermal_feature_cave", "monster_den_heat_adapted", "outcast_shelter_potential"]
+            },
+            {
+                "id": 70021,
+                "name": "Ruins of Old Amol",
+                "desc": "The scattered, ancient foundations and a few crumbling walls of a settlement that predated Fort Amol, now mostly reclaimed by the volcanic tundra.",
+                "tags": ["nordic_ruin_minor_settlement", "historic_site_ancient_village", "archaeology_interest_minor", "volcanic_tundra_ruin"]
+            },
+            {
+                "id": 70022,
+                "name": "Shrine of Mara (Eastmarch Hot Springs)",
+                "desc": "A small, secluded shrine to Mara, Goddess of Love, nestled among the steaming vents and warm pools of Eastmarch's hot springs. A place of unexpected serenity.",
+                "tags": ["shrine_aedric_outdoor", "mara_shrine", "religious_site_minor", "hot_springs_location", "tranquil_spot"]
+            },
+            {
+                "id": 70023,
+                "name": "Shrine of Malacath (Narzulbur Outskirts)",
+                "desc": "A crude, outdoor shrine dedicated to Malacath, located a short distance from the Orc stronghold of Narzulbur. Used by Orcs for private offerings or rituals.",
+                "tags": ["shrine_daedric_outdoor", "malacath_shrine_orcish", "orc_stronghold_related", "ritual_site_minor", "tribal_worship_site"]
+            },
+            {
+                "id": 70024,
+                "name": "Riverside Shack (Eastmarch Volcanic Plains)",
+                "desc": "An isolated, ramshackle hut on the banks of a river cutting through Eastmarch's volcanic plains. Could be home to a reclusive fisherman or a desperate outcast.",
+                "tags": ["hut_isolated_river", "volcanic_plains_dwelling", "hermit_refuge_potential", "fishing_spot_rough"]
+            },
+            {
+                "id": 70025,
+                "name": "Volcanic Vent Cave",
+                "desc": "A small cave system formed near an active volcanic vent, filled with heated air and strange mineral deposits. May be home to fire atronachs or other heat-adapted creatures.",
+                "tags": ["cave_volcanic_vent", "dungeon_minor", "geothermal_feature_cave", "monster_den_fire_elemental", "rare_mineral_source_potential"]
+            },
+            {
+                "id": 70026,
+                "name": "The Atronach Stone",
+                "desc": "A Standing Stone located in the volcanic tundra of Eastmarch, south of Windhelm. It grants a larger pool of magicka but hinders natural regeneration, forcing reliance on absorption or potions.",
+                "tags": ["standing_stone", "buff_magicka_increased", "debuff_magicka_regen_slowed", "magic_absorption_potential", "volcanic_tundra_landmark"]
+            },
+            {
+                "id": 70027,
+                "name": "Kagrenzel",
+                "desc": "A remote Dwemer ruin in the mountains of Eastmarch, known for its peculiar entrance trap that drops explorers into a deep chasm leading to a Falmer-infested cave system.",
+                "tags": ["dwemer_ruin_remote", "dungeon_trap_entrance_unique", "falmer_den_connected_cave", "dangerous_exploration_dwemer", "unique_dwemer_mechanism"]
+            },
+            {
+                "id": 70028,
+                "name": "Mistwatch",
+                "desc": "A ruined fort in southern Eastmarch, overlooking the road to The Rift. It is currently occupied by a band of bandits led by a charismatic chief, and is connected to a local family's tragedy.",
+                "tags": ["fort_ruined_bandit", "bandit_stronghold_story", "dungeon_fort", "quest_location_family_rescue", "strategic_overlook_ruined"]
+            },
+            {
+                "id": 70029,
+                "name": "Mara's Eye Pond",
+                "desc": "A small, tranquil pond in Eastmarch, west of Morvunskar. Beneath its surface lies the entrance to Mara's Eye Den, a cave often used by vampires or other creatures.",
+                "tags": ["pond_landmark_tranquil", "cave_entrance_hidden_underwater", "vampire_lair_potential_pond", "natural_beauty_spot_deceptive"],
+                "sub_locations": [
+                    {
+                        "id": 700291,
+                        "name": "Mara's Eye Den",
+                        "desc": "A damp cave system accessible from Mara's Eye Pond, often serving as a den for vampires or other creatures seeking a hidden lair.",
+                        "tags": ["cave_vampire_lair", "dungeon_minor", "monster_den_hidden", "underwater_access"]
+                    }
+                ]
+            },
+            {
+                "id": 70030,
+                "name": "Abandoned Prison",
+                "desc": "A crumbling, forgotten prison in the wilds of Eastmarch, its cells now empty or home to desperate squatters, bandits, or restless spirits of former inmates.",
+                "tags": ["ruin_prison_abandoned", "dungeon_minor_eerie", "bandit_lair_potential_prison", "haunted_potential_inmates", "historic_site_justice_decayed"]
             }
         ]
     },
@@ -1698,6 +2304,66 @@ LOCATIONS = [
                 "name": "Clearpine Pond",
                 "desc": "A tranquil pond nestled in the forests of Haafingar, known for its clear waters and abundant fish. A popular spot for local hunters and hermits.",
                 "tags": ["pond_forest", "fishing_spot_good", "hunter_camp_potential", "tranquil_location", "natural_beauty"]
+            },
+            {
+                "id": 80017,
+                "name": "Coastal Watch Fishery",
+                "desc": "A small fishing village nestled in a cove near a crumbling, ancient watchtower on Haafingar's coast. The villagers are wary of both pirates and the crumbling tower's secrets.",
+                "tags": ["village_fishing_coastal", "watchtower_ruined_nearby", "pirate_threat_local", "historic_landmark_local_mystery"]
+            },
+            {
+                "id": 80018,
+                "name": "Shepherd's Rest Farm",
+                "desc": "A secluded farm high in the hills of Haafingar, known for its hardy mountain sheep and the potent, if rough, cheese made from their milk.",
+                "tags": ["farm_mountain_secluded", "agriculture_sheep_hardy", "cheese_production_local", "residence_isolated_pastoral"]
+            },
+            {
+                "id": 80019,
+                "name": "Smuggler's Cove (Minor)",
+                "desc": "A small, well-hidden sea cave on Haafingar's coast, used by petty smugglers to land illicit goods or hide from patrols. Likely contains a small cache.",
+                "tags": ["cave_sea_smuggler", "dungeon_minor", "smuggler_cache_small", "coastal_hideout_secret"]
+            },
+            {
+                "id": 80020,
+                "name": "Ruined Coastal Shrine",
+                "desc": "The crumbling remains of a small, ancient shrine dedicated to an unknown sea deity or ancestor, battered by the coastal winds and waves of Haafingar.",
+                "tags": ["ruin_shrine_coastal", "historic_site_religious_ancient", "weathered_landmark", "offering_spot_forgotten"]
+            },
+            {
+                "id": 80021,
+                "name": "Widow's Watch Ruins",
+                "desc": "The crumbling remains of a small watchtower on a lonely cliff overlooking the Sea of Ghosts. Local tales say it was built by a noblewoman awaiting her lost husband's return from sea, and her sorrowful spirit still lingers.",
+                "tags": ["ruin_tower_coastal", "dungeon_minor", "haunted_potential_ghostly_widow", "scenic_overlook_ruined", "local_legend_tragic"]
+            },
+            {
+                "id": 80022,
+                "name": "Shrine of Dibella (Wilderness - Haafingar)",
+                "desc": "A secluded, beautifully maintained outdoor shrine to Dibella, hidden in a picturesque grove or clifftop in Haafingar's wilderness. A place of quiet inspiration and artistic offerings.",
+                "tags": ["shrine_aedric_outdoor", "dibella_shrine", "religious_site_secluded", "natural_beauty_spot", "artistic_inspiration_site"]
+            },
+            {
+                "id": 80024,
+                "name": "The Katariah (Imperial Flagship)",
+                "desc": "A massive Imperial warship, often docked at Solitude or patrolling the Sea of Ghosts. It represents the might of the Imperial Navy in Skyrim's waters. (May not be Emperor Titus Mede II's personal vessel in 4E 200, but a significant flagship).",
+                "tags": ["ship_imperial_warship_major", "naval_presence_imperial", "solitude_docks_visitor_potential", "sea_of_ghosts_patrol", "military_vessel_flagship_class"]
+            },
+            {
+                "id": 80025,
+                "name": "Orphan's Tear",
+                "desc": "A shipwreck on the northern coast of Haafingar, west of the Solitude Lighthouse. It is rumored to hold lost treasures and is sometimes used as a hideout by coastal scavengers or bandits.",
+                "tags": ["shipwreck_site_coastal", "treasure_potential_lost", "bandit_lair_scavenger_potential", "dungeon_minor_wreckage", "coastal_exploration_point"]
+            },
+            {
+                "id": 80026,
+                "name": "Solitude Lighthouse (Structure)",
+                "desc": "The tall lighthouse guiding ships into Solitude's harbor. While functional, its keeper might have local concerns or knowledge.",
+                "tags": ["lighthouse_functional", "coastal_landmark_navigational", "solitude_harbor_aid", "quest_giver_potential_keeper"]
+            },
+            {
+                "id": 80027,
+                "name": "The Dainty Sload",
+                "desc": "A notorious pirate or smuggler ship that sometimes anchors in hidden coves along Haafingar's coast, or might even brazenly try to trade illicit goods at the Solitude Docks under a false flag.",
+                "tags": ["ship_pirate_smuggler", "criminal_vessel_notorious", "coastal_encounter_hostile_potential", "illicit_trade_source", "black_market_connection"]
             }
         ]
     },
@@ -1805,6 +2471,12 @@ LOCATIONS = [
                         "name": "Beggar's Row",
                         "desc": "A dilapidated section of Riften's lower walkways where the city's poorest and most desperate souls eke out a meager existence.",
                         "tags": ["poverty_district", "slums_city", "beggars_community", "desperation_hub"]
+                    },
+                    {
+                        "id": 9013,
+                        "name": "Riften Warehouse",
+                        "desc": "A large warehouse on the Riften docks, often used for storing goods, both legitimate and illicit. Rumored to be a key point in the city's smuggling operations and sometimes used by the Thieves Guild.",
+                        "tags": ["warehouse_docks", "storage_commercial", "smuggling_hotspot_potential", "thieves_guild_interest", "black_briar_connection_rumor"]
                     }
                 ]
             },
@@ -2054,6 +2726,72 @@ LOCATIONS = [
                 "name": "Ruunvald Excavation",
                 "desc": "An archaeological dig site in the eastern mountains of the Rift, where Vigilants of Stendarr were investigating ancient ruins before something went terribly wrong. Now a place of danger and dark influence.", # Made pre-Dawnguard
                 "tags": ["excavation_site_ruined", "vigilant_of_stendarr_tragedy", "dark_influence_site", "dungeon_dangerous_investigation", "undead_presence_likely"]
+            },
+            {
+                "id": 90025,
+                "name": "Lakeside Landing",
+                "desc": "A small community of fisherfolk and boatwrights on the shores of Lake Honrich in The Rift, known for their sturdy fishing boats and tales of the lake's depths.",
+                "tags": ["village_fishing_lakeside", "boatwright_community", "lake_honrich_settlement", "local_folklore_lake_monsters_potential"]
+            },
+            {
+                "id": 90026,
+                "name": "Goldenleaf Farmstead",
+                "desc": "A picturesque farm in The Rift, renowned for its vibrant autumn foliage and the sweet, crisp apples grown in its orchards.",
+                "tags": ["farm_picturesque_autumnal", "agriculture_orchard_apple", "scenic_location_rift", "unique_produce_apples"]
+            },
+            {
+                "id": 90027,
+                "name": "Tanglewood Den",
+                "desc": "A dense, overgrown cave system hidden deep within the autumnal forests of The Rift, often serving as a den for bears, spriggans, or a reclusive alchemist.",
+                "tags": ["cave_forest_overgrown", "dungeon_minor", "bear_den_potential", "spriggan_grove_cave", "alchemist_hideout_potential"]
+            },
+            {
+                "id": 90028,
+                "name": "Ruins of Autumn's End",
+                "desc": "The crumbling remains of an old hunting lodge or minor keep in The Rift, now reclaimed by the forest. It might hold forgotten treasures or be used by local bandits.",
+                "tags": ["ruin_lodge_forest", "historic_site_minor_keep", "treasure_cache_rumored", "bandit_outpost_potential_ruin"]
+            },
+            {
+                "id": 90029,
+                "name": "Shrine of Zenithar (Rift Forest)",
+                "desc": "An outdoor shrine dedicated to Zenithar, the Divine of Work and Commerce, located along an old trade path in the Rift's forests. Merchants and craftsmen sometimes leave offerings here for prosperity.",
+                "tags": ["shrine_aedric_outdoor", "zenithar_shrine", "religious_site_trade_route", "commerce_shrine", "craftsmanship_blessing_site"]
+            },
+            {
+                "id": 90030,
+                "name": "Angarvunde",
+                "desc": "An ancient and extensive Nordic ruin in the mountains of the Rift, deeply buried and heavily guarded by draugr. It is known for a tragic tale of betrayal and a powerful artifact sought by some.",
+                "tags": ["nordic_ruin_major", "dungeon_large_complex", "undead_heavy_powerful", "historic_site_tragic_lore", "artifact_location_rumored", "dragon_word_ancient_potential"]
+            },
+            {
+                "id": 90031,
+                "name": "The Shadow Stone",
+                "desc": "A Standing Stone hidden in the forests south of Riften, near the traditional grounds of the Nightingales. It grants the power of invisibility for a short duration, once per day.",
+                "tags": ["standing_stone", "power_invisibility_temporary", "stealth_buff", "forest_shrine_hidden", "nightingale_lore_associated_potential"]
+            },
+            {
+                "id": 90032,
+                "name": "Ruins of Bthalft",
+                "desc": "Crumbling Dwemer ruins in the southern Rift, notable for an outdoor Dwemer mechanism. Legends say it's an access point to deeper, hidden Dwemer workings and perhaps the legendary Aetherium Forge.",
+                "tags": ["dwemer_ruin_outdoor", "ancient_mechanism_dwemer", "aetherium_forge_access_rumor", "falmer_presence_potential_nearby", "exploration_point_dwemer_lore"]
+            },
+            {
+                "id": 90033,
+                "name": "Fallowstone Cave",
+                "desc": "A large cave system in the northern Rift, near Shor's Stone. It is often a den for bears or trolls and is one of the sites for Kyne's Sacred Trials.",
+                "tags": ["cave_large_wilderness", "monster_den_bear_troll", "kyne_sacred_trials_site", "dungeon_natural", "hunting_ground_dangerous"]
+            },
+            {
+                "id": 90034,
+                "name": "Lost Tongue Overlook",
+                "desc": "A ruined Nordic watchtower and ancient dragon lair high in the mountains of The Rift, south of Riften. It contains a Word Wall and is often guarded by powerful draugr or other ancient entities.",
+                "tags": ["nordic_ruin_tower", "dragon_lair_ancient_empty", "dragon_word_ancient", "dungeon_major_overlook", "undead_presence_strong", "mountain_peak_ruin"]
+            },
+            {
+                "id": 90035,
+                "name": "Geirmund's Hall",
+                "desc": "An ancient Nordic ruin on an island in Lake Geir, east of Ivarstead. It is the tomb of the archmage Geirmund and is guarded by draugr and a powerful necromancer.",
+                "tags": ["nordic_ruin_lakeside", "dungeon_tomb_mage", "undead_draugr", "necromancer_guardian_powerful", "quest_location_artifact_gauldur_amulet_related_potential", "historic_figure_geirmund"]
             }
         ]
     },
@@ -2256,3 +2994,64 @@ LOCATIONS = [
         "travel": {"roads": [], "paths": ["Path from Kynesgrove vicinity"]}
     }
 ]
+class Location:
+    def __init__(self, name, description, is_dark=False):
+        self.name = name
+        self.description = description
+        self.is_dark = is_dark
+        self.items = []
+        self.npcs = []
+        self.exits = {}
+
+    def enter(self, player):
+        print(f"You enter {self.name}.")
+        print(self.description)
+        self.display_items()
+        self.display_npcs()
+
+        if self.is_dark:
+            # player.has_lit_torch() now updates visibility internally.
+            # We just check the result for the message.
+            if player.has_lit_torch(): # This call updates player.visibility
+                print("The torch illuminates the area, allowing you to see clearly.")
+                # player.visibility is already set by has_lit_torch()
+            else:
+                print("It's too dark to see anything! You stumble around blindly.")
+                # player.visibility is already set by has_lit_torch()
+        else:
+            # If the location is not dark, ensure player visibility is normal.
+            # This might be redundant if has_lit_torch() is always called or default visibility is 10.
+            # However, explicitly setting it here ensures correctness if the location itself isn't dark.
+            player.visibility = 10 # Default visibility for non-dark areas
+
+    def add_item(self, item):
+        self.items.append(item)
+
+    def remove_item(self, item):
+        if item in self.items:
+            self.items.remove(item)
+
+    def display_items(self):
+        if self.items:
+            print("You see the following items:")
+            for item in self.items:
+                print(f"- {item}")
+
+    def add_npc(self, npc):
+        self.npcs.append(npc)
+
+    def remove_npc(self, npc):
+        if npc in self.npcs:
+            self.npcs.remove(npc)
+
+    def display_npcs(self):
+        if self.npcs:
+            print("You see the following people:")
+            for npc in self.npcs:
+                print(f"- {npc.name}")
+
+    def add_exit(self, direction, location):
+        self.exits[direction] = location
+
+    def get_exit(self, direction):
+        return self.exits.get(direction)

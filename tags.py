@@ -2,15 +2,19 @@ import random
 
 # Location Tags
 LOCATIONS = {
-    "environment": ["urban", "rural", "wilderness", "coastal", "underground", "aerial", "aquatic"],
-    "climate": ["temperate", "tropical", "arid", "arctic", "swampy"],
-    "terrain": ["mountainous", "hilly", "plains", "forest", "desert", "island"],
-    "structure": ["natural", "ruined", "fortified", "populated", "abandoned"],
-    "magical": ["enchanted", "cursed", "holy", "arcane", "tainted"],
-    # City Specific tags.
-    "city_affiliation": ["whiterun", "riften", "windhelm", "solitude", "markarth", "falkreath", "dawnstar", "winterhold", "morthal"],
-    "city_features": ["market", "jarls_seat", "temple", "thieves_guild", "companions_guild", "college", "imperial_presence", "stormcloak_presence", "dwemer_influence"],
-    "urban_issues": ["crime", "poverty", "corruption", "political_unrest", "monster_attacks"]
+    "environment": ["urban", "rural", "wilderness", "coastal", "underground", "aerial", "aquatic", "volcanic_tundra", "glacial", "ashland"],
+    "climate": ["temperate", "tropical", "arid", "arctic", "swampy", "volcanic_geothermal"],
+    "terrain": ["mountainous", "hilly", "plains", "forest", "desert", "island", "canyon", "geyser_field", "hot_springs", "marsh", "tundra_plains", "cliffside", "river_delta", "mountain_pass", "ice_field", "ash_waste"],
+    "structure_type": ["natural_cave", "natural_grotto", "ruined_fort", "ruined_tower", "ruined_settlement", "ruined_shrine", "fortified_keep", "fortified_city_wall", "populated_city", "populated_town", "populated_village", "abandoned_shack", "abandoned_mine", "settlement_minor", "outpost_military", "outpost_civilian", "shack_or_hut", "tower_structure", "bridge_structure", "shipwreck_site", "lighthouse_structure", "mine_active", "mine_depleted", "cave_entrance_prominent", "monument_historic_site", "standing_stone_circle", "shrine_outdoor_structure", "wall_ancient_structure", "farmstead", "meadery_building", "apiary_location", "lumber_mill_site", "fishing_dock", "smelter_works", "prison_building", "barracks_building", "library_archive_building", "museum_building", "catacombs_structure", "arena_structure", "palace_or_manor", "temple_building", "guild_hall_building", "shop_building", "inn_building", "stable_building"],
+    "structure_condition": ["pristine", "well_maintained", "weathered", "damaged", "ruined_extensively", "collapsed", "overgrown", "flooded", "frozen_over", "ash_covered", "haunted_aura", "recently_looted", "under_construction", "newly_built"],
+    "magical_properties": ["enchanted_positive", "enchanted_neutral", "enchanted_negative", "cursed_major", "cursed_minor", "holy_ground_aedric", "unholy_ground_daedric", "arcane_nexus", "tainted_by_dark_magic", "elemental_fire_dominant", "elemental_frost_dominant", "elemental_shock_dominant", "wild_magic_zone", "null_magic_zone", "daedric_influence_subtle", "daedric_influence_overt", "aedric_blessing_active", "ancient_wards_active", "geomantic_power_spot"],
+    "city_affiliation": ["whiterun_hold_capital", "riften_city", "windhelm_city", "solitude_city", "markarth_city", "falkreath_town", "dawnstar_town", "winterhold_town_ruined", "morthal_town"], # More specific
+    "settlement_features": ["market_square", "jarls_longhouse", "temple_divines", "temple_specific_god", "thieves_guild_presence", "companions_guild_hall", "college_of_winterhold_main", "mages_guild_local_hall", "imperial_legion_hq", "stormcloak_army_hq", "dwemer_architecture_prominent", "docks_harbor", "warehouse_storage", "slums_poor_district", "noble_estate_district", "military_garrison_active", "prison_jailhouse", "smelter_industrial", "apiary_honey_farm", "lumber_mill_active", "fishing_community_hub", "alchemy_shop_notable", "blacksmith_forge_active", "library_public_or_private", "museum_artifacts", "catacombs_burial", "arena_combat_local", "barracks_guards", "player_home_available", "unique_landmark_iconic"],
+    "urban_issues_or_atmosphere": ["high_crime_rate", "pervasive_poverty", "rampant_corruption", "political_tension_high", "frequent_monster_raids", "racial_tension_overt", "fear_and_superstition", "bustling_trade_atmosphere", "oppressive_atmosphere", "scholarly_atmosphere", "militaristic_atmosphere", "pious_atmosphere", "decadent_atmosphere", "secretive_atmosphere", "haunted_rumors_strong"],
+    "economic_activity": ["mining_iron", "mining_silver", "mining_gold", "mining_ebony", "mining_malachite", "mining_quicksilver", "mining_moonstone", "mining_corundum", "mining_gems", "logging_timber", "farming_crops", "farming_livestock", "fishing_industry_local", "trade_hub_major", "trade_hub_minor", "alchemy_ingredient_source_rich", "smithing_center_renowned", "brewing_mead_ale", "skooma_trade_illicit", "smuggling_route_active", "hunting_furs_meat", "caravan_stopover", "shipbuilding_port"],
+    "cultural_historical_significance": ["nordic_settlement_ancient", "nordic_burial_site_major", "dwemer_ruin_major_city", "dwemer_outpost_minor", "dragon_cult_temple_ruin", "dragon_cult_lair_priest", "forsworn_ancestral_site", "orc_stronghold_traditional", "imperial_fort_historic", "stormcloak_rebellion_site", "battlefield_major_historic", "pilgrimage_site_religious", "legendary_hero_location", "sacred_grove_kynareth", "daedric_shrine_prominent", "natural_wonder_revered", "ancient_magical_site", "great_collapse_affected_site", "ysgramor_related_site", "nightingale_shrine_hidden"],
+    "state_or_condition_current": ["contested_by_factions", "active_warzone_nearby", "peaceful_and_prosperous", "isolated_and_forgotten", "densely_populated_urban", "sparsely_populated_rural", "recently_attacked_recovering", "under_siege_rumored", "plague_outbreak_rumored", "supernatural_event_ongoing", "economically_depressed", "politically_stable", "politically_unstable", "heavily_guarded", "lightly_patrolled", "lawless_area", "neutral_territory_faction", "thalmor_controlled_area", "forsworn_controlled_area", "bandit_controlled_area", "giant_territory", "dragon_sighting_recent_rumor"],
+    "specific_landmark_type": ["dragon_lair_active_story", "dragon_lair_ancient_inactive", "dragon_burial_site_mound", "giant_camp_established", "hagraven_coven_lair_main", "spriggan_sanctuary", "vampire_ancient_lair", "vampire_coven_minor", "necromancer_tower_or_lair", "bandit_main_stronghold", "bandit_minor_camp", "smuggler_main_den", "smuggler_cache_minor", "pirate_ship_base", "pirate_cove_hidden", "word_wall_location", "standing_stone_magical", "unique_natural_formation", "quest_specific_dungeon_entrance", "blackreach_elevator_access"]
 }
 
 # Faction Tags
@@ -97,9 +101,24 @@ TAGS = {
     "RELATIONSHIPS": RELATIONSHIPS,
 }
 
+# Set of tags that can be inherited from parent locations (e.g., Hold to City, City to Venue)
+# for contextual flavor text or other game logic.
+INHERITABLE_TAGS = {
+    "nordic", "imperial", "stormcloak", "thieves_guild_presence", "corrupt_influence", # Faction/Influence
+    "military_presence", "bards_college_influence", "mages_guild_influence",
+    "city", "town", "village", "hold", # Settlement Types
+    "plains", "central_location", "snowy_region", "coastal_area", "magical_aura", # Environment/Geography
+    "marshland", "swamp_terrain", "forested_area", "southern_region", "mountainous_terrain",
+    "dwemer_ruins_nearby", "volcanic_activity", "water_dominant_landscape", # Specific Features
+    "urban", "rural", "wilderness", "underground", # General Environment
+    "temperate", "arctic", "arid", # Climate
+    "fortified", "populated", "abandoned", "ruined", # Structure Status
+    "enchanted", "cursed", "holy_site", "arcane_focus", "tainted_area" # Magical properties
+}
+ 
 def get_random_tag(tag_category):
     """Returns a random tag from the specified category within the master TAGS dictionary."""
-    category_dict = TAGS.get(tag_category.upper())  # Access from the new TAGS dictionary
+    category_dict = TAGS.get(tag_category.upper())
     if category_dict:
         # If the category is a dictionary (like LOCATIONS, FACTIONS, etc.),
         # we want to pick a random value from one of its sub-categories.

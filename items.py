@@ -4,46 +4,61 @@ from ui import UI
 import tags # Assuming tags.py exists and is used by Item class
 import flavor # Crucial for item flavor text
 from colorama import Fore, Style # For colored/styled output in descriptions
+from spells import get_spell, Spell # Import for tome functionality
 
 INITIAL_INVENTORY_MAPPING = {
     # Warrior Gear
-    "iron_sword": {"category": "weapon", "name": "Iron Sword", "material": "Iron", "base_damage": (3, 7), "equipment_tag": "main_hand"},
+    "iron_sword": {"category": "weapon", "name": "Iron Sword", "material": "Iron", "base_damage": (8, 12), "equipment_tag": "main_hand"}, # Increased
     "hide_shield": {"category": "armor", "name": "Hide Shield", "material": "Hide", "armor_rating": 5, "equipment_tag": "off_hand"},
-    "iron_battleaxe": {"category": "weapon", "name": "Iron Battleaxe", "material": "Iron", "base_damage": (5, 10), "equipment_tag": "two_handed"},
+    "iron_battleaxe": {"category": "weapon", "name": "Iron Battleaxe", "material": "Iron", "base_damage": (10, 18), "equipment_tag": "two_handed"}, # Increased
     "hide_armor": {"category": "armor", "name": "Hide Cuirass", "material": "Hide", "armor_rating": 8, "equipment_tag": "chest"},
-    "steel_sword": {"category": "weapon", "name": "Steel Sword", "material": "Steel", "base_damage": (4, 8), "equipment_tag": "main_hand"},
-    "apprentice_tome_flames": {"category": "scroll", "name": "Apprentice Tome of Flames", "material": "Paper"},
+    "steel_sword": {"category": "weapon", "name": "Steel Sword", "material": "Steel", "base_damage": (10, 15), "equipment_tag": "main_hand"}, # Increased
+    "apprentice_tome_flames": {"category": "tome", "name": "Tome: Flames", "material": "Paper", "properties": {"spell_key": "flames"}},
     "steel_plate_armor": {"category": "armor", "name": "Steel Plate Cuirass", "material": "Steel", "armor_rating": 15, "equipment_tag": "chest"},
     "steel_shield": {"category": "armor", "name": "Steel Shield", "material": "Steel", "armor_rating": 10, "equipment_tag": "off_hand"},
-    "dragonbone_greatsword": {"category": "weapon", "name": "Dragonbone Greatsword", "material": "Dragonbone", "base_damage": (15, 25), "equipment_tag": "two_handed"},
+    "dragonbone_greatsword": {"category": "weapon", "name": "Dragonbone Greatsword", "material": "Dragonbone", "base_damage": (25, 35), "equipment_tag": "two_handed"}, # Increased
     "amulet_of_mara": {"category": "jewelry", "name": "Amulet of Mara", "material": "Gold", "equipment_tag": "amulet"},
 
     # Mage Gear
     "novice_robes": {"category": "armor", "name": "Novice Robes", "material": "Linen", "armor_rating": 2, "equipment_tag": "chest"},
-    "apprentice_tome_firebolt": {"category": "scroll", "name": "Apprentice Tome of Firebolt", "material": "Paper"},
+    "apprentice_tome_firebolt": {"category": "tome", "name": "Tome: Firebolt", "material": "Paper", "properties": {"spell_key": "firebolt"}},
     "priest_robes": {"category": "armor", "name": "Priest Robes", "material": "Linen", "armor_rating": 3, "equipment_tag": "chest"},
-    "apprentice_tome_healing": {"category": "scroll", "name": "Apprentice Tome of Healing", "material": "Paper"},
+    "apprentice_tome_healing": {"category": "tome", "name": "Tome: Healing", "material": "Paper", "properties": {"spell_key": "healing"}},
     "apprentice_robes": {"category": "armor", "name": "Apprentice Robes", "material": "Linen", "armor_rating": 4, "equipment_tag": "chest"},
-    "apprentice_tome_conjure_familiar": {"category": "scroll", "name": "Apprentice Tome of Conjure Familiar", "material": "Paper"},
+    "apprentice_tome_conjure_familiar": {"category": "tome", "name": "Tome: Conjure Familiar", "material": "Paper", "properties": {"spell_key": "conjure_familiar"}},
     "fine_clothes": {"category": "armor", "name": "Fine Clothes", "material": "Linen", "armor_rating": 1, "equipment_tag": "chest"},
-    "apprentice_tome_courage": {"category": "scroll", "name": "Apprentice Tome of Courage", "material": "Paper"},
+    "apprentice_tome_courage": {"category": "tome", "name": "Tome: Courage", "material": "Paper", "properties": {"spell_key": "courage"}},
     "alchemist_robes": {"category": "armor", "name": "Alchemist Robes", "material": "Linen", "armor_rating": 3, "equipment_tag": "chest"},
-    "scroll_of_soul_trap": {"category": "scroll", "name": "Scroll of Soul Trap", "material": "Paper"},
+    "scroll_of_soul_trap": {"category": "scroll", "name": "Scroll of Soul Trap", "material": "Paper"}, # Scrolls are one-time use, Tomes teach spells
 
     # Thief Gear
     "leather_armor": {"category": "armor", "name": "Leather Armor", "material": "Leather", "armor_rating": 10, "equipment_tag": "chest"},
-    "iron_dagger": {"category": "weapon", "name": "Iron Dagger", "material": "Iron", "base_damage": (2, 4), "equipment_tag": "main_hand"},
+    "iron_dagger": {"category": "weapon", "name": "Iron Dagger", "material": "Iron", "base_damage": (5, 8), "equipment_tag": "main_hand"}, # Increased
     "dark_brotherhood_robes": {"category": "armor", "name": "Dark Brotherhood Robes", "material": "Leather", "armor_rating": 6, "equipment_tag": "chest"},
     "lockpick": {"category": "misc", "name": "Lockpick", "material": "Iron"},
-    "hunting_bow": {"category": "weapon", "name": "Hunting Bow", "material": "Wood", "base_damage": (4, 8), "equipment_tag": "two_handed"},
+    "hunting_bow": {"category": "weapon", "name": "Hunting Bow", "material": "Wood", "base_damage": (7, 12), "equipment_tag": "two_handed"}, # Increased
     "jester_outfit": {"category": "armor", "name": "Jester Outfit", "material": "Linen", "armor_rating": 2, "equipment_tag": "chest"},
     "scroll_of_calm": {"category": "scroll", "name": "Scroll of Calm", "material": "Paper"},
     
     # Adventurer Gear
     "lute": {"category": "misc", "name": "Lute", "material": "Wood"},
     "fur_armor": {"category": "armor", "name": "Fur Armor", "material": "Fur", "armor_rating": 7, "equipment_tag": "chest"},
-    "iron_axe": {"category": "weapon", "name": "Iron Axe", "material": "Iron", "base_damage": (4, 9), "equipment_tag": "main_hand"},
+    "iron_axe": {"category": "weapon", "name": "Iron Axe", "material": "Iron", "base_damage": (9, 14), "equipment_tag": "main_hand"}, # Increased
     "venison_steak": {"category": "food", "name": "Venison Steak", "material": "Common"},
+
+    # NPC/Enemy Specific Gear (Ensure these are defined)
+    "steel_axe_old": {"category": "weapon", "name": "Old Steel Axe", "material": "Steel", "base_damage": (8, 13), "equipment_tag": "main_hand"}, # Increased
+    "iron_mace_rusty": {"category": "weapon", "name": "Rusty Iron Mace", "material": "Iron", "base_damage": (7, 11), "equipment_tag": "main_hand"}, # Increased
+    "ancient_nord_sword_chipped": {"category": "weapon", "name": "Chipped Ancient Nord Sword", "material": "Iron", "base_damage": (8, 12), "equipment_tag": "main_hand"}, # Increased
+    "falmer_sword_crude": {"category": "weapon", "name": "Crude Falmer Sword", "material": "Chitin", "base_damage": (7, 10), "equipment_tag": "main_hand"}, # Increased
+    "hide_armor_scraps": {"category": "armor", "name": "Hide Armor Scraps", "material": "Hide", "armor_rating": 4, "equipment_tag": "chest"},
+    "iron_armor_dented": {"category": "armor", "name": "Dented Iron Armor", "material": "Iron", "armor_rating": 7, "equipment_tag": "chest"},
+    "ancient_nord_armor_piece": {"category": "armor", "name": "Ancient Nord Armor Piece", "material": "Iron", "armor_rating": 6, "equipment_tag": "chest"},
+    "falmer_armor_basic": {"category": "armor", "name": "Basic Falmer Armor", "material": "Chitin", "armor_rating": 5, "equipment_tag": "chest"},
+    "gem_flawless_diamond": {"category": "misc", "name": "Flawless Diamond", "material": "Misc"},
+    "gem_flawless_ruby": {"category": "misc", "name": "Flawless Ruby", "material": "Misc"},
+    "silver_ingot_pure": {"category": "misc", "name": "Silver Ingot", "material": "Silver"},
+    "imperial_dispatch_sealed_bloodied": {"category": "misc", "name": "Bloodied Imperial Dispatch", "material": "Paper"},
 }
 
 MATERIALS = ["Iron", "Steel", "Silver", "Gold", "Glass", "Ebony", "Dragonbone",
@@ -261,8 +276,24 @@ class Item:
 
             if self.category in ["potion", "ingredient"] and hasattr(player, 'improve_skill'):
                 player.improve_skill("alchemy", random.randint(1,2))
+        
+        elif self.category == "tome" and "spell_key" in self.properties:
+            spell_key_to_learn = self.properties["spell_key"]
+            spell_to_learn = get_spell(spell_key_to_learn)
+            if spell_to_learn:
+                if any(s.name == spell_to_learn.name for s in player.known_spells):
+                    UI.slow_print(f"You already know the spell {spell_to_learn.name}.")
+                else:
+                    player.known_spells.append(spell_to_learn)
+                    UI.slow_print(f"You study the {self.name} and learn the spell: {spell_to_learn.name}!")
+                    # Tomes are usually consumed upon learning
+                    if hasattr(player, 'remove_item'): player.remove_item(self)
+                    elif hasattr(player.stats, 'remove_from_inventory'): player.stats.remove_from_inventory(self)
+            else:
+                UI.print_warning(f"The {self.name} seems to refer to a forgotten spell ({spell_key_to_learn}).")
 
         elif self.category == "scroll":
+            # TODO: Implement one-time spell effect for scrolls
             UI.slow_print(f"You read the {self.name} and a magical effect unfolds! (Spell effects from scrolls TODO).")
             if hasattr(player, 'remove_item'): player.remove_item(self)
             elif hasattr(player.stats, 'remove_from_inventory'): player.stats.remove_from_inventory(self)
@@ -385,6 +416,46 @@ class Item:
         return "\n".join(description_parts)
 
 
+class Torch(Item):
+    def __init__(self):
+        super().__init__("Torch", "A wooden torch that can be lit to provide light.")
+        self.is_lit = False
+        self.durability = 100
+
+    def light(self):
+        if self.durability > 0:
+            self.is_lit = True
+            print("You light the torch.")
+        else:
+            print("Your torch is broken and cannot be lit.")
+            self.is_lit = False
+
+    def extinguish(self):
+        self.is_lit = False
+        print("You extinguish the torch.")
+
+    def use(self, target=None):
+        if not self.is_lit:
+            self.light()
+        else:
+            self.extinguish()
+
+    def update_durability(self, amount):
+        self.durability += amount
+        if self.durability <= 0:
+            self.durability = 0
+            self.is_lit = False
+            print("Your torch has broken.")
+        else:
+            print(f"Torch durability: {self.durability}")
+
+    def __str__(self):
+        if self.is_lit:
+            return "Lit Torch"
+        else:
+            return "Torch"
+
+
 def generate_random_item(category: str, level: int = 1) -> Item:
     material = random.choice(MATERIALS) if MATERIALS else "Common"
     enchant = random.choice([None, "Fire", "Frost", "Shock", "Poison", "Absorb Health", "Turn Undead"]) if category in ["weapon", "armor", "jewelry"] and random.random() < 0.15 else None
@@ -398,10 +469,19 @@ def generate_random_item(category: str, level: int = 1) -> Item:
         name_base = random.choice(WEAPONS) if WEAPONS else "Blade"
         name = f"{material} {name_base}"
         if "Staff" in name_base:
-            base_damage = (1 + level//2, 3 + level//2) 
+            base_damage = (5 + level, 10 + level) # Increased staff damage
             enchant = enchant or random.choice(["Fire", "Frost", "Shock", "Fear"])
         else:
-            base_damage = (random.randint(1, 3) + level, random.randint(4, 6) + level + (level // 2))
+            # Increased base random weapon damage
+            base_min = 5 + level
+            base_max = 10 + level + (level // 2)
+            if "dagger" in name_base.lower(): # Daggers are faster but less damage
+                base_min = max(1, base_min // 2)
+                base_max = max(2, base_max // 2)
+            elif "greatsword" in name_base.lower() or "battleaxe" in name_base.lower() or "warhammer" in name_base.lower(): # Two-handed are slower but more damage
+                base_min = int(base_min * 1.3)
+                base_max = int(base_max * 1.3)
+            base_damage = (random.randint(base_min, base_min + 3), random.randint(base_max, base_max + 5))
         
         if "bow" in name_base.lower() or "greatsword" in name_base.lower() or "battleaxe" in name_base.lower() or "warhammer" in name_base.lower():
             equipment_tag = "two_handed"

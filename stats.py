@@ -163,313 +163,41 @@ CLASSES = {
         "name": "Warrior",
         "desc": "A master of arms, favoring strength and direct combat.",
         "subclasses": {
-            "1": {"name": "Blademaster", "attributes": {"strength": 50, "endurance": 50}, "skills": {"one_handed": 20, "heavy_armor": 20}, "inventory": ["iron_sword", "hide_shield"]},
-            "2": {"name": "Berserker", "attributes": {"strength": 60, "speed": 40}, "skills": {"two_handed": 20, "light_armor": 15}, "inventory": ["iron_battleaxe", "hide_armor"]},
-            "3": {"name": "Spellblade", "attributes": {"strength": 45, "intelligence": 45}, "skills": {"one_handed": 15, "destruction": 15}, "inventory": ["steel_sword", "apprentice_tome_flames"]},
-            "4": {"name": "Knight", "attributes": {"endurance": 55, "personality": 40}, "skills": {"heavy_armor": 20, "block": 15}, "inventory": ["steel_plate_armor", "steel_shield"]},
-            "5": {"name": "Dragonslayer", "attributes": {"strength": 55, "willpower": 45}, "skills": {"two_handed": 25, "restoration": 10}, "inventory": ["dragonbone_greatsword", "amulet_of_mara"]}
-        }, "inventory": ["iron_sword", "hide_shield"]
+            "1": {"name": "Blademaster", "attributes": {"strength": 50, "endurance": 50}, "skills": {"one_handed": 20, "heavy_armor": 20}, "inventory": ["iron_sword", "hide_shield"], "starting_spells": []},
+            "2": {"name": "Berserker", "attributes": {"strength": 60, "speed": 40}, "skills": {"two_handed": 20, "light_armor": 15}, "inventory": ["iron_battleaxe", "hide_armor"], "starting_spells": []},
+            "3": {"name": "Spellblade", "attributes": {"strength": 45, "intelligence": 45}, "skills": {"one_handed": 15, "destruction": 15}, "inventory": ["steel_sword", "apprentice_tome_flames"], "starting_spells": ["flames"]},
+            "4": {"name": "Knight", "attributes": {"endurance": 55, "personality": 40}, "skills": {"heavy_armor": 20, "block": 15}, "inventory": ["steel_plate_armor", "steel_shield"], "starting_spells": []},
+            "5": {"name": "Dragonslayer", "attributes": {"strength": 55, "willpower": 45}, "skills": {"two_handed": 25, "restoration": 10}, "inventory": ["dragonbone_greatsword", "amulet_of_mara"], "starting_spells": ["healing"]}
+        }, "inventory": ["iron_sword", "hide_shield"], "starting_spells": []
     },
     "mage": {
         "name": "Mage", "desc": "A scholar of the arcane arts, wielding powerful spells.",
         "subclasses": {
-            "1": {"name": "Sorcerer", "attributes": {"intelligence": 50, "willpower": 50}, "skills": {"destruction": 20, "alteration": 15}, "inventory": ["novice_robes", "apprentice_tome_firebolt"]},
-            "2": {"name": "Cleric", "attributes": {"willpower": 50, "personality": 50}, "skills": {"restoration": 20, "heavy_armor": 15}, "inventory": ["priest_robes", "apprentice_tome_healing"]},
-            "3": {"name": "Conjurer", "attributes": {"intelligence": 45, "willpower": 45}, "skills": {"conjuration": 20, "alteration": 10}, "inventory": ["apprentice_robes", "apprentice_tome_conjure_familiar"]},
-            "4": {"name": "Illusionist", "attributes": {"intelligence": 40, "personality": 55}, "skills": {"illusion": 20, "sneak": 10}, "inventory": ["fine_clothes", "apprentice_tome_courage"]},
-            "5": {"name": "Mystic", "attributes": {"intelligence": 55, "luck": 40}, "skills": {"mysticism": 20, "alchemy": 15}, "inventory": ["alchemist_robes", "scroll_of_soul_trap"]}
-        }, "inventory": ["novice_robes", "apprentice_tome_firebolt"]
+            "1": {"name": "Sorcerer", "attributes": {"intelligence": 50, "willpower": 50}, "skills": {"destruction": 20, "alteration": 15}, "inventory": ["novice_robes", "apprentice_tome_firebolt"], "starting_spells": ["firebolt", "flames"]},
+            "2": {"name": "Cleric", "attributes": {"willpower": 50, "personality": 50}, "skills": {"restoration": 20, "heavy_armor": 15}, "inventory": ["priest_robes", "apprentice_tome_healing"], "starting_spells": ["healing", "lesser_ward"]},
+            "3": {"name": "Conjurer", "attributes": {"intelligence": 45, "willpower": 45}, "skills": {"conjuration": 20, "alteration": 10}, "inventory": ["apprentice_robes", "apprentice_tome_conjure_familiar"], "starting_spells": ["conjure_familiar"]},
+            "4": {"name": "Illusionist", "attributes": {"intelligence": 40, "personality": 55}, "skills": {"illusion": 20, "sneak": 10}, "inventory": ["fine_clothes", "apprentice_tome_courage"], "starting_spells": ["courage"]},
+            "5": {"name": "Mystic", "attributes": {"intelligence": 55, "luck": 40}, "skills": {"mysticism": 20, "alchemy": 15}, "inventory": ["alchemist_robes", "scroll_of_soul_trap"], "starting_spells": []} # Mystics might rely on scrolls/alchemy
+        }, "inventory": ["novice_robes", "apprentice_tome_firebolt"], "starting_spells": ["firebolt"]
     },
     "thief": {
         "name": "Thief", "desc": "A master of stealth and subterfuge, relying on cunning.",
         "subclasses": {
-            "1": {"name": "Assassin", "attributes": {"agility": 50, "speed": 50}, "skills": {"sneak": 20, "one_handed": 15}, "inventory": ["leather_armor", "iron_dagger"]},
-            "2": {"name": "Nightblade", "attributes": {"agility": 40, "intelligence": 40}, "skills": {"sneak": 15, "illusion": 20}, "inventory": ["dark_brotherhood_robes", "iron_dagger"]},
-            "3": {"name": "Rogue", "attributes": {"agility": 45, "personality": 45}, "skills": {"pickpocket": 20, "speech": 15}, "inventory": ["fine_clothes", "lockpick"]},
-            "4": {"name": "Scout", "attributes": {"speed": 55, "endurance": 40}, "skills": {"light_armor": 20, "archery": 15}, "inventory": ["hide_armor", "hunting_bow"]},
-            "5": {"name": "Trickster", "attributes": {"luck": 50, "agility": 40}, "skills": {"alteration": 15, "speech": 20}, "inventory": ["jester_outfit", "scroll_of_calm"]}
-        }, "inventory": ["leather_armor", "iron_dagger"]
+            "1": {"name": "Assassin", "attributes": {"agility": 50, "speed": 50}, "skills": {"sneak": 20, "one_handed": 15}, "inventory": ["leather_armor", "iron_dagger"], "starting_spells": []},
+            "2": {"name": "Nightblade", "attributes": {"agility": 40, "intelligence": 40}, "skills": {"sneak": 15, "illusion": 20}, "inventory": ["dark_brotherhood_robes", "iron_dagger"], "starting_spells": ["courage"]}, # Example illusion spell
+            "3": {"name": "Rogue", "attributes": {"agility": 45, "personality": 45}, "skills": {"pickpocket": 20, "speech": 15}, "inventory": ["fine_clothes", "lockpick"], "starting_spells": []},
+            "4": {"name": "Scout", "attributes": {"speed": 55, "endurance": 40}, "skills": {"light_armor": 20, "archery": 15}, "inventory": ["hide_armor", "hunting_bow"], "starting_spells": []},
+            "5": {"name": "Trickster", "attributes": {"luck": 50, "agility": 40}, "skills": {"alteration": 15, "speech": 20}, "inventory": ["jester_outfit", "scroll_of_calm"], "starting_spells": []}
+        }, "inventory": ["leather_armor", "iron_dagger"], "starting_spells": []
     },
     "adventurer": {
         "name": "Adventurer", "desc": "A versatile explorer, comfortable in many situations.",
         "subclasses": {
-            "1": {"name": "Explorer", "attributes": {"endurance": 50, "luck": 50}, "skills": {"light_armor": 15, "speech": 15}, "inventory": ["leather_armor", "hunting_bow"]},
-            "2": {"name": "Bard", "attributes": {"personality": 50, "intelligence": 40}, "skills": {"speech": 20, "illusion": 15}, "inventory": ["fine_clothes", "lute"]},
-            "3": {"name": "Survivalist", "attributes": {"endurance": 55, "strength": 40}, "skills": {"block": 15, "one_handed": 15}, "inventory": ["fur_armor", "iron_axe", "venison_steak"]}
-        }, "inventory": ["leather_armor", "hunting_bow"]
+            "1": {"name": "Explorer", "attributes": {"endurance": 50, "luck": 50}, "skills": {"light_armor": 15, "speech": 15}, "inventory": ["leather_armor", "hunting_bow"], "starting_spells": []},
+            "2": {"name": "Bard", "attributes": {"personality": 50, "intelligence": 40}, "skills": {"speech": 20, "illusion": 15}, "inventory": ["fine_clothes", "lute"], "starting_spells": ["courage"]},
+            "3": {"name": "Survivalist", "attributes": {"endurance": 55, "strength": 40}, "skills": {"block": 15, "one_handed": 15}, "inventory": ["fur_armor", "iron_axe", "venison_steak"], "starting_spells": []}
+        }, "inventory": ["leather_armor", "hunting_bow"], "starting_spells": []
     }
 }
 
-class Player:
-    """
-    Represents the player character, inheriting core stats from Stats and
-    managing inventory, equipment, quest log, and various quest-related trackers.
-    """
-    def __init__(self, name: str, race: str, subclass: str, stats: Stats, skills: Dict[str, int]):
-        self.full_name = name # Store the full name (including surname, if any)
-        self.name = name.split(" ")[0] # Store only the first name for simpler references
-        self.race = race
-        self.subclass = subclass
-        self.stats = stats      # The actual Stats object instance
-        self.skills = skills    # Dictionary of skill_name: value
-        self.quest_log = QuestLog() # Manages active and completed quests
-        self.combat = None      # To store a Combat instance if player is in combat
-
-        self.slots = { # Equipment slots
-            "head": None, "chest": None, "hands": None, "feet": None,
-            "main_hand": None, "off_hand": None,
-            "amulet": None, "ring1": None, "ring2": None
-        }
-
-        # Trackers for quest objectives and world state
-        self.defeated_enemies_tracker: Dict[str, int] = {} # e.g., {"bandit_raider_unique_id": 3, "draugr_restless_unique_id": 1}
-        self.talked_to_npcs: Set[str] = set() # Stores unique NPC IDs after talking to them
-        self.current_location_obj: Dict[str, Any] | None = None # Set by the game loop during travel
-        self.known_locations_objects: List[Dict[str, Any]] = [] # List of known location dicts, updated during travel
-        self.faction_reputation: Dict[str, int] = { # Initial faction reputations
-            "imperial_legion": 0,
-            "stormcloaks": 0,
-            "thieves_guild": 0,
-            "college_of_winterhold": 0,
-            "companions": 0,
-            "dark_brotherhood": 0,
-            "silver_blood": 0,
-            "thalmor": 0,
-            "khajiit_caravans": 0,
-            "falkreath": 0 # Example for a hold-level reputation
-        }
-
-
-    @property
-    def level(self) -> int:
-        """Convenience property to access player's level from their Stats object."""
-        return self.stats.level
-
-    @property
-    def experience(self) -> int:
-        """Convenience property to access player's current experience from their Stats object."""
-        return self.stats.experience
-
-    @property
-    def next_level_exp(self) -> int:
-        """Convenience property to access XP needed for next level from Stats object."""
-        return self.stats.next_level_exp
-
-    @property
-    def equipment(self) -> List[Item]:
-        """Returns a list of all items currently equipped in slots."""
-        equipped_items = []
-        for item in self.slots.values():
-            if item and item not in equipped_items: # Check for item and avoid duplicates if any item could fill multiple conceptual slots
-                equipped_items.append(item)
-        return equipped_items
-
-    def add_item(self, item_to_add: Item) -> bool:
-        """Adds an item to the player's main inventory (managed by Stats object)."""
-        return self.stats.add_to_inventory(item_to_add)
-
-    def remove_item(self, item_to_remove: Item) -> bool:
-        """Removes an item from the player's main inventory (managed by Stats object)."""
-        return self.stats.remove_from_inventory(item_to_remove)
-
-    def _unequip_from_slot(self, slot_name: str) -> Item | None:
-        """Internal helper to unequip an item from a specific slot and add it back to inventory."""
-        item_in_slot = self.slots.get(slot_name)
-        if item_in_slot:
-            self.slots[slot_name] = None
-            if not self.stats.add_to_inventory(item_in_slot):
-                UI.print_warning(f"Could not return {item_in_slot.name} to inventory after unequipping from {slot_name}! It may be lost if encumbered.")
-            UI.slow_print(f"{item_in_slot.name} unequipped from {slot_name}.")
-            return item_in_slot
-        return None
-
-    def equip_item(self, item_to_equip: Item) -> bool:
-        """Equips an item from the main inventory into an appropriate slot."""
-        if item_to_equip not in self.stats.inventory:
-            UI.slow_print(f"{item_to_equip.name} is not in your inventory to equip.")
-            return False
-
-        equippable_categories = ["weapon", "armor", "jewelry"]
-        if item_to_equip.category not in equippable_categories:
-            UI.slow_print(f"You cannot equip {item_to_equip.name}; it's not standard equipment.")
-            return False
-
-        target_slot_tag = item_to_equip.equipment_tag
-
-        if target_slot_tag == "ring":
-            slot_to_place_in = None
-            if not self.slots["ring1"]: slot_to_place_in = "ring1"
-            elif not self.slots["ring2"]: slot_to_place_in = "ring2"
-            else:
-                UI.slow_print(f"Both ring slots are full. Unequipping {self.slots['ring1'].name} to make space for {item_to_equip.name}.")
-                self._unequip_from_slot("ring1")
-                slot_to_place_in = "ring1"
-
-            self.slots[slot_to_place_in] = item_to_equip
-            self.stats.remove_from_inventory(item_to_equip)
-            UI.slow_print(f"{item_to_equip.name} has been equipped to {slot_to_place_in}.")
-            return True
-
-        if target_slot_tag == "two_handed":
-            if self.slots["main_hand"]: self._unequip_from_slot("main_hand")
-            if self.slots["off_hand"]: self._unequip_from_slot("off_hand")
-
-            self.slots["main_hand"] = item_to_equip;
-            self.stats.remove_from_inventory(item_to_equip)
-            UI.slow_print(f"{item_to_equip.name} (Two-Handed) has been equipped.")
-            return True
-
-        if target_slot_tag in self.slots:
-            if target_slot_tag == "main_hand" and self.slots["main_hand"] and getattr(self.slots["main_hand"], 'equipment_tag', '') == "two_handed":
-                self._unequip_from_slot("main_hand")
-
-            if target_slot_tag == "off_hand" and self.slots["main_hand"] and \
-               getattr(self.slots["main_hand"], 'equipment_tag', '') == "two_handed":
-                UI.slow_print(f"Cannot equip {item_to_equip.name} in off-hand while wielding {self.slots['main_hand'].name}. Unequip it first.")
-                return False
-
-            if self.slots[target_slot_tag]:
-                self._unequip_from_slot(target_slot_tag)
-
-            self.slots[target_slot_tag] = item_to_equip
-            self.stats.remove_from_inventory(item_to_equip)
-            UI.slow_print(f"{item_to_equip.name} has been equipped to {target_slot_tag}.")
-            return True
-        else:
-            UI.slow_print(f"Cannot equip {item_to_equip.name}: Unknown or inappropriate equipment slot tag '{target_slot_tag}'.")
-            return False
-
-    def unequip_item(self, item_to_unequip: Item) -> bool:
-        """Unequips an item from its slot and returns it to the main inventory."""
-        found_slot_name = None
-        for slot_name, equipped_item_in_slot in self.slots.items():
-            if equipped_item_in_slot == item_to_unequip:
-                found_slot_name = slot_name
-                break
-
-        if found_slot_name:
-            self._unequip_from_slot(found_slot_name)
-            return True
-        else:
-            UI.slow_print(f"{item_to_unequip.name} is not currently equipped or not found in slots.")
-            return False
-
-    def examine_item(self, item: Item) -> None:
-        """Displays detailed information about an item."""
-        UI.slow_print(f"You examine {item.name} more closely...")
-        print("\n" + item.get_description())
-
-    def use_item(self, item: Item) -> None:
-        """Attempts to use an item (e.g., consumable, scroll)."""
-        if hasattr(item, 'use') and callable(item.use):
-            item.use(self)
-        else:
-            UI.slow_print(f"You cannot use {item.name} in that way.")
-
-    def drop_item(self, item_to_drop: Item) -> bool:
-        """Drops an item from inventory or unequipped from equipment."""
-        for slot_name, equipped_item in self.slots.items():
-            if equipped_item == item_to_drop:
-                UI.slow_print(f"You must unequip {item_to_drop.name} from your {slot_name} slot before dropping it.")
-                return False
-
-        if item_to_drop in self.stats.inventory:
-            if self.stats.remove_from_inventory(item_to_drop):
-                UI.slow_print(f"You dropped {item_to_drop.name} on the ground.")
-                return True
-            else:
-                UI.slow_print(f"Could not drop {item_to_drop.name} for an unknown reason.")
-                return False
-        else:
-            UI.slow_print(f"{item_to_drop.name} is not in your possession to drop.")
-            return False
-
-    def sort_inventory(self, key: str = "name") -> None:
-        """Sorts the player's main inventory (self.stats.inventory)."""
-        if hasattr(self.stats, 'inventory') and isinstance(self.stats.inventory, list):
-            try:
-                self.stats.inventory.sort(key=lambda item_obj: str(getattr(item_obj, key, "")).lower())
-                UI.slow_print(f"Inventory sorted by {key.capitalize()}.")
-            except AttributeError:
-                UI.print_warning(f"Cannot sort inventory by '{key}', items may lack this attribute.")
-        else:
-            UI.print_warning("Inventory could not be sorted (data missing or not a list).")
-
-    def inspect_equipped_items(self) -> None:
-        """Displays currently equipped items and their slots."""
-        UI.print_subheading("--- Currently Equipped ---")
-        found_any = False
-        for slot_name, item in self.slots.items():
-            if item:
-                UI.print_info(f"{slot_name.capitalize()}: {item.name} - {item.get_description().splitlines()[0]}")
-                found_any = True
-        if not found_any:
-            UI.slow_print("You have nothing equipped.")
-
-    def improve_skill(self, skill_name: str, amount: int = 1) -> None:
-        """Improves a player skill by a certain amount."""
-        if skill_name in self.skills:
-            self.skills[skill_name] = self.skills.get(skill_name, 0) + amount
-        else:
-            self.skills[skill_name] = amount
-
-    def is_alive(self) -> bool:
-        """Checks if the player is alive."""
-        return self.stats.is_alive()
-
-    def gain_experience(self, amount: int) -> None:
-        """Awards experience points to the player and checks for level up."""
-        self.stats.experience += amount
-        UI.print_info(f"You gained {amount} experience points!")
-        UI.print_info(f"Total XP: {self.stats.experience} / {self.stats.next_level_exp}")
-        while self.stats.experience >= self.stats.next_level_exp:
-            self.stats.level_up()
-            self.stats.experience -= self.stats.next_level_exp
-            self.stats.next_level_exp = self.stats._calculate_next_level_exp(self.stats.level)
-
-    def update_defeated_enemies_tracker(self, enemy_id: str, count: int = 1) -> None:
-        """Updates the count of defeated enemies for quest tracking."""
-        self.defeated_enemies_tracker[enemy_id] = self.defeated_enemies_tracker.get(enemy_id, 0) + count
-
-    def add_talked_to_npc(self, npc_id: str) -> None:
-        """Adds an NPC's ID to the set of talked-to NPCs for quest tracking."""
-        self.talked_to_npcs.add(npc_id)
-
-    def update_current_location_for_quest(self, location_obj: Dict[str, Any]) -> None:
-        """Updates the player's current location for quest tracking."""
-        self.current_location_obj = location_obj
-        if location_obj not in self.known_locations_objects:
-             self.known_locations_objects.append(location_obj)
-
-    def perform_skill_check(self, skill_name: str, difficulty_class: int) -> bool:
-        """
-        Performs a skill check against a difficulty class.
-        Returns True for success, False for failure.
-        """
-        player_skill_value = self.skills.get(skill_name, 5) # Default to 5 if skill not present
-        
-        # Determine relevant attribute for the skill if needed (example mapping)
-        if skill_name in ["one_handed", "two_handed", "block", "heavy_armor", "smithing"]:
-            attribute_bonus = self.stats.strength // 10
-        elif skill_name in ["destruction", "restoration", "alteration", "conjuration", "illusion", "mysticism", "alchemy"]:
-            attribute_bonus = self.stats.intelligence // 10
-        elif skill_name in ["archery", "light_armor", "sneak", "pickpocket", "security"]:
-            attribute_bonus = self.stats.agility // 10
-        elif skill_name in ["speech", "persuasion", "intimidation"]:
-            attribute_bonus = self.stats.personality // 10
-        else:
-            attribute_bonus = 0 # No specific attribute bonus for other skills
-
-        roll = random.randint(1, 20) # A D20 roll
-        total_skill_value = player_skill_value + attribute_bonus + (self.stats.luck // 5) # Luck provides a minor bonus
-
-        UI.slow_print(f"Performing a {skill_name.replace('_', ' ').capitalize()} check (DC: {difficulty_class})...")
-        UI.slow_print(f"Your skill: {player_skill_value} + Attribute Bonus: {attribute_bonus} + Luck Bonus: {self.stats.luck // 5} (Total: {total_skill_value}) + Roll: {roll}")
-
-        if roll + total_skill_value >= difficulty_class:
-            UI.print_success(f"SUCCESS! You pass the {skill_name.replace('_', ' ').capitalize()} check.")
-            self.improve_skill(skill_name, random.randint(1,2)) # Minor skill improvement on success
-            return True
-        else:
-            UI.print_failure(f"FAILURE! You fail the {skill_name.replace('_', ' ').capitalize()} check.")
-            return False
+# Player class has been moved to player.py

@@ -546,7 +546,7 @@ def explore_location(player, current_location, random_encounters, npc_registry, 
                     unique_descriptions.add(d["description"])
                     unique_results_data.append(d)
 
-            num_results_to_show = min(random.randint(1, 2), len(unique_results_data))
+            num_results_to_show = min(1, len(unique_results_data)) # Ensure only one event, or zero if no unique results
             selected_exploration_outcomes = random.sample(unique_results_data, num_results_to_show)
 
         if selected_exploration_outcomes:
@@ -651,11 +651,11 @@ def explore_location(player, current_location, random_encounters, npc_registry, 
 
 
         else:
-            if not possible_events_for_location:
+            if not available_results_data:
                 ui.slow_print("The area seems quiet, with nothing specific of note occurring right now.")
             else:
                  ui.slow_print("You sense a potential occurrence, but it passes without incident this time.")
-        return event
+        return selected_exploration_outcomes
     except Exception as e:
         print(f"Error in trigger_random_event: {e}")
         traceback.print_exc()
