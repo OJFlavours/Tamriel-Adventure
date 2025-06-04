@@ -30,7 +30,10 @@ def get_target_logic(attacker, target_list: List, ui_instance: UI, player_instan
                     target = target_list[choice - 1]
                     body_part = get_body_part_choice(target, ui_instance)
                     if body_part:
-                        return (target, body_part)
+                        target_score = 0  # Initialize target_score
+                        if has_status_effect(target, "poisoned"):
+                            target_score += 50
+                        return (target, body_part, target_score)
                     else:
                         return None
                 ui_instance.slow_print("Invalid target number.")
@@ -63,5 +66,3 @@ def has_status_effect(target, status_effect: str) -> bool:
     if not hasattr(target, 'status_effects'):
         return False
     return status_effect in target.status_effects
-if has_status_effect(target, "poisoned"):
-                    target_score += 50

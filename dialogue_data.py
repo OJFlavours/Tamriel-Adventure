@@ -1,5 +1,6 @@
 from ui import UI
 from flavor_data import LOCATION_FLAVORS
+import flavor
 """
 Stores dialogue trees for NPCs.
 

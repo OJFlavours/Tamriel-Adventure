@@ -188,6 +188,7 @@ class NPC:
 
     def _finalize_stats(self):
         self.stats.max_health = int(75 + (self.stats.endurance * 2) + (self.level * 5))
+        race_mods = RACES.get(self.race, {})
         if not race_mods.get("magicka_mod"): # Only set default if no race mod applied
             self.stats.max_magicka = int(40 + (self.stats.intelligence * 1.5) + (self.level * 3))
         self.stats.max_fatigue = int(80 + (self.stats.endurance * 1.5) + (self.level * 4))
@@ -213,7 +214,7 @@ class NPC:
     def _generate_greeting_and_purpose(self):
         # Greeting and Purpose are generated at initialization for the NPC's persona
         self.greeting = generate_greeting(self.role, self.race, self.disposition, self.tags)
-        self.purpose = generate_purpose(self.role, self.race, self.disposition)
+        self.purpose = generate_purpose(self.role, self.race, self.disposition, self.tags)
 
     def _determine_combat_archetype(self) -> str:
         """Determines the NPC's combat archetype based on their role."""

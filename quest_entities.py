@@ -262,38 +262,6 @@ class Quest:
         data = json.loads(json_str)
         return cls(**data)
 
-def save_quest_log(quest_log: QuestLog, file_path: str) -> None:
-    """
-    Saves the quest log to a JSON file.
-    """
-    try:
-        with open(file_path, 'w') as f:
-            json.dump({
-                "active_quests": [json.loads(quest.to_json()) for quest in quest_log.active_quests],
-                "completed_quests": [json.loads(quest.to_json()) for quest in quest_log.completed_quests],
-                "failed_quests": [json.loads(quest.to_json()) for quest in quest_log.failed_quests]
-            }, f, indent=4)
-    except Exception as e:
-        UI.print_warning(f"Error saving quest log: {e}")
-
-
-def load_quest_log(file_path: str) -> QuestLog:
-    """
-    Loads the quest log from a JSON file.
-    """
-    quest_log = QuestLog()
-    try:
-        with open(file_path, 'r') as f:
-            data = json.load(f)
-            quest_log.active_quests = [Quest.from_json(quest_json) for quest_json in data.get("active_quests", [])]
-            quest_log.completed_quests = [Quest.from_json(quest_json) for quest_json in data.get("completed_quests", [])]
-            quest_log.failed_quests = [Quest.from_json(quest_json) for quest_json in data.get("failed_quests", [])]
-    except FileNotFoundError:
-        UI.print_warning("Quest log file not found. Creating a new quest log.")
-    except Exception as e:
-        UI.print_warning(f"Error loading quest log: {e}")
-    return quest_log
-
 class QuestLog:
     def __init__(self):
         self.active_quests: List[Quest] = []
@@ -347,3 +315,34 @@ class QuestLog:
 
     def get_quests_for_turn_in(self, npc_id: str) -> List[Quest]:
         return [q for q in self.active_quests if q.status == "completed" and q.turn_in_npc_id == npc_id]
+
+def save_quest_log(quest_log: QuestLog, file_path: str) -> None:
+    """
+    Saves the quest log to a JSON file.
+    """
+    try:
+        with open(file_path, 'w') as f:
+            json.dump({
+                "active_quests": [json.loads(quest.to_json()) for quest in quest_log.active_quests],
+                "completed_quests": [json.loads(quest.to_json()) for quest in quest_log.completed_quests],
+                "failed_quests": [json.loads(quest.to_json()) for quest in quest_log.failed_quests]
+            }, f, indent=4)
+    except Exception as e:
+        UI.print_warning(f"Error saving quest log: {e}")
+
+def load_quest_log(file_path: str) -> QuestLog:
+    """
+    Loads the quest log from a JSON file.
+    """
+    quest_log = QuestLog()
+    try:
+        with open(file_path, 'r') as f:
+            data = json.load(f)
+            quest_log.active_quests = [Quest.from_json(quest_json) for quest_json in data.get("active_quests", [])]
+            quest_log.completed_quests = [Quest.from_json(quest_json) for quest_json in data.get("completed_quests", [])]
+            quest_log.failed_quests = [Quest.from_json(quest_json) for quest_json in data.get("failed_quests", [])]
+    except FileNotFoundError:
+        UI.print_warning("Quest log file not found. Creating a new quest log.")
+    except Exception as e:
+        UI.print_warning(f"Error loading quest log: {e}")
+    return quest_log

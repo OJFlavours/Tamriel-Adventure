@@ -1,3 +1,4 @@
+from npc import NPC
 # player.py
 import random
 from typing import Dict, List, Any, Set

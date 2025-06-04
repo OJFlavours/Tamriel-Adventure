@@ -2,7 +2,7 @@
 import random
 from ui import UI
 
-from combat import Combat
+from combat_logic import Combat
 from npc import NPC # NPC class
 from npc_roles import HOSTILE_ROLES # HOSTILE_ROLES is now in npc_roles.py
 from items import generate_item_from_key
@@ -125,7 +125,7 @@ def combat_demo(player, current_location_obj, find_hierarchy_func, npc_registry_
         for _ in range(num_additional_enemies):
             additional_enemy_level = max(1, player.level + random.randint(-2, 0))
             additional_enemy_role = random.choice(["bandit_thug", "bandit_scout", "wolf_creature"])
-            additional_enemy_race = determine_npc_culture(demographics_source.get("demographics", {"Nord": 70, "Orc": 15, "Khajiit":15 }))
+            additional_enemy_race = determine_npc_culture(getattr(demographics_source_obj, 'demographics', {"Nord": 70, "Orc": 15, "Khajiit":15 }))
             if "wolf" in additional_enemy_role: additional_enemy_race = "wolf_creature"
 
             additional_enemy = NPC(

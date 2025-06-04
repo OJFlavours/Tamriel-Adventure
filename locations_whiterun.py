@@ -22,8 +22,7 @@ WHITERUN_LOCATIONS = [
                 {"name": "Rorikstead", "connection_type": "Path"},
                 {"name": "Helgen", "connection_type": "Path"}
             ]
-        }
-    },
+        },
         "travel_time": 2, # Whiterun Hold takes longer to traverse
         "sub_locations": [
             WHITERUN_CITY_LOCATION_DATA,
@@ -382,5 +381,3 @@ WHITERUN_LOCATIONS = [
         ]
     }
 ]
-"""
-line_count = corrected_content.count('\n') + 1
