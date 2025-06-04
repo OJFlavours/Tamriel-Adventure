@@ -2,12 +2,13 @@ import time
 import sys
 import textwrap
 from colorama import Fore, Back, Style, init
+from typing import List, Dict, Any, Optional
 
 # Initialize colorama for cross-platform ANSI escape codes
 init(autoreset=True)
 
 # --- Configuration ---
-LINE_WIDTH = 70
+LINE_WIDTH = 105
 SLOW_PRINT_SPEED = 0.0001# Adjust for faster/slower text crawl
 HEADING_COLOR = Fore.CYAN + Style.BRIGHT
 SUBHEADING_COLOR = Fore.GREEN + Style.BRIGHT
@@ -19,6 +20,7 @@ MENU_COLOR = Fore.MAGENTA
 HIGHLIGHT_COLOR = Fore.YELLOW
 COMBAT_TEXT_COLOR = Fore.RED
 SYSTEM_MESSAGE_COLOR = Fore.BLUE + Style.BRIGHT # Used for debug messages
+EVENT_MESSAGE_COLOR = Fore.MAGENTA + Style.BRIGHT # Color for event messages
 
 class UI:
     """
@@ -38,16 +40,31 @@ class UI:
         print(char * width)
 
     @staticmethod
-    def slow_print(text, speed=SLOW_PRINT_SPEED, end='\n'):
-        """Prints text character by character with a delay for dramatic effect."""
-        for char in text:
-            sys.stdout.write(char)
-            sys.stdout.flush()
-            time.sleep(speed)
-        # Ensure a newline is printed at the end, but avoid double newlines
-        if not text.endswith('\n'):
-            sys.stdout.write(end)
-            sys.stdout.flush()
+    def slow_print(text, speed=SLOW_PRINT_SPEED, end='\n', width=LINE_WIDTH):
+        """Prints text character by character with a delay, wrapping at the specified width."""
+        wrapped_lines = textwrap.wrap(text, width=width)
+        for i, line in enumerate(wrapped_lines):
+            for char_index, char in enumerate(line):
+                sys.stdout.write(char)
+                sys.stdout.flush()
+                time.sleep(speed)
+            # Add a newline after each line, except possibly the last one if 'end' is different
+            if i < len(wrapped_lines) - 1:
+                sys.stdout.write('\n')
+                sys.stdout.flush()
+            elif end == '\n': # Ensure the specified 'end' is honored for the very last line
+                 sys.stdout.write('\n')
+                 sys.stdout.flush()
+
+        # If the original text didn't end with a newline and the specified 'end' is not a newline,
+        # and the wrapped output also didn't end with a newline (which it should now),
+        # this part might need adjustment. But the loop above should handle newlines correctly.
+        # The original logic for 'end' might be redundant if textwrap always ensures lines.
+        # However, if 'end' is something other than '\n', we should respect it for the final output.
+        if end != '\n' and wrapped_lines and not wrapped_lines[-1].endswith('\n'):
+             sys.stdout.write(end)
+             sys.stdout.flush()
+
 
     @staticmethod
     def wrap_text(text, width=LINE_WIDTH):
@@ -70,8 +87,12 @@ class UI:
 
     @staticmethod
     def print_prompt(text):
-        """Prints a formatted prompt for user input."""
-        return input(f"{PROMPT_COLOR}{UI.wrap_text(text)}: {Style.RESET_ALL}")
+        """Prints a formatted prompt for user input, ensuring wrapping."""
+        # Print the wrapped prompt text first, without a trailing newline from print()
+        wrapped_prompt_text = UI.wrap_text(text)
+        print(f"{PROMPT_COLOR}{wrapped_prompt_text}{Style.RESET_ALL}", end="")
+        # Then, get input with a minimal actual prompt for the input() function itself
+        return input(f"{PROMPT_COLOR}: {Style.RESET_ALL}")
 
     @staticmethod
     def print_info(text):
@@ -118,6 +139,11 @@ class UI:
         print(f"{SYSTEM_MESSAGE_COLOR}{UI.wrap_text(text)}{Style.RESET_ALL}")
 
     @staticmethod
+    def print_event_message(text):
+        """Prints messages related to game events, often with a distinct style."""
+        print(f"{EVENT_MESSAGE_COLOR}{UI.wrap_text(text)}{Style.RESET_ALL}")
+
+    @staticmethod
     def capitalize_dialogue(text: str) -> str:
         """
         Capitalizes the first letter of sentences and fixes standalone 'i' to 'I'.
@@ -159,7 +185,8 @@ class UI:
         # Ensure 'character_class' is an attribute of player or player.stats
         # For now, using player.subclass as a fallback if character_class is not set
         class_display = getattr(player, 'character_class', player.subclass if hasattr(player, 'subclass') else 'Adventurer')
-        UI.print_info(f"Name: {player.full_name}, Level: {player.level} {player.race.capitalize()} {class_display.capitalize()}")
+        race_name = player.race.replace("_", " ").title()
+        UI.print_info(f"Name: {player.full_name}, Level: {player.level} {race_name} {class_display.capitalize()}")
         UI.print_info(f"Health: {player.stats.current_health}/{player.stats.max_health}")
         UI.print_info(f"Magicka: {player.stats.current_magicka}/{player.stats.max_magicka}")
         UI.print_info(f"Fatigue: {player.stats.current_fatigue}/{player.stats.max_fatigue}")
@@ -296,8 +323,10 @@ if __name__ == "__main__":
     UI.slow_print("A land of mystery and danger awaits you...")
     time.sleep(0.5)
 
+    print()
     UI.print_subheading("A New Day Dawns")
-    UI.print_info("The crisp morning air fills your lungs as you awaken. The sounds of a nearby town drift towards you.")
+    print()
+    UI.print_info("The crisp morning air fills your lungs as you awaken.\n\nThe sounds of a nearby town drift towards you.")
 
     # Example of capitalizing dialogue using the new method
     test_dialogue_1 = "i think i've heard that rumor before. it's quite interesting, isn't it?"

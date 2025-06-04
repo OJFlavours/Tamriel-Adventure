@@ -3,10 +3,11 @@ import random
 from typing import Dict, List, Any, Set
 
 # Assuming QuestLog is in quests.py and Item is in items.py
-from quests import QuestLog, Quest # Import Quest for type hinting
+from quest_entities import QuestLog, Quest # Import Quest for type hinting
 from items import Item, Torch # Import Item and Torch
 from ui import UI # For UI messages
 from stats import Stats # Import the Stats class
+from locations import Location # Import Location for type hinting
 
 from spells import Spell, get_spell # Import Spell class and get_spell function
 
@@ -30,8 +31,8 @@ class Player:
         # Trackers for quest objectives and world state
         self.defeated_enemies_tracker: Dict[str, int] = {}
         self.talked_to_npcs: Set[str] = set()
-        self.current_location_obj: Dict[str, Any] | None = None # Current location as a dictionary
-        self.known_locations_objects: List[Dict[str, Any]] = [] # List of known location dicts
+        self.current_location_obj: Location | None = None # Current location is a Location object
+        self.known_locations_objects: List[Location] = [] # List of known Location objects
         self.faction_reputation: Dict[str, int] = {
             "imperial_legion": 0, "stormcloaks": 0, "thieves_guild": 0,
             "college_of_winterhold": 0, "companions": 0, "dark_brotherhood": 0,
@@ -62,12 +63,12 @@ class Player:
         self.visibility = 10  # Initial visibility, modified by torches, spells, etc.
 
     @property
-    def location(self) -> Dict[str, Any] | None:
+    def location(self) -> Location | None: # Changed type hint
         """Property to access the player's current location object."""
         return self.current_location_obj
 
     @location.setter
-    def location(self, value: Dict[str, Any] | None) -> None:
+    def location(self, value: Location | None) -> None: # Changed type hint
         """Property to set the player's current location object."""
         self.current_location_obj = value
 
@@ -321,11 +322,13 @@ class Player:
     def add_talked_to_npc(self, npc_id: str) -> None:
         self.talked_to_npcs.add(npc_id)
 
-    def update_current_location_for_quest(self, location_dict: Dict[str, Any]) -> None:
-        self.current_location_obj = location_dict
-        is_known = any(known_loc["id"] == location_dict["id"] for known_loc in self.known_locations_objects if "id" in known_loc and "id" in location_dict)
+    def update_current_location_for_quest(self, new_location_obj: Location) -> None: # Renamed and changed type hint
+        self.current_location_obj = new_location_obj
+        # Assuming known_locations_objects stores Location objects and new_location_obj is a Location object
+        # Location objects should have an 'id' attribute.
+        is_known = any(known_loc.id == new_location_obj.id for known_loc in self.known_locations_objects)
         if not is_known:
-            self.known_locations_objects.append(location_dict)
+            self.known_locations_objects.append(new_location_obj)
 
     def perform_skill_check(self, skill_name: str, difficulty_class: int) -> bool:
         player_skill = self.skills.get(skill_name, 5)

@@ -1,3 +1,5 @@
+from ui import UI
+from flavor_data import LOCATION_FLAVORS
 """
 Stores dialogue trees for NPCs.
 
@@ -204,6 +206,8 @@ def get_npc_line(node):
     return node["npc_line"]
 
 # Helper function to replace placeholders in text
+import random
+
 def format_dialogue_text(text, player, npc, current_location, game_data=None):
     # game_data could be a dictionary holding dynamic elements like quest item names, etc.
     if game_data is None:
@@ -235,25 +239,36 @@ def format_dialogue_text(text, player, npc, current_location, game_data=None):
         text = text.replace("{Greeting}", npc._generate_greeting())
     if "{Purpose}" in text and hasattr(npc, '_generate_purpose'):
         text = text.replace("{Purpose}", npc._generate_purpose())
+
     if "{LocationFlavor}" in text and current_location and hasattr(flavor, 'get_flavor'):
-        # Simplified flavor fetching for location within dialogue
-        class DummyLoc:
-            def __init__(self, tags): self.tags = {"location": {"environment": tags if isinstance(tags, list) else [tags]}} # Basic
-        
-        loc_flavor_tags = current_location.get("tags", [])
-        # Prioritize more specific tags for flavor if available
-        priority_tags = [t for t in ["city", "town", "village", "forest", "mountain", "cave", "ruin", "tavern"] if t in loc_flavor_tags]
-        
-        flavor_text_for_loc = ""
-        if priority_tags:
-            flavors = flavor.get_flavor(DummyLoc(priority_tags[0])) # Get flavor for the most specific tag
-            if flavors: flavor_text_for_loc = random.choice(flavors)
-        
-        if not flavor_text_for_loc and loc_flavor_tags: # Fallback to any tag
-             flavors = flavor.get_flavor(DummyLoc(loc_flavor_tags[0]))
-             if flavors: flavor_text_for_loc = random.choice(flavors)
+        # Check if the NPC is an innkeeper and if we can get specific inn flavor
+        inn_flavor_text = ""
+        if hasattr(npc, 'role') and npc.role == "innkeeper":
+            inn_name = current_location.get("name", "").lower().replace(" ", "_")
+            inn_flavor_key = "location_specific_" + inn_name
+            if inn_flavor_key in LOCATION_FLAVORS["unique_establishments"]:
+                inn_flavor_text = random.choice(LOCATION_FLAVORS["unique_establishments"][inn_flavor_key])
 
-        text = text.replace("{LocationFlavor}", flavor_text_for_loc if flavor_text_for_loc else "It's a place with its own stories, that's for sure.")
+        if inn_flavor_text:
+            text = text.replace("{LocationFlavor}", inn_flavor_text)
+        else:
+            # Simplified flavor fetching for location within dialogue
+            class DummyLoc:
+                def __init__(self, tags): self.tags = {"location": {"environment": tags if isinstance(tags, list) else [tags]}} # Basic
 
+            loc_flavor_tags = current_location.get("tags", [])
+            # Prioritize more specific tags for flavor if available
+            priority_tags = [t for t in ["city", "town", "village", "forest", "mountain", "cave", "ruin", "tavern"] if t in loc_flavor_tags]
+
+            flavor_text_for_loc = ""
+            if priority_tags:
+                flavors = flavor.get_flavor(DummyLoc(priority_tags[0])) # Get flavor for the most specific tag
+                if flavors: flavor_text_for_loc = random.choice(flavors)
+
+            if not flavor_text_for_loc and loc_flavor_tags: # Fallback to any tag
+                 flavors = flavor.get_flavor(DummyLoc(loc_flavor_tags[0]))
+                 if flavors: flavor_text_for_loc = random.choice(flavors)
+
+            text = text.replace("{LocationFlavor}", flavor_text_for_loc if flavor_text_for_loc else "It's a place with its own stories, that's for sure.")
 
     return UI.capitalize_dialogue(text)
