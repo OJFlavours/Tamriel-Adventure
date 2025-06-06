@@ -1,3 +1,4 @@
+# damage_utils.py
 import logging
 import random
 
@@ -27,6 +28,7 @@ def has_elemental_weapon(character, element_type: str) -> bool:
         return False
     return any(item.category == "weapon" and
                 hasattr(item, 'enchantment') and
+                item.enchantment and
                 element_type in item.enchantment.lower()
                 for item in character.equipment)
 
@@ -35,6 +37,8 @@ def calculate_damage_logic(attacker, defender, ui_instance, combo_counter: int, 
     Calculates the damage dealt by an attacker to a defender.
     This is a more complete implementation.
     """
+    from ui import UI # Local import to avoid circular dependency issues at the module level
+
     logging.debug(f"calculate_damage_logic called by {attacker.name if hasattr(attacker, 'name') else 'Unknown Attacker'} against {defender.name if hasattr(defender, 'name') else 'Unknown Defender'}")
 
     if is_ranged:
@@ -72,8 +76,8 @@ def calculate_damage_logic(attacker, defender, ui_instance, combo_counter: int, 
     if hasattr(defender, 'is_blocking') and defender.is_blocking and not is_ranged:
         block_skill = defender.skills.get("block", 0)
         shield_bonus = 0
-        equipped_shield = next((item for item in defender.equipment if item.equipment_tag == "off_hand" and item.category == "armor"), None)
-        if equipped_shield:
+        equipped_shield = next((item for item in defender.equipment if hasattr(item, 'equipment_tag') and item.equipment_tag == "off_hand" and item.category == "armor"), None)
+        if equipped_shield and hasattr(equipped_shield, 'armor_rating'):
             shield_bonus = equipped_shield.armor_rating
 
         block_effectiveness_percent = min( (block_skill * 0.6 + shield_bonus * 0.4) / 100, 0.85)
@@ -111,5 +115,3 @@ def calculate_damage_logic(attacker, defender, ui_instance, combo_counter: int, 
 
     logging.debug(f"Final damage calculated: {int(final_damage)}")
     return int(final_damage)
-
-logging.debug("damage_utils.py is being imported")

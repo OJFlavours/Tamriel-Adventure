@@ -1,16 +1,11 @@
-
 # combat_interactions.py
 import random
 from ui import UI
-from combat_core import Combat
-
-
-from npc import NPC # NPC class
-from npc_roles import HOSTILE_ROLES # HOSTILE_ROLES is now in npc_roles.py
+from combat import Combat  # CORRECTED IMPORT
+from npc_entities import NPC
+from npc_roles import HOSTILE_ROLES
 from items import generate_item_from_key
-# Assuming determine_npc_culture is in npc_generation or passed if needed
 from npc_generation import determine_npc_culture 
-# _find_hierarchy will need to be passed as an argument or imported if it's moved to a utility module.
 from npc_dialogue_logic import handle_npc_dialogue
 
 def list_npcs_at_location(location_obj, player, npc_registry_param):
@@ -24,7 +19,7 @@ def list_npcs_at_location(location_obj, player, npc_registry_param):
             UI.slow_print("No souls linger here, save the whispers of the wind.")
             return
 
-        UI.print_heading(f"Souls at {location_obj.name if hasattr(location_obj, 'name') else location_obj}")
+        UI.print_heading(f"Souls at {location_obj.name if hasattr(location_obj, 'name') else 'this location'}")
         active_npcs = [npc for npc in npcs_here if npc.stats.is_alive()]
 
         if not active_npcs:
@@ -38,7 +33,6 @@ def list_npcs_at_location(location_obj, player, npc_registry_param):
             role_display = 'Server' if npc.role == 'server' else npc.role.replace('_', ' ').title()
             UI.slow_print(f"[{i}] {npc.full_name} — {role_display} ({npc.race.capitalize()}) {attitude_display}")
         
-
         sel = UI.print_prompt("With whom do you wish to parley? (0 to pass)").strip()
         if sel.isdigit():
             choice_index = int(sel)
@@ -52,7 +46,7 @@ def list_npcs_at_location(location_obj, player, npc_registry_param):
 
                 if is_hostile and player.combat is None:
                     UI.slow_print(f"{selected_npc.name} snarls and lunges with clear hostile intent!")
-                    combat_instance = Combat(player, [selected_npc], location_obj)
+                    combat_instance = Combat(player, [selected_npc], location_obj.__dict__ if not isinstance(location_obj, dict) else location_obj)
                     player.combat = combat_instance
                     combat_instance.run()
                 elif player.combat is not None:
@@ -64,25 +58,22 @@ def list_npcs_at_location(location_obj, player, npc_registry_param):
     except Exception as e:
         UI.print_failure(f"Error in list_npcs_at_location: {e}")
 
-def combat_demo(player, current_location_obj, find_hierarchy_func, npc_registry_param): # Added find_hierarchy_func
+def combat_demo(player, current_location_obj, find_hierarchy_func, npc_registry_param):
     try:
         enemy_level = player.level + random.randint(-1, 1)
         enemy_level = max(1, enemy_level)
         
-        # find_hierarchy_func now expects a Location object or ID
-        parent_hold_obj, parent_city_obj, _ = find_hierarchy_func(current_location_obj) # Pass object
+        parent_hold_obj, parent_city_obj, _ = find_hierarchy_func(current_location_obj.id)
         
-        # Determine demographics source by checking attributes of Location objects
         demographics_source_obj = current_location_obj
         if parent_city_obj and not hasattr(demographics_source_obj, 'demographics'):
             demographics_source_obj = parent_city_obj
         if parent_hold_obj and not hasattr(demographics_source_obj, 'demographics'):
             demographics_source_obj = parent_hold_obj
         
-        loc_tags = getattr(current_location_obj, 'tags', []) # Use getattr for safety
+        loc_tags = getattr(current_location_obj, 'tags', [])
         enemy_role = "bandit_raider"
         
-        # Ensure loc_tags is a list of strings for 'in' operator
         if not isinstance(loc_tags, list): loc_tags = []
         
         if any(tag in loc_tags for tag in ["undead", "barrow", "graveyard"]):
@@ -110,40 +101,19 @@ def combat_demo(player, current_location_obj, find_hierarchy_func, npc_registry_
         )
         enemy.unique_id = f"{enemy_role}_{random.randint(1000,9999)}" 
         
-        if "bandit" in enemy_role or "draugr" in enemy_role or "skeleton" in enemy_role or "falmer" in enemy_role:
-            weapon_keys = ["iron_sword", "steel_axe_old", "iron_mace_rusty", "ancient_nord_sword_chipped", "falmer_sword_crude"]
-            armor_keys = ["hide_armor_scraps", "iron_armor_dented", "ancient_nord_armor_piece", "falmer_armor_basic"]
-            
-            if random.random() < 0.8:
-                enemy_weapon = generate_item_from_key(random.choice(weapon_keys), enemy.level)
-                if enemy_weapon: enemy.stats.inventory.append(enemy_weapon)
-            if random.random() < 0.6:
-                enemy_armor = generate_item_from_key(random.choice(armor_keys), enemy.level)
-                if enemy_armor: enemy.stats.inventory.append(enemy_armor)
-        
         enemies_for_combat = [enemy]
         num_additional_enemies = random.randint(0, 2)
 
         for _ in range(num_additional_enemies):
-            additional_enemy_level = max(1, player.level + random.randint(-2, 0))
-            additional_enemy_role = random.choice(["bandit_thug", "bandit_scout", "wolf_creature"])
-            additional_enemy_race = determine_npc_culture(getattr(demographics_source_obj, 'demographics', {"Nord": 70, "Orc": 15, "Khajiit":15 }))
-            if "wolf" in additional_enemy_role: additional_enemy_race = "wolf_creature"
-
-            additional_enemy = NPC(
-                name=None,
-                level=additional_enemy_level,
-                race=additional_enemy_race,
-                role=additional_enemy_role
-            )
-            additional_enemy.unique_id = f"{additional_enemy_role}_{random.randint(1000,9999)}"
+            additional_enemy = NPC(name=None, level=max(1, player.level + random.randint(-2, 0)), race=determine_npc_culture(getattr(demographics_source_obj, 'demographics', {"Nord": 70})), role=random.choice(["bandit_thug", "wolf_creature"]))
+            additional_enemy.unique_id = f"{additional_enemy.role}_{random.randint(1000,9999)}"
             enemies_for_combat.append(additional_enemy)
 
         enemy_names = ", ".join([e.name for e in enemies_for_combat])
         UI.slow_print(f"Suddenly, hostile figures emerge: {enemy_names}!")
 
         if player.combat is None:
-            combat_instance = Combat(player, enemies_for_combat, current_location_obj)
+            combat_instance = Combat(player, enemies_for_combat, current_location_obj.__dict__ if not isinstance(current_location_obj, dict) else current_location_obj)
             player.combat = combat_instance
             combat_instance.run()
             
@@ -154,32 +124,7 @@ def combat_demo(player, current_location_obj, find_hierarchy_func, npc_registry_
         else:
             UI.print_warning("Cannot initiate demo combat: Player already in combat.")
         
-        return current_location_obj # Return current location, as it might not change
+        return current_location_obj
     except Exception as e:
         UI.print_failure(f"Error in combat_demo: {e}")
         return current_location_obj
-
-# --- Complex Interactions ---
-# class Combo:
-    #     def __init__(self, name, moves, damage_multiplier, stamina_cost):
-        #         self.name = name
-        #         self.moves = moves  # List of move names (e.g., ["attack", "block", "attack"])
-        #         self.damage_multiplier = damage_multiplier
-        #         self.stamina_cost = stamina_cost
-
-    #     def execute(self, attacker, defender):
-        """Executes the combo, applying damage and stamina cost."""
-        #         total_damage = attacker.stats.attack * self.damage_multiplier
-        #         defender.stats.take_damage(total_damage)
-        #         attacker.stats.stamina -= self.stamina_cost
-        #         return f"{attacker.name} executes {self.name} for {total_damage} damage!"
-
-# --- Dynamic Interactions ---
-# def create_dynamic_interaction(name, condition, effect):
-    """Creates a dynamic interaction based on a condition and effect."""
-    #     def dynamic_interaction(attacker, defender):
-        #         if condition(attacker, defender):
-            #             return effect(attacker, defender)
-        #         return None
-    #     dynamic_interaction.__name__ = name  # Set the name of the function
-    #     return dynamic_interaction

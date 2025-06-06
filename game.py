@@ -26,51 +26,34 @@ import time
 import traceback
 from datetime import datetime, timezone, timedelta
 
+# --- Main Game Imports (Corrected) ---
 try:
-    from locations import LOCATIONS, Location, initialize_skyrim_map, RAW_LOCATION_DATA_MAP, HOLD_NAME_TO_MAIN_ID_MAP # Updated imports
-    from player import Player # Import Player from player.py
-    from stats import Stats, RACES, CLASSES # Import Stats, RACES, CLASSES from stats.py
-    from npc_entities import NPC # NPC class
-    from npc_roles import FRIENDLY_ROLES, HOSTILE_ROLES # Roles
-    from npc_names import NAME_POOLS # Name pools
-    npc_registry = {}
-    from combat_manager import Combat
+    from locations import Location, initialize_skyrim_map, RAW_LOCATION_DATA_MAP
+    from player import Player
+    from stats import Stats, RACES, CLASSES
+    from npc_entities import NPC
+    from combat import Combat  # CORRECT: Imports the main Combat class
     from ui import UI
     from items import generate_random_item, Item, generate_item_from_key, Torch
-    from events import trigger_random_event, explore_location # Now triggers events with more detail
-    from quests import (
-        QuestLog,
-        generate_location_appropriate_quest,
-        process_quest_rewards,
-        list_player_quests_for_display,
-        Quest # Import Quest class
-    )
+    from events import trigger_random_event
+    from quests import QuestLog, generate_location_appropriate_quest, Quest, process_quest_rewards
     from character_creation import initialize_player
-    from npc_generation import ( # Added
-        determine_npc_count, determine_npc_culture, determine_npc_role,
-        generate_npcs_for_location
-    )
-    from exploration import ( # Added
-        get_hold_by_id, get_known_holds, get_known_primary_locations_in_hold,
-        get_known_sub_locations, determine_city_type, determine_venue_type,
-        process_travel, discover_connected_locations, explore_and_travel_menu,
-        display_world_map # Added for the new map display function
-    )
-    from inventory_manager import ( # Added
-        display_inventory_with_equipped, handle_inventory_menu,
-        sort_inventory_menu, handle_item_use
-    )
-    from combat_interactions import combat_demo, list_npcs_at_location # list_npcs_at_location is in combat_interactions
+    from npc_generation import generate_npcs_for_location
+    from exploration import display_world_map, explore_and_travel_menu
+    from inventory_manager import handle_inventory_menu, handle_item_use
+    from combat_interactions import combat_demo, list_npcs_at_location  # CORRECT: Imports from combat_interactions
+    from npc_dialogue_logic import handle_npc_dialogue
+    from game_events import initialize_game_events, check_and_trigger_events
     import tags
     import flavor
-    from rumors import generate_rumor # for generating rumors in NPC dialogue
-    from game_events import initialize_game_events, check_and_trigger_events # Added for new event system
+    from rumors import generate_rumor
+
 except ImportError as e:
     print(f"Error importing modules: {e}")
     traceback.print_exc()
     input("Press Enter to exit...")
     exit(1)
-print("--- SCRIPT EXECUTION STARTED ---")
+
 
 # Globals
 npc_registry = {}
@@ -523,7 +506,7 @@ try:
     from stats import Stats, RACES, CLASSES
     from npc_entities import NPC
     from npc_roles import HOSTILE_ROLES
-    from combat_manager import Combat
+    from combat import Combat
     from ui import UI
     from items import generate_random_item, Item, generate_item_from_key
     from events import trigger_random_event, explore_location
