@@ -123,9 +123,6 @@ def generate_purpose(role, race, disposition, tags) -> str:
 
     base_purpose = random.choice(base_purposes)
 
-    if race_lower in processed_racial_modifiers and random.random() < 0.3:
-        racial_addition = random.choice(processed_racial_modifiers[race_lower]).strip()
-        base_purpose = base_purpose.rstrip('.') + f", {racial_addition}"
 
     if disposition >= 80:
         if random.random() < 0.4:

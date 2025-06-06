@@ -340,19 +340,7 @@ def handle_npc_dialogue(npc: Any, player: Any, current_location: Any) -> None:
 
             elif chosen_option_text == "Ask about your work/purpose":
                 current_dialogue = npc.purpose
-                spoken_purpose = current_dialogue.strip()
-                first_word = spoken_purpose.split(' ')[0].lower() if spoken_purpose else ""
-                if not first_word in ("i", "my", "i'm", "i've", "to"):
-                    # Check if the second word starts with a capital letter
-                    words = spoken_purpose.split()
-                    if len(words) > 1 and words[1][0].isupper():
-                        pass  # Do not add "I "
-                    else:
-                        spoken_purpose = "I " + spoken_purpose
-                if spoken_purpose.startswith("I ") and len(spoken_purpose) > 2 and spoken_purpose[2].islower():
-                    spoken_purpose = "I " + spoken_purpose[2].upper() + spoken_purpose[3:]
-                elif spoken_purpose and spoken_purpose[0].islower():
-                    spoken_purpose = spoken_purpose[0].upper() + spoken_purpose[1:]
+                spoken_purpose = UI.capitalize_dialogue(current_dialogue.strip()) # Use the UI function to capitalize correctly
 
                 if current_dialogue == previous_dialogue_purpose:
                     UI.slow_print(UI.capitalize_dialogue(f'"As I said, {spoken_purpose}"'))

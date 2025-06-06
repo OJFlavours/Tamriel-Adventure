@@ -30,12 +30,11 @@ try:
     from player import Player # Import Player from player.py
     from stats import Stats, RACES, CLASSES # Import Stats, RACES, CLASSES from stats.py
     from npc import NPC # NPC class
-    from npc import NPC # NPC class
-    from npc_roles import FRIENDLY_ROLES, HOSTILE_ROLES, define_fixed_npcs # Roles
+    from npc_roles import FRIENDLY_ROLES, HOSTILE_ROLES # Roles
     from npc_names import NAME_POOLS # Name pools
     npc_registry = {}
-    define_fixed_npcs(npc_registry) # Define fixed NPCs after NPC class is loaded
-    from npc_entities import define_specific_npcs, NPC
+    # define_fixed_npcs(npc_registry) # This function call is removed
+    from npc_entities import define_specific_npcs
     specific_npcs = define_specific_npcs()
     from combat_core import Combat
     from ui import UI
@@ -233,8 +232,12 @@ def handle_player_choice(choice, player, current_loc_obj: Location, menu_options
 
     if action == "explore known world":
         UI.print_heading(f"Travel from {current_loc_obj.name}")
-        if discovered_for_startup:
-            UI.slow_print(f"You know of: {', '.join(reversed(discovered_for_startup))}")
+        # ** FIX STARTS HERE **
+        # The 'discovered_for_startup' variable does not exist in this function's scope.
+        # This check should be removed.
+        # if discovered_for_startup:
+        #     UI.slow_print(f"You know of: {', '.join(reversed(discovered_for_startup))}")
+        # ** FIX ENDS HERE **
         if current_loc_obj.exits:
             UI.slow_print("Available destinations:")
             exit_options = list(current_loc_obj.exits.items())
@@ -464,7 +467,11 @@ def start_game():
                     UI.slow_print("Your heavy load weighs you down.", speed=0.005)
                     
                     UI.print_line('=')
-                    UI.slow_print(starting_loc_obj.description)
+                    # ** FIX STARTS HERE **
+                    # The 'starting_loc_obj' variable does not exist in this scope.
+                    # It should be 'current_location_global_obj'.
+                    UI.slow_print(current_location_global_obj.description)
+                    # ** FIX ENDS HERE **
                     UI.print_line('=')
                     UI.print_info(f"Location: {current_location_global_obj.name} | {get_current_game_time_string(game_time)}\nHP: {player.stats.current_health}/{player.stats.max_health} | MP: {player.stats.current_magicka}/{player.stats.max_magicka} | FP: {player.stats.current_fatigue}/{player.stats.max_fatigue}")
                     

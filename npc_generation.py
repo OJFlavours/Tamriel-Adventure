@@ -5,6 +5,7 @@ from npc import NPC # NPC class itself
 from npc_roles import FRIENDLY_ROLES, HOSTILE_ROLES # Roles are now in npc_roles.py
 from ui import UI # Added for print_failure
 from locations import RAW_LOCATION_DATA_MAP # Import for accessing raw location data
+from fixed_npc_data import FIXED_NPC_DATA
 
 def determine_npc_count(tags_list):
     """Determines the number of NPCs to generate based on location tags."""
@@ -197,50 +198,35 @@ def generate_standard_npcs(location, tags_list, npc_count, role_pool, demographi
 
 def generate_npcs_for_location(location_obj, npc_registry, find_hierarchy_func):
     try:
-        # Access raw data for properties not directly on the Location object
         raw_location_data = RAW_LOCATION_DATA_MAP.get(location_obj.id, {})
 
         if raw_location_data.get("is_encounter"):
             return
 
-        if location_obj.id in npc_registry and npc_registry[location_obj.id]: # Use .id
+        if location_obj.id in npc_registry and npc_registry[location_obj.id]:
             return
 
-        npc_registry[location_obj.id] = [] # Use .id
+        npc_registry[location_obj.id] = []
         filled_roles = set()
 
-        # 1. Spawn fixed NPCs if any are defined for the location
-        if "fixed_npcs" in raw_location_data and isinstance(raw_location_data["fixed_npcs"], list):
-            for npc_data in raw_location_data["fixed_npcs"]:
-                if isinstance(npc_data, dict) and "name" in npc_data and "role" in npc_data and "race" in npc_data:
-                    npc_level = npc_data.get("level", random.randint(3, 10)) # Default level if not specified
-                    
-                    # Format the role
-                    role = npc_data["role"]
-                    if role == "server":
-                        role = "Server"
-                    elif role == "tavern staff server":
-                        role = "Server"
-                    else:
-                        role = role.replace('_', ' ').title()
-                    
-                    fixed_npc = NPC(
-                        name=npc_data["name"],
-                        race=npc_data["race"],
-                        role=role,
-                        level=npc_level
-                    )
-                    # Ensure unique_id is set if name is specific (NPC class handles this if name is not None)
-                    npc_registry[location_obj.id].append(fixed_npc)
-                    filled_roles.add(npc_data["role"].lower())
-                    # UI.print_system_message(f"DEBUG: Spawned fixed NPC: {fixed_npc.name} ({fixed_npc.role}) in {location_obj.name}")
-                else:
-                    UI.print_warning(f"Warning: Invalid fixed_npc data in {location_obj.name}: {npc_data}")
-        
+        # --- NEW SECTION: Spawn fixed NPCs first ---
+        if location_obj.id in FIXED_NPC_DATA:
+            for npc_data in FIXED_NPC_DATA[location_obj.id]:
+                # Create the NPC instance from the fixed data
+                fixed_npc = NPC(
+                    name=npc_data["name"],
+                    race=npc_data["race"],
+                    role=npc_data["role"],
+                    level=npc_data.get("level", 5) # Default level if not specified
+                )
+                npc_registry[location_obj.id].append(fixed_npc)
+                filled_roles.add(npc_data["role"].lower()) # Mark role as filled to avoid duplicates
+        # --- END OF NEW SECTION ---
+
         # _find_hierarchy returns (hold_obj, primary_obj, specific_obj)
         # We map parent_hold to hold_obj and parent_city to primary_obj
-        parent_hold, parent_city, _ = find_hierarchy_func(location_obj.id) # Use .id, unpack 3 values
-        combined_tags_for_npc_gen = list(raw_location_data.get("tags", [])) # Use raw_location_data
+        parent_hold, parent_city, _ = find_hierarchy_func(location_obj.id)
+        combined_tags_for_npc_gen = list(raw_location_data.get("tags", []))
 
         inheritable_npc_context_tags = {
             "nordic", "imperial", "stormcloak", "thieves", "corrupt", "college", "companions", "darkbrotherhood",
