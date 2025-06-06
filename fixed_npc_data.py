@@ -3,6 +3,8 @@
 # This file contains the data for all fixed, named NPCs in the game world.
 # The structure is a dictionary where keys are location IDs and values are lists
 # of NPC data dictionaries.
+# Roles used here (e.g., "jarl") are reserved for these characters and are not
+# intended for use by the random NPC generator.
 
 FIXED_NPC_DATA = {
     # === WHITERUN HOLD ===
@@ -97,5 +99,5 @@ FIXED_NPC_DATA = {
         {"name": "Galmar Stone-Fist", "race": "Nord", "role": "stormcloak_general", "level": 25},
         {"name": "Wuunferth the Unliving", "race": "Nord", "role": "court_wizard", "level": 20},
     ]
-    # ...This dictionary can be expanded with every fixed NPC in Skyrim.
+    # This dictionary can be expanded with every fixed NPC in Skyrim.
 }
