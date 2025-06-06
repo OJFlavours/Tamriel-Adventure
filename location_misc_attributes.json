@@ -1,0 +1,15 @@
+{
+  "1": {
+    "context_tags": ["exterior", "hold_capital_type", "wilderness", "plains_type"]
+  },
+  "10": {
+    "context_tags": ["exterior", "urban_city", "city_type"],
+    "exit_label_from_parent": "Main Gate",
+    "exit_label_to_parent": "Main Gate"
+  },
+  "11": {
+    "context_tags": ["exterior", "rural_village", "village_type"],
+    "exit_label_from_parent": "Path",
+    "exit_label_to_parent": "Path"
+  }
+}

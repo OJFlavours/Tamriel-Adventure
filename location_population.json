@@ -1,0 +1,14 @@
+{
+  "1": {
+    "demographics": {"Nord": 85, "Imperial": 10, "Others": 5},
+    "density": "sparse"
+  },
+  "10": {
+    "demographics": {"Nord": 70, "Imperial": 10, "Breton": 5, "Redguard": 5, "Dunmer": 5, "Khajiit": 3, "Argonian": 2},
+    "density": "bustling"
+  },
+  "11": {
+    "demographics": {},
+    "density": "average"
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "1": ["hold", "terrain_plains", "central_location", "economic_activity_trade_hub_regional", "nordic_culture_strong", "imperial_influence_moderate", "climate_temperate", "economic_activity_farming_crops", "economic_activity_farming_livestock", "state_or_condition_current_politically_stable", "travel_hub_major"],
+  "10": ["populated_city", "city_affiliation_whiterun_hold_capital", "economic_activity_trade_hub_major", "settlement_features_market_square", "settlement_features_jarls_longhouse", "settlement_features_companions_guild_hall", "settlement_features_temple_divines", "imperial_influence_strong", "cultural_historical_significance_nordic_settlement_ancient", "structure_type_fortified_city_wall", "cultural_historical_significance_ysgramor_related_site", "urban_issues_or_atmosphere_bustling_trade_atmosphere", "unique_landmark_iconic_dragonsreach_gildergreen"],
+  "11": ["populated_village", "settlement_minor", "economic_activity_logging_timber", "terrain_river_delta", "climate_temperate", "terrain_forest", "travel_hub_minor", "quest_location_main_story_early_dragon_attack_aftermath_potential"]
+}

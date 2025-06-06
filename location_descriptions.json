@@ -1,0 +1,14 @@
+{
+  "1": {
+    "desc": "The fertile heartland of Skyrim, marked by golden plains and the bustling city of Whiterun. A center of commerce, Imperial influence, and ancient Nordic tradition.",
+    "travel_desc": "The fertile heartland of Skyrim, a center of commerce and tradition."
+  },
+  "10": {
+    "desc": "A thriving trade city built around the great keep Dragonsreach, seat of Jarl Balgruuf the Greater. Its bustling market and legendary mead hall form the heart of the hold.",
+    "travel_desc": "A thriving trade city built around the great keep Dragonsreach."
+  },
+  "11": {
+    "desc": "A quaint logging village along the White River, known for its simplicity and rustic charm, often the first stop for travelers from the south.",
+    "travel_desc": "Quaint logging village along the White River."
+  }
+}
