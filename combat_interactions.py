@@ -30,7 +30,7 @@ def list_npcs_at_location(location_obj, player, npc_registry_param):
             npc_info_tags = npc.tags.get("npc", {})
             attitude_display_val = npc_info_tags.get("attitude", "neutral")
             attitude_display = f"({attitude_display_val.capitalize()})" if attitude_display_val else ""
-            role_display = 'Server' if npc.role == 'server' else npc.role.replace('_', ' ').title()
+            role_display = format_npc_role(npc.role)
             UI.slow_print(f"[{i}] {npc.full_name} — {role_display} ({npc.race.capitalize()}) {attitude_display}")
         
         sel = UI.print_prompt("With whom do you wish to parley? (0 to pass)").strip()
@@ -128,3 +128,26 @@ def combat_demo(player, current_location_obj, find_hierarchy_func, npc_registry_
     except Exception as e:
         UI.print_failure(f"Error in combat_demo: {e}")
         return current_location_obj
+def format_npc_role(role_str: str) -> str:
+    """Intelligently formats complex NPC role strings for display."""
+    from npc_roles import NOBLE_ROLES, COMMONER_ROLES
+    parts = role_str.split('_')
+    base_roles = NOBLE_ROLES.union(COMMONER_ROLES)
+    
+    base_role_part = ""
+    clarifiers = []
+
+    for part in parts:
+        if part in base_roles and not base_role_part:
+            base_role_part = part
+        else:
+            clarifiers.append(part)
+    
+    if not base_role_part and parts:
+        base_role_part = parts[-1]
+        clarifiers = parts[:-1]
+
+    clarifier_str = " ".join(c.capitalize() for c in clarifiers)
+    base_role_str = base_role_part.capitalize()
+
+    return f"{clarifier_str} {base_role_str}".strip()

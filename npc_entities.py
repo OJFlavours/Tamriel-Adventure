@@ -5,7 +5,7 @@ from stats import Stats, RACES
 from items import Item
 from ui import UI
 from spells import get_spell, Spell
-from npc_names import NAME_POOLS, NORD_SURNAMES # <-- IMPORT NORD_SURNAMES
+from npc_names import NORD_SURNAMES_COMMONER, NORD_SURNAMES_NOBLE, NAME_POOLS # <-- IMPORT NORD_SURNAMES and NAME_POOLS
 from npc_dialogue_generation import generate_greeting, generate_purpose
 import json
 
@@ -77,19 +77,25 @@ class NPC:
         self.quest_giver = False # Can be updated based on quests
         self.vendor_inventory = [] # For merchants
         self.has_offered_quest = False
-        self._generate_name_and_id(name)
-        self.stats = Stats(level=self.level) # Create a Stats instance
-        self.skills = {} # Populate based on role/class
         self.tags = {}
         self._initialize_npc_tags()
+        
+        self._generate_name_and_id(name)
+        
+        self.stats = Stats(level=self.level) # Create a Stats instance
+        self.skills = {} # Populate based on role/class
         self._initialize_stats_and_skills()
         self.known_spells: List[Spell] = []
 
     def _generate_name_and_id(self, name: str):
         if name is None:
             gender = random.choice(["male", "female"])
-            name_type = "noble" if self.role in NOBLE_ROLES else "commoner"
-            
+            # Check for noble tag
+            if self.tags.get('npc', {}).get('noble', False) == True:
+                name_type = "noble"
+            else:
+                name_type = "commoner"
+
             race_name_pool_data = NAME_POOLS.get(self.race, NAME_POOLS.get("nord", {}))
             specific_name_pool = race_name_pool_data.get(name_type, race_name_pool_data.get("commoner", {}))
             gender_specific_pool = specific_name_pool.get(gender, [])
@@ -100,16 +106,15 @@ class NPC:
             first_name_base = self.unique_id.split('_')[0].capitalize()
 
             final_surname = ""
-            if self.race == "nord":
-                hold_name = self.location_context.get("hold_name", "generic") if self.location_context else "generic"
-                surname_pool = NORD_SURNAMES.get(hold_name, NORD_SURNAMES["generic"])
-                if surname_pool:
-                    final_surname = random.choice(surname_pool)
-            
-            if final_surname:
-                self.name = f"{first_name_base} {final_surname}"
+            surname_pool = []
+            if self.tags.get('npc', {}).get('noble', False) == True:
+                surname_pool = NORD_SURNAMES_NOBLE
             else:
-                self.name = first_name_base
+                surname_pool = NORD_SURNAMES_COMMONER
+
+            if surname_pool:
+                final_surname = random.choice(surname_pool)
+            self.name = f"{first_name_base} {final_surname}"
         else:
             self.name = name
             self.unique_id = f"{self.name.lower().replace(' ', '_')}_{self.role.lower().replace(' ', '_')}_{random.randint(100,999)}"

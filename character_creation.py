@@ -8,7 +8,7 @@ from stats import Stats, RACES, CLASSES
 from ui import UI
 from items import generate_item_from_key
 from quests import QuestLog
-from npc_names import NAME_POOLS # Import here to avoid circular dependency
+from npc_names import Race, Gender, generate_npc_name # Import here to avoid circular dependency
 
 def initialize_player():
     try:
@@ -39,7 +39,7 @@ def initialize_player():
             race_options = list(RACES.keys())
             player_race_str = random.choice(race_options)
             race_display_name = RACES[player_race_str]["display_name"]
-            UI.print_success(f"Lineage: {race_display_name.capitalize()}")
+            UI.print_success(f"Lineage: {player_race_str.capitalize()}")
 
             # Randomly select Gender
             player_gender = random.choice(["male", "female"])
@@ -48,26 +48,8 @@ def initialize_player():
             # Randomly select Name Type and Name
             name_types = ["noble", "commoner"] # Exclude custom for quick start
             random_name_type = random.choice(name_types)
-            
-            available_ids = NAME_POOLS.get(player_race_str.replace(" / ", " ("), {}).get(random_name_type, {}).get(player_gender, [])
-            if available_ids:
-                selected_name_id = random.choice(available_ids)
-                player_name = selected_name_id.split('_')[0].capitalize() # Use the name part
-            # Randomly select Surname (if applicable to race)
-            player_surname = ""
-            if player_race_str not in ["khajiit", "bosmer"] and player_race_str.replace(" / ", " (") in NAME_POOLS and (
-                "noble_surnames" in NAME_POOLS[player_race_str.replace(" / ", "(")].get(random_name_type, {})
-                or "commoner_surnames" in NAME_POOLS[player_race_str.replace(" / ", "(")].get(random_name_type, {})
-            ):
-                available_surnames = [sname.split('_')[0] for sname in NAME_POOLS[player_race_str].get(random_name_type, {}).get(f"{random_name_type}_surnames", [])]
-                if available_surnames:
-                    player_surname = random.choice(available_surnames)
-                    player_name = f"{player_name} {player_surname.capitalize()}"
-                    UI.print_success(f"Name: '{player_name}'")
-                else:
-                    UI.slow_print(f"{player_race_str.capitalize()} do not traditionally use surnames.")
-            else:
-                UI.print_success(f"Name: '{player_name}'")
+            player_name = generate_npc_name(Race(player_race_str), Gender(player_gender), tags={})
+            UI.print_success(f"Name: '{player_name}'")
 
             # Randomly select Class
             class_options_keys = list(CLASSES.keys())
@@ -116,6 +98,7 @@ def initialize_player():
             UI.slow_print("\nWhat is your form?")
             UI.print_menu(["Male", "Female"])
 
+            player_gender = ""
             while player_gender not in ["male", "female"]:
                 gender_choice_input = UI.print_prompt("Enter your choice (1 or 2)")
                 if gender_choice_input == "1":
@@ -124,7 +107,7 @@ def initialize_player():
                     player_gender = "female"
                 else:
                     UI.slow_print("Invalid choice. Please enter 1 for Male or 2 for Female.")
-            
+
             UI.print_success(f"You have chosen the form of a {player_gender.capitalize()}.")
 
             # 3. Choose Social Standing / Name Type
@@ -133,7 +116,6 @@ def initialize_player():
                 UI.slow_print("\nName by lineage, common tongue, or your own legend?")
                 UI.print_menu(["Noble (names of influence)", "Commoner (everyday names)", "Forge my own name (Custom)"])
                 name_type_choice_input = UI.print_prompt("Enter your choice (1, 2, or 3)").strip()
-
                 if name_type_choice_input == "1":
                     player_name_type = "noble"
                 elif name_type_choice_input == "2":
@@ -142,100 +124,23 @@ def initialize_player():
                     player_name_type = "custom"
                 else:
                     UI.slow_print("Invalid choice. Please select 1, 2, or 3.")
-            
+
             if player_name_type == "custom":
                 while not player_name:
                     player_name = UI.print_prompt("Speak your true name, wanderer")
                     if not player_name:
                         UI.slow_print("A name is your first step into legend. Choose wisely.", speed=0.02)
             else:
-                available_ids = NAME_POOLS.get(player_race_str.replace(" / ", " ("), {}).get(player_name_type, {}).get(player_gender, [])
-                display_names = [name_id.split('_')[0].capitalize() for name_id in available_ids] # Display only the name part
-                
-                if not display_names:
-                    UI.slow_print(f"\nNo specific {player_name_type} names found for a {player_race_str.capitalize()} {player_gender}.")
-                    UI.slow_print("You may choose your own name instead.")
-                    while True:
-                        player_name = UI.print_prompt("Speak your true name, wanderer")
-                        if player_name:
-                            break
-                        else:
-                            UI.slow_print("A name is your first step into legend. Choose wisely.", speed=0.02)
-                else:
-                    UI.slow_print(f"\nNames of your people ({player_name_type} {player_gender}):")
-                    for i, name_opt in enumerate(display_names):
-                        UI.slow_print(f"[{i+1}] {name_opt}", speed=0.005)
-                    UI.slow_print(f"[{len(display_names)+1}] Choose my own name (Custom)")
-
-                    while True:
-                        name_choice_input = UI.print_prompt("Enter the number of your chosen name")
-                        try:
-                            name_index = int(name_choice_input) - 1
-                            if 0 <= name_index < len(display_names):
-                                player_name = display_names[name_index]
-                                break
-                            elif name_index == len(display_names):
-                                player_name = UI.print_prompt("Speak your true name, wanderer")
-                                if not player_name:
-                                    UI.slow_print("A name is your first step into legend. Choose wisely.", speed=0.02)
-                                else:
-                                    break
-                            else:
-                                UI.slow_print("Invalid choice. Please enter a number from the list.")
-                        except ValueError:
-                            UI.slow_print("Invalid input. Please enter a number.")
-                    player_name = player_name.capitalize() # Capitalize the chosen name
-
-            # 3a. Choose Surname (if applicable to race)
-            player_surname = ""
-            if player_race_str not in ["khajiit", "bosmer"] and player_race_str in NAME_POOLS and any([
-                "noble_surnames" in NAME_POOLS[player_race_str].get(player_name_type, {})
-                or "commoner_surnames" in NAME_POOLS[player_race_str].get(player_name_type, {})
-            ]):
-                UI.slow_print("\nChoose your family's legacy, or forge a new one:")
-                surname_type = player_name_type  # Use the same name type (noble/commoner) for surnames
-                available_surnames = (
-                    NAME_POOLS[player_race_str]
-                    .get(surname_type, {})
-                    .get(f"{surname_type}_surnames", [])
-                )
-                display_surnames = [surname.replace('_',' ').title().split(' ')[0] for surname in available_surnames]
-                if not display_surnames:
-                    UI.slow_print(
-                        f"\nNo specific {surname_type} surnames found for a {player_race_str.capitalize()}."
-                    )
-                    player_surname = UI.print_prompt("What surname will you carry?")
-                else:
-                    UI.slow_print(f"\nSurnames of your people ({surname_type} lineage):")
-                    for i, surname_opt in enumerate(display_surnames):
-                        UI.slow_print(f"[{i+1}] {surname_opt}", speed=0.005)
-                    UI.slow_print(f"[{len(display_surnames)+1}] Choose my own surname (Custom)")
-
-                    while True:
-                        surname_choice_input = UI.print_prompt("Enter the number of your chosen surname")
-                        try:
-                            surname_index = int(surname_choice_input) - 1
-                            if 0 <= surname_index < len(display_surnames):
-                                player_surname = display_surnames[surname_index]
-                            elif surname_index == len(display_surnames):
-                                player_surname = UI.print_prompt("Speak your family's name, wanderer")
-                            else:
-                                UI.slow_print("Invalid choice. Please enter a number from the list.")
-                        except ValueError:
-                            UI.slow_print("Invalid input. Please enter a number.")
-                        break # Exit loop after a valid choice or custom input
-            else:
-                if player_race_str not in ["khajiit", "bosmer", "argonian"]:
-                    UI.slow_print(f"\n{player_race_str.capitalize()} do not traditionally use surnames.")
-
-            if player_surname:
-                player_surname = player_surname.capitalize()
-                player_name = f"{player_name} {player_surname}"
-                UI.print_success(f"'{player_name}'... a name that will be whispered through the ages.")
-            else:
-                UI.print_success(f"'{player_name}'... a name carried with honor.")
+                player_name = generate_npc_name(Race(player_race_str), Gender(player_gender), tags={})
+                UI.print_success(f"Name: '{player_name}'")
 
             # 4. Choose Class (Path of Skill)
+#
+#
+#
+#
+#
+#
             UI.slow_print("\nWhat path of skill do you tread?")
             class_options_keys = list(CLASSES.keys())
             for i, class_id_key in enumerate(class_options_keys):

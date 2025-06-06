@@ -9,10 +9,6 @@ RIFTEN_CITY_LOCATIONS = [
         "demographics": {"Nord": 40, "Dunmer": 20, "Argonian": 15, "Khajiit": 10, "Imperial": 5, "Breton": 5, "Redguard": 5},
         "exit_label_from_parent": "Tavern Door",
         "exit_label_to_parent": "Exit Tavern",
-        "fixed_npcs": [
-            {"name": "Talen-Jei", "race": "Argonian", "gender": "Male", "role": "publican", "level": 6},
-            {"name": "Keerava", "race": "Argonian", "gender": "Female", "role": "publican", "level": 6}
-        ]
     },
     {
         "id": 9002,

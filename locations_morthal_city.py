@@ -18,10 +18,6 @@ MORTHAL_CITY_LOCATION_DATA = [
         "density": "sparse",
         "context_tags": ["interior", "urban_town", "tavern_type", "safe_zone"],
         "demographics": {"Nord": 90, "Breton": 5, "Imperial": 3, "Argonian": 2},
-        "fixed_npcs": [
-            {"name": "Jonna", "race": "Nord", "role": "innkeeper", "level": 5},
-            {"name": "Lurbuk", "race": "Orc", "role": "untalented_bard", "level": 3}
-        ],
         "exit_label_from_parent": "Inn Door",
         "exit_label_to_parent": "Exit Inn"
     },
@@ -33,9 +29,6 @@ MORTHAL_CITY_LOCATION_DATA = [
         "tags": ["structure_type_shack_or_hut_wizard", "structure_type_residence_wizard", "settlement_features_alchemy_shop_notable_wizard_hut", "item_type_potion_vendor", "item_type_ingredient_vendor", "magical_properties_arcane_focus_vampire_lore", "quest_giver_vampire_cure_falion", "scholar_retreat_rumor_arcane_expert", "urban_issues_or_atmosphere_fear_and_superstition_falion_suspicion", "spell_vendor_conjuration_expert"],
         "density": "sparse",
         "context_tags": ["interior", "urban_town_edge", "shop_type_arcane", "residence_type"],
-        "fixed_npcs": [
-            {"name": "Falion", "race": "Redguard", "role": "mage_conjurer_scholar_vampire_expert", "level": 12}
-        ],
         "exit_label_from_parent": "Hut Door",
         "exit_label_to_parent": "Exit Hut"
     },

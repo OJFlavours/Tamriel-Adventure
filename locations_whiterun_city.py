@@ -41,11 +41,6 @@ WHITERUN_CITY_LOCATION_DATA = {
             "density": "bustling",
             "context_tags": ["interior", "urban_city", "tavern_type", "safe_zone"],
             "demographics": {"Nord": 70, "Imperial": 10, "Breton": 5, "Redguard": 5, "Dunmer": 5, "Khajiit": 3, "Argonian": 2},
-            "fixed_npcs": [
-                {"name": "Hulda", "race": "Nord", "role": "innkeeper", "level": 8},
-                {"name": "Saadia", "race": "Redguard", "role": "tavern_staff_server", "level": 3},
-                {"name": "Uthgerd the Unbroken", "race": "Nord", "role": "warrior_patron", "level": 6}
-            ],
             "exit_label_from_parent": "Tavern Door",
             "exit_label_to_parent": "Exit Tavern"
         },
@@ -57,10 +52,6 @@ WHITERUN_CITY_LOCATION_DATA = {
             "tags": ["structure_type_shop_building", "settlement_features_blacksmith_forge_active", "economic_activity_smithing_production", "item_type_weapon_vendor", "item_type_armor_vendor", "crafting_tools", "quest_giver_potential_adrianne"],
             "density": "average",
             "context_tags": ["interior_shop_exterior_forge", "urban_city", "smithy_type"],
-            "fixed_npcs": [
-                {"name": "Adrianne Avenicci", "race": "Imperial", "role": "blacksmith", "level": 7},
-                {"name": "Ulfberth War-Bear", "race": "Nord", "role": "merchant_blacksmith_shopkeeper", "level": 6}
-            ],
             "exit_label_from_parent": "Smithy Entrance",
             "exit_label_to_parent": "Exit Smithy"
         },
@@ -72,9 +63,6 @@ WHITERUN_CITY_LOCATION_DATA = {
             "tags": ["structure_type_shop_building", "settlement_features_alchemy_shop_notable", "economic_activity_alchemy_ingredient_source_rich", "item_type_potion_vendor", "item_type_ingredient_vendor", "quest_giver_potential_arcadia"],
             "density": "average",
             "context_tags": ["interior", "urban_city", "shop_type_alchemy"],
-            "fixed_npcs": [
-                {"name": "Arcadia", "race": "Imperial", "role": "alchemist_merchant", "level": 5}
-            ],
             "exit_label_from_parent": "Shop Door",
             "exit_label_to_parent": "Exit Shop"
         },
@@ -109,10 +97,6 @@ WHITERUN_CITY_LOCATION_DATA = {
             "density": "average",
             "context_tags": ["interior", "urban_city", "tavern_type", "safe_zone"],
             "demographics": {"Nord": 65, "Bosmer": 10, "Imperial": 10, "Breton": 5, "Redguard": 5, "Khajiit": 3, "Orc": 2},
-            "fixed_npcs": [
-                {"name": "Elrindir", "race": "Bosmer", "role": "innkeeper", "level": 6},
-                {"name": "Jenassa", "race": "Dunmer", "role": "mercenary_archer", "level": 5}
-            ],
             "exit_label_from_parent": "Tavern Door",
             "exit_label_to_parent": "Exit Tavern"
         },
@@ -124,10 +108,6 @@ WHITERUN_CITY_LOCATION_DATA = {
             "tags": ["structure_type_shop_building", "shop_general_goods", "trade_variety_extensive", "eccentric_merchant_owner_belethor", "item_type_various_vendor", "quest_giver_potential_belethor"],
             "density": "average",
             "context_tags": ["interior", "urban_city", "shop_type"],
-            "fixed_npcs": [
-                {"name": "Belethor", "race": "Breton", "role": "merchant_general_goods", "level": 4},
-                {"name": "Sigurd", "race": "Nord", "role": "shop_assistant_woodcutter", "level": 2}
-            ],
             "exit_label_from_parent": "Shop Door",
             "exit_label_to_parent": "Exit Shop"
         },

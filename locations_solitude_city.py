@@ -28,10 +28,6 @@ SOLITUDE_CITY_LOCATIONS = [
         "density": "bustling",
         "context_tags": ["interior", "urban_city_capital", "tavern_type_bustling", "safe_zone"],
         "demographics": {"Imperial": 30, "Nord": 40, "Breton": 10, "Redguard": 5, "Altmer": 5, "Khajiit": 5, "Argonian": 3, "Bosmer": 2},
-        "fixed_npcs": [
-            {"name": "Corpulus Vinius", "race": "Imperial", "role": "innkeeper", "level": 7},
-            {"name": "Gulum-Ei", "race": "Argonian", "role": "shady_patron", "level": 5}
-        ],
         "exit_label_from_parent": "Tavern Door",
         "exit_label_to_parent": "Exit Tavern"
     },
@@ -43,9 +39,6 @@ SOLITUDE_CITY_LOCATIONS = [
         "tags": ["structure_type_shop_building", "shop_general_goods", "trade_variety", "economic_activity_trade_hub_local", "business_owner_sayma"],
         "density": "average",
         "context_tags": ["interior", "urban_city_capital", "shop_type"],
-        "fixed_npcs": [
-            {"name": "Sayma", "race": "Imperial", "role": "merchant_general_goods", "level": 6}
-        ],
         "exit_label_from_parent": "Shop Door",
         "exit_label_to_parent": "Exit Shop"
     },
@@ -67,10 +60,6 @@ SOLITUDE_CITY_LOCATIONS = [
         "tags": ["structure_type_shop_building", "shop_specialty_goods_clothing", "economic_activity_tailoring_high_fashion", "altmer_presence_business", "social_hub_elite_potential", "business_owner_taarie_endarie"],
         "density": "average",
         "context_tags": ["interior", "urban_city_capital", "shop_type_clothing_high_end"],
-        "fixed_npcs": [
-            {"name": "Taarie", "race": "Altmer", "role": "merchant_clothing_tailor_haughty", "level": 5},
-            {"name": "Endarie", "race": "Altmer", "role": "merchant_clothing_tailor", "level": 5}
-        ],
         "exit_label_from_parent": "Shop Door",
         "exit_label_to_parent": "Exit Shop"
     },
@@ -82,9 +71,6 @@ SOLITUDE_CITY_LOCATIONS = [
         "tags": ["structure_type_shop_building", "shop_specialty_goods_archery", "item_type_weapon_bow_arrow_vendor", "economic_activity_crafting_fletching", "business_owner_fihada"],
         "density": "sparse",
         "context_tags": ["interior", "urban_city_capital", "shop_type_archery"],
-        "fixed_npcs": [
-            {"name": "Fihada", "race": "Redguard", "role": "merchant_fletcher", "level": 6}
-        ],
         "exit_label_from_parent": "Shop Door",
         "exit_label_to_parent": "Exit Shop"
     },

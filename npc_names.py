@@ -1,128 +1,558 @@
-# npc_names.py
+from enum import Enum
 import random
 
-# Surnames are now nested under hold keys. 'generic' is a fallback.
-# Hold keys should match the 'name' from your top-level location data, but lowercased with spaces as underscores.
-NORD_SURNAMES = {
-    "eastmarch": ["Shatter-Shield", "Snow-Shod", "Stone-Fist"],
-    "whiterun_hold": ["Battle-Born", "Gray-Mane", "War-Bear"],
-    "the_rift": ["Black-Briar"],
-    "haafingar": ["Cruel-Sea"],
-    "the_reach": ["Silver-Blood"],
-    "generic": ["Icestorm", "Rime-Gazer", "Wind-Caller", "Oath-Breaker", "Rune-Carver", "Ice-Veins"]
-}
+class Race(Enum):
+    IMPERIAL = "imperial"
+    NORD = "nord"
+    REDGUARD = "redguard"
+    BRETON = "breton"
+    DUNMER = "dunmer"
+    ALTMER = "altmer"
+    BOSMER = "bosmer"
+    ORC = "orc"
+    ARGONIAN = "argonian"
+    KHAJIIT = "khajiit"
 
-# The main NAME_POOLS dictionary contains the first names. Surnames are now handled separately.
+class Gender(Enum):
+    MALE = "male"
+    FEMALE = "female"
+
+# ### Imperial
+
+# Male Names - Commoner
+IMPERIAL_MALE_NAMES_COMMONER = [
+    "Flavius", "Aulus", "Titus", "Adrius", "Bastian", "Corvus", "Decianus", "Gallus", "Jens", "Marcurio",
+    "Pavo", "Valgus", "Severus", "Roderic", "Garrus"
+]
+
+# Male Names - Noble
+IMPERIAL_MALE_NAMES_NOBLE = [
+    "Gaius", "Lucius", "Marcus", "Septimus", "Valerius", "Aquillius", "Cassian", "Constantine", "Ignatius",
+    "Regulus", "Silus", "Tiber", "Varian", "Atticus", "Tullius"
+]
+
+# Female Names - Commoner
+IMPERIAL_FEMALE_NAMES_COMMONER = [
+    "Aurelia", "Drusilla", "Livia", "Alessia", "Caelia", "Fausta", "Gisella", "Justina", "Lucia", "Ria",
+    "Serena", "Viola", "Valentina", "Sabina", "Octavia"
+]
+
+# Female Names - Noble
+IMPERIAL_FEMALE_NAMES_NOBLE = [
+    "Octavia", "Tullia", "Valeria", "Poppaea", "Messalina", "Aelia", "Camilla", "Domitia", "Flavia", "Junia",
+    "Lavinia", "Marcella", "Porphyria", "Ulpia", "Vipsania"
+]
+
+# Surnames - Commoner
+IMPERIAL_SURNAMES_COMMONER = [
+    "Antonius", "Aurelius", "Aco", "Carius", "Maro", "Vinius", "Accius", "Gratius"
+]
+
+# Surnames - Noble
+IMPERIAL_SURNAMES_NOBLE = [
+    "Flavius", "Julius", "Licinius", "Octavius", "Valerius", "Vilius", "Aemilius", "Claudius",
+    "Cornelius", "Horatius", "Septimius", "Tullius"
+]
+
+# ### Nord
+
+# Male Names - Commoner
+NORD_MALE_NAMES_COMMONER = [
+    "Bjorn", "Torvin", "Harald", "Angar", "Falk", "Gunnar", "Hrolf", "Joric", "Sten", "Vigge",
+    "Yngvar", "Arinbjorn", "Benor", "Cosnach", "Filnjar"
+]
+
+# Male Names - Noble
+NORD_MALE_NAMES_NOBLE = [
+    "Leif", "Erik", "Ragnar", "Sven", "Ulf", "Balimund", "Eorlund", "Galmar", "Kodlak", "Olaf",
+    "Skjor", "Torbjorn", "Ulfric", "Vignar", "Brynjolf"
+]
+
+# Female Names - Commoner
+NORD_FEMALE_NAMES_COMMONER = [
+    "Astrid", "Freya", "Ingrid", "Birgit", "Dagny", "Gerdur", "Hilde", "Olava", "Sigrun", "Tova",
+    "Yrsa", "Anja", "Fastred", "Grelka", "Lydia"
+]
+
+# Female Names - Noble
+NORD_FEMALE_NAMES_NOBLE = [
+    "Liv", "Solveig", "Sigrid", "Helga", "Gunnhild", "Elisif", "Gerda", "Idgrod", "Laila", "Maven",
+    "Rikke", "Sybille", "Thane", "Ysolda", "Jordis"
+]
+
+# Surnames - Commoner
+NORD_SURNAMES_COMMONER = [
+    "Battle-Born", "Gray-Mane", "Black-Briar", "Cruel-Sea", "Shatter-Shield", "Silver-Blood", "Vile-Man",
+    "the Tall"
+]
+
+# Surnames - Noble
+NORD_SURNAMES_NOBLE = [
+    "Ice-Veins", "Snow-Shod", "Stormcloak", "War-Bear", "Winter-Gate", "Stone-Fist", "Fire-Mane",
+    "Law-Giver", "the Unflinching", "the Fair", "Red-Hand", "White-Estrid"
+]
+
+# ### Redguard
+
+# Male Names - Commoner
+REDGUARD_MALE_NAMES_COMMONER = [
+    "Kematu", "Nazir", "Azzin", "Ahlam", "Fihada", "Isran", "Jalil", "Nazeem", "Razan", "Saadia",
+    "Virkmund", "Wayn", "Brenuin", "Kayd", "Talsgar"
+]
+
+# Male Names - Noble
+REDGUARD_MALE_NAMES_NOBLE = [
+    "Kasim", "Husni", "Mustafa", "Yusuf", "Malik", "Aziz", "Farid", "Hanan", "Jibril", "Nabil",
+    "Qasim", "Samir", "Tariq", "Zayn", "Jawanan"
+]
+
+# Female Names - Commoner
+REDGUARD_FEMALE_NAMES_COMMONER = [
+    "Zariya", "Ayana", "Jamila", "Dalia", "Iman", "Layla", "Nadia", "Salma", "Shavari", "Yasmin",
+    "Zahra", "Farah", "Anwen", "Lamiya", "Saadia"
+]
+
+# Female Names - Noble
+REDGUARD_FEMALE_NAMES_NOBLE = [
+    "Naima", "Safiya", "Aaliyah", "Fatima", "Samira", "Aisha", "Halima", "Karima", "Rania", "Sabina",
+    "Soraya", "Thania", "Zainab", "Zafira", "Shada"
+]
+
+# Surnames
+REDGUARD_SURNAMES = [
+    "Iman", "Serrano", "Sali", "At-Tarik", "Benam", "Omar", "Hassan", "Zahra", "al-Alim", "al-Hassan",
+    "al-Jabir", "al-Qam", "al-Walid", "Ben-Youssef", "ibn-Hasan", "ibn-Rashid"
+]
+
+# ### Breton
+
+# Male Names - Commoner
+BRETON_MALE_NAMES_COMMONER = [
+    "Jean", "Luc", "Pierre", "Arnol", "Cosnach", "Enmon", "Gaston", "Julien", "Maurice", "Pascal",
+    "Rochus", "Simon", "Belrand", "Herve", "Odfel"
+]
+
+# Male Names - Noble
+BRETON_MALE_NAMES_NOBLE = [
+    "Alain", "Thierry", "Gilles", "Remy", "Etienne", "Amaund", "Delacroix", "Francois", "Guillaume",
+    "Matthieu", "Philippe", "Sebastien", "Tristan", "Vard", "Anton"
+]
+
+# Female Names - Commoner
+BRETON_FEMALE_NAMES_COMMONER = [
+    "Sophie", "Nathalie", "Isabelle", "Antoinette", "Babette", "Colette", "Genevieve", "Jolie", "Lisette",
+    "Odette", "Simone", "Veronique", "Anise", "Fianna", "Susanna"
+]
+
+# Female Names - Noble
+BRETON_FEMALE_NAMES_NOBLE = [
+    "Camille", "Celine", "Margot", "Amelie", "Manon", "Adeline", "Eleonore", "Ffion", "Genevieve",
+    "Helene", "Isolde", "Jacqueline", "Madeleine", "Seraphine", "Vivienne"
+]
+
+# Surnames - Commoner
+BRETON_SURNAMES_COMMONER = [
+    "Beaufort", "Dupont", "Aubin", "Bernard", "Leonce", "Motte", "Liric", "Rane"
+]
+
+# Surnames - Noble
+BRETON_SURNAMES_NOBLE = [
+    "Gauthier", "Lambert", "Moreau", "Renaud", "Vincent", "Leclerc", "Aumont", "Chastel", "Montclair",
+    "Rochelle", "Valois", "de Savin"
+]
+
+# ### Dark Elf (Dunmer)
+
+# Male Names - Commoner
+DARK_ELF_MALE_NAMES_COMMONER = [
+    "Ravan", "Varvur", "Arvel", "Athis", "Brand-Shei", "Dravynea", "Erandur", "Garyn", "Lleril", "Revyn",
+    "Slitter", "Tythis", "Faryl", "Romlyn", "Teldryn"
+]
+
+# Male Names - Noble
+DARK_ELF_MALE_NAMES_NOBLE = [
+    "Balen", "Faron", "Rolis", "Taron", "Neloth", "Adril", "Gothren", "Indoril", "Malur", "Nelvayn",
+    "Soris", "Theron", "Veleth", "Zathrian", "Divayth"
+]
+
+# Female Names - Commoner
+DARK_ELF_FEMALE_NAMES_COMMONER = [
+    "Aryni", "Bralen", "Feleth", "Brelyna", "Dinya", "Ildari", "Jenassa", "Llavela", "Niluva", "Sosia",
+    "Voldsea", "Avrusa", "Aduri", "Ildene", "Suvaris"
+]
+
+# Female Names - Noble
+DARK_ELF_FEMALE_NAMES_NOBLE = [
+    "Mirri", "Rilen", "Teleri", "Varona", "Alvela", "Arara", "Bralsa", "Dreyla", "Ildene", "Malsa",
+    "Nenya", "Sulvi", "Tilse", "Voldrani", "Karliah"
+]
+
+# Surnames - Commoner
+DARK_ELF_SURNAMES_COMMONER = [
+    "Andrethi", "Baloren", "Hlaalu", "Maryon", "Sadri", "Ulen", "Atheron", "Sarys"
+]
+
+# Surnames - Noble
+DARK_ELF_SURNAMES_NOBLE = [
+    "Darethi", "Nerethi", "Sarethi", "Uvarethi", "Velethi", "Andas", "Dren", "Hleran", "Rethan",
+    "Telvanni", "Indarys", "Redoran"
+]
+
+# ### High Elf (Altmer)
+
+# Male Names - Commoner
+HIGH_ELF_MALE_NAMES_COMMONER = [
+    "Ancano", "Elenwen", "Ondolemar", "Linwe", "Melaran", "Nirion", "Orion", "Rulindil", "Taen", "Voranil",
+    "Aicantar", "Volanaro", "Nelacar", "Runil", "Vingalmo"
+]
+
+# Male Names - Noble
+HIGH_ELF_MALE_NAMES_NOBLE = [
+    "Thoron", "Talsgar", "Eridor", "Ulfgar", "Calcelmo", "Ario", "Estormo", "Faendal", "Mannimarco",
+    "Quaranir", "Runil", "Vingalmo", "Anarion", "Pelidil", "Ocato"
+]
+
+# Female Names - Commoner
+HIGH_ELF_FEMALE_NAMES_COMMONER = [
+    "Elenwen", "Irileth", "Laranthir", "Faralda", "Linwe", "Miniel", "Nenya", "Seren", "Syndorie", "Tavari",
+    "Viarmo", "Elenya", "Niranye", "Taarie", "Viola"
+]
+
+# Female Names - Noble
+HIGH_ELF_FEMALE_NAMES_NOBLE = [
+    "Niranye", "Talsgar", "Eridor", "Ulfgar", "Calcelmo", "Almalexia", "Ayrenn", "Curwe", "Lathenil",
+    "Morgwen", "Nirniel", "Taarie", "Vanrie", "Elenari", "Emeric"
+]
+
+# Surnames - Commoner
+HIGH_ELF_SURNAMES_COMMONER = [
+    "Alinor", "Cloudrest", "Aurelion", "Indoril", "Silorn", "Valerius", "Lloran", "Sildar"
+]
+
+# Surnames - Noble
+HIGH_ELF_SURNAMES_NOBLE = [
+    "Elenwen", "Lillandril", "Silverlode", "Sunhold", "Winterhold", "Wintermoon", "Arana", "Camo",
+    "Marayn", "Othela", "Soran", "Tarmia"
+]
+
+# ### Wood Elf (Bosmer)
+
+# Male Names - Commoner
+WOOD_ELF_MALE_NAMES_COMMONER = [
+    "Faelar", "Glarthir", "Hircine", "Aengoth", "Celegorn", "Faen", "Gwildin", "Malborn", "Niron", "Thran",
+    "Valen", "Aeran", "Faendal", "Grelod", "Valindor"
+]
+
+# Male Names - Noble
+WOOD_ELF_MALE_NAMES_NOBLE = [
+    "Ollar", "Orion", "Oron", "Orundil", "Owin", "Cindelin", "Eldamir", "Faelian", "Galathil", "Maenor",
+    "Orthelon", "Rinon", "Saelorn", "Tauriel", "Aerendel"
+]
+
+# Female Names - Commoner
+WOOD_ELF_FEMALE_NAMES_COMMONER = [
+    "Aeri", "Owaen", "Orin", "Aela", "Cairine", "Elphina", "Glathriel", "Larethia", "Nivriel", "Saeldia",
+    "Thaelen", "Anoriath", "Caminda", "Gilfre", "Nimphaneth"
+]
+
+# Female Names - Noble
+WOOD_ELF_FEMALE_NAMES_NOBLE = [
+    "Orynn", "Othari", "Owen", "Owinori", "Owinril", "Aranniel", "Cindiri", "Elanil", "Gwen", "Laenafil",
+    "Nirrine", "Seren", "Thelama", "Elara", "Lyra"
+]
+
+# Surnames - Commoner
+WOOD_ELF_SURNAMES_COMMONER = [
+    "Aerion", "Camoran", "Green-Pact", "Heartwood", "Shadow-Walker", "Wild-Runner", "Black-Briar",
+    "Swift-Arrow"
+]
+
+# Surnames - Noble
+WOOD_ELF_SURNAMES_NOBLE = [
+    "Elenwen", "Faelar", "Glarthir", "Orion", "Oron", "Orundil", "Arroway", "Black-Arrow", "Green-Leaf",
+    "Swift-Elk", "Thorn-Stalker", "Whisper-Wind"
+]
+
+# ### Orc (Orsimer)
+
+# Male Names - Commoner
+ORC_MALE_NAMES_COMMONER = [
+    "Gat gro-Shargak", "Ugak gra-Mogakh", "Yatul gro-Gnash", "Bashuk", "Durzod", "Ghorbash", "Larak",
+    "Murbul", "Ogrul", "Shagrol", "Urag", "Yamarz", "Gat", "Ghorza", "Mogrul"
+]
+
+# Male Names - Noble
+ORC_MALE_NAMES_NOBLE = [
+    "Burz gro-Kharbush", "Lagdub gro-Gaturn", "Mog gro-Korgnak", "Oglub gro-Dum", "Shagdub gro-Ular",
+    "Ghorak", "Kharag", "Lurog", "Mogdurz", "Ornag", "Sharamph", "Ulgush", "Yargol", "Borgakh", "Grommok"
+]
+
+# Female Names - Commoner
+ORC_FEMALE_NAMES_COMMONER = [
+    "Borgakh Steel-Heart", "Durbul gro-Gamurz", "Ghob gra-Magul", "Atub", "Bagrak", "Gharol", "Lash",
+    "Mog", "Shuftharz", "Ugor", "Yatul", "Garakh", "Bashnag", "Sharn", "Uglarz"
+]
+
+# Female Names - Noble
+ORC_FEMALE_NAMES_NOBLE = [
+    "Maz gro-Kilav", "Olub gra-Gaturn", "Shuftharz gra-Gaturn", "Tug gra-Mogakh", "Urzoga gra-Batul",
+    "Batul", "Dura", "Ghorza", "Mazoga", "Oglub", "Sharn", "Urzoga", "Yashnag", "Borba", "Shel"
+]
+
+# Surnames - Commoner
+ORC_SURNAMES_COMMONER = [
+    "gro-Bagrat", "gra-Bashnag", "gro-Shurkul", "gra-Bumph", "gro-Khazun", "gra-Sharob", "gro-Largash",
+    "gra-Dushnikh"
+]
+
+# Surnames - Noble
+ORC_SURNAMES_NOBLE = [
+    "gro-Demnik", "gra-Gaturn", "gro-Ghorza", "gra-Kharbush", "gro-Mogakh", "gra-Muzgob", "gro-Dushnikh",
+    "gra-Largash", "gro-Mor-Khazgur", "gra-Narzulbur", "gro-Yazgul", "gra-Dush"
+]
+
+# ### Argonian
+
+# Male Names - Commoner
+ARGONIAN_MALE_NAMES_COMMONER = [
+    "Derkeethus", "Hides-His-Heart", "Jaree-Ra", "Beem-Ja", "Chal-Ma", "Mee-Jur", "Nee-Sa", "Ree-Zish",
+    "Skee-Tei", "Tal-Jei", "Vee-Daza", "Wee-Na", "Madesi", "Neetrenaza", "Teeba-Ei"
+]
+
+# Male Names - Noble
+ARGONIAN_MALE_NAMES_NOBLE = [
+    "Keerava", "Sky-Shimmer", "Teinaava", "Wujeeta", "Zaquarius", "Ashee-Meeko", "Chee-Sei", "Erh-Jee",
+    "Haj-Maar", "Mee-See", "Peesh-Ja", "Ree-Nakal", "Sees-All-Colors", "Uka-Zei", "Veezara"
+]
+
+# Female Names - Commoner
+ARGONIAN_FEMALE_NAMES_COMMONER = [
+    "Deetum-Ja", "Hides-Her-Cache", "Jana-Millia", "Dee-Meese", "Gee-Ska", "Haj-Sira", "Kee-Rani",
+    "Mee-To", "Paa-Ween", "Ree-Zishka", "See-Nee", "Tee-Wee", "Brand-Shei", "Shavee", "Wujeeta"
+]
+
+# Female Names - Noble
+ARGONIAN_FEMALE_NAMES_NOBLE = [
+    "Keerava", "Sky-Shimmer", "Teinaava", "Wujeeta", "Zaquarius", "An-Jeen", "Chee-Sa", "Ena-Mei",
+    "Hee-Sa", "Jee-Mei", "Mee-Nee", "Ree-Neeus", "Shee-Mei", "Uta-Tei", "Zarain"
+]
+
+# Surnames - Commoner
+ARGONIAN_SURNAMES_COMMONER = [
+    "-Dar", "-Ei", "-Kaj", "-Ra", "-Sei", "-Zish", "-Ka", "-Tee"
+]
+
+# Surnames - Noble
+ARGONIAN_SURNAMES_NOBLE = [
+    "-Ja", "-Lei", "-Mei", "-Neeus", "-Qei", "-Teeus", "-Jee", "-Keeus", "-Nakal", "-Shei", "-Tee", "-Zul"
+]
+
+# ### Khajiit
+
+# Male Names - Commoner
+KHAJIIT_MALE_NAMES_COMMONER = [
+    "J'zargo", "M'aiq the Liar", "Ri'saad", "Kharjo", "Ma'dran", "Ra'zhinda", "Shavir", "Tsarr", "Zayhad",
+    "Dro'marash", "Jobasha", "Ra'jirr", "Ma'tasarr", "Ri'kasha", "Za'zhar"
+]
+
+# Male Names - Noble
+KHAJIIT_MALE_NAMES_NOBLE = [
+    "Dro'marash", "J'datharr", "M'dirr", "Ri'zakar", "Dro'shanji", "Ahzirr", "Do'rhen", "J'zhad", "Ma'jhad",
+    "Q'a-jhan", "Ra'shad", "S'krivva", "Tesar", "Za'rabi", "J'Ghasta"
+]
+
+# Female Names - Commoner
+KHAJIIT_FEMALE_NAMES_COMMONER = [
+    "Ahkari", "Tsrava", "Zaynabi", "Atahbah", "Kishashi", "Ma'jida", "Ra'shida", "Shuravi", "Tsra'ni",
+    "Zabani", "Ahjara", "Dro'bara", "Kishra", "Ra'ava", "Shavari"
+]
+
+# Female Names - Noble
+KHAJIIT_FEMALE_NAMES_NOBLE = [
+    "Adara", "Hadia", "Imani", "Kaliyah", "Safiya", "Abanji", "Ahnissi", "Do'rashi", "K'sharr",
+    "M'raaj-Dar", "Ra'zana", "Shuzura", "Tslani", "Ziss'r", "Thjoto"
+]
+
+# Surnames - Commoner
+KHAJIIT_SURNAMES_COMMONER = [
+    "-Dar", "-Dro", "-Daro", "-Jasa", "-Kato", "-Sien", "-Dara", "-Jhad"
+]
+
+# Surnames - Noble
+KHAJIIT_SURNAMES_NOBLE = [
+    "-Jo", "-Li", "-Ma", "-Ri", "-Sa", "-Zo", "-Jadd", "-Krin", "-Rava", "-Shav", "-Tani", "-Zar"
+]
+
+def get_random_name(race: Race, gender: Gender, tags: dict, name_type: str = None):
+    if race == Race.IMPERIAL:
+        if gender == Gender.MALE:
+            names = IMPERIAL_MALE_NAMES_COMMONER + IMPERIAL_MALE_NAMES_NOBLE
+        else:
+            names = IMPERIAL_FEMALE_NAMES_COMMONER + IMPERIAL_FEMALE_NAMES_NOBLE
+        surnames = IMPERIAL_SURNAMES_COMMONER + IMPERIAL_SURNAMES_NOBLE
+    elif race == Race.NORD:
+        if gender == Gender.MALE:
+            names = NORD_MALE_NAMES_COMMONER + NORD_MALE_NAMES_NOBLE
+        else:
+            names = NORD_FEMALE_NAMES_COMMONER + NORD_FEMALE_NAMES_NOBLE
+        surnames = NORD_SURNAMES_COMMONER + NORD_SURNAMES_NOBLE
+    elif race == Race.REDGUARD:
+        if gender == Gender.MALE:
+            names = REDGUARD_MALE_NAMES_COMMONER + REDGUARD_MALE_NAMES_NOBLE
+        else:
+            names = REDGUARD_FEMALE_NAMES_COMMONER + REDGUARD_FEMALE_NAMES_NOBLE
+        surnames = REDGUARD_SURNAMES
+    elif race == Race.BRETON:
+        if gender == Gender.MALE:
+            names = BRETON_MALE_NAMES_COMMONER + BRETON_MALE_NAMES_NOBLE
+        else:
+            names = BRETON_FEMALE_NAMES_COMMONER + BRETON_FEMALE_NAMES_NOBLE
+        surnames = BRETON_SURNAMES_COMMONER + BRETON_SURNAMES_NOBLE
+    elif race == Race.DUNMER:
+        if gender == Gender.MALE:
+            names = DARK_ELF_MALE_NAMES_COMMONER + DARK_ELF_MALE_NAMES_NOBLE
+        else:
+            names = DARK_ELF_FEMALE_NAMES_COMMONER + DARK_ELF_FEMALE_NAMES_NOBLE
+        surnames = DARK_ELF_SURNAMES_COMMONER + DARK_ELF_SURNAMES_NOBLE
+    elif race == Race.ALTMER:
+        if gender == Gender.MALE:
+            names = HIGH_ELF_MALE_NAMES_COMMONER + HIGH_ELF_MALE_NAMES_NOBLE
+        else:
+            names = HIGH_ELF_FEMALE_NAMES_COMMONER + HIGH_ELF_FEMALE_NAMES_NOBLE
+        surnames = HIGH_ELF_SURNAMES_COMMONER + HIGH_ELF_SURNAMES_NOBLE
+    elif race == Race.BOSMER:
+        if gender == Gender.MALE:
+            names = WOOD_ELF_MALE_NAMES_COMMONER + WOOD_ELF_MALE_NAMES_NOBLE
+        else:
+            names = WOOD_ELF_FEMALE_NAMES_COMMONER + WOOD_ELF_FEMALE_NAMES_NOBLE
+        surnames = WOOD_ELF_SURNAMES_COMMONER + WOOD_ELF_SURNAMES_NOBLE
+    elif race == Race.ORC:
+        if gender == Gender.MALE:
+            names = ORC_MALE_NAMES_COMMONER + ORC_MALE_NAMES_NOBLE
+        else:
+            names = ORC_FEMALE_NAMES_COMMONER + ORC_FEMALE_NAMES_NOBLE
+        surnames = ORC_SURNAMES_COMMONER + ORC_SURNAMES_NOBLE
+    elif race == Race.ARGONIAN:
+        if gender == Gender.MALE:
+            names = ARGONIAN_MALE_NAMES_COMMONER + ARGONIAN_MALE_NAMES_NOBLE
+        else:
+            names = ARGONIAN_FEMALE_NAMES_COMMONER + ARGONIAN_FEMALE_NAMES_NOBLE
+        surnames = ARGONIAN_SURNAMES_COMMONER + ARGONIAN_SURNAMES_NOBLE
+    elif race == Race.KHAJIIT:
+        if gender == Gender.MALE:
+            names = KHAJIIT_MALE_NAMES_COMMONER + KHAJIIT_MALE_NAMES_NOBLE
+        else:
+            names = KHAJIIT_FEMALE_NAMES_COMMONER + KHAJIIT_FEMALE_NAMES_NOBLE
+        surnames = KHAJIIT_SURNAMES_COMMONER + KHAJIIT_SURNAMES_NOBLE
+    else:
+        raise ValueError("Unknown race: {}".format(race))
+    
+    name = random.choice(names)
+    surname = random.choice(surnames)
+    return f"{name}{surname}" if surname.startswith('-') else f"{name} {surname}"
+
+def generate_npc_name(race: Race, gender: Gender, tags: dict, name_type: str = None):
+    return get_random_name(race, gender, tags, name_type)
+
 NAME_POOLS = {
-    "nord": {
-        "noble": {
-            "male": ["Ulfric", "Torvald", "Jarlson", "Rolfrick", "Stahlund", "Brynjolf", "Kodlak", "Skjor", "Galmar", "Harkon", "Vignar", "Balgruuf", "Korir", "Thongvor", "Dengeir", "Siddgeir", "Igmund", "Arngeir"],
-            "female": ["Brynhild", "Elfarra", "Sofira", "Hildrun", "Thyra", "Laila", "Astrid", "Elisif", "Maven", "Rikke", "Freyja", "Ingjard", "Idgrod", "Skald", "Frida", "Jonna", "Miraak"],
-        },
-        "commoner": {
-            "male": ["Ragnar", "Bjorn", "Sven", "Eirik", "Sigurd", "Hadvar", "Ralof", "Vilkas", "Farkas", "Stenvar", "Benor", "Cosnach", "Vorstag", "Hod", "Torvar", "Athis", "Njada", "Ria", "Skuli", "Torsten"],
-            "female": ["Astrid", "Freya", "Ylva", "Ingrid", "Solveig", "Gerdur", "Sigrid", "Mjoll", "Lydia", "Uthgerd", "Annekke", "Sylgja", "Temba", "Hroki", "Hilde", "Gunmar", "Aela", "Jorunn", "Bodil", "Greta"],
-        }
-    },
     "imperial": {
         "noble": {
-            "male": ["Titus", "Valerius", "Cassius", "Hadrian", "Septimus", "Tullius", "Proventus", "Quentin", "Maro", "Atticus", "Lucan", "Vittorio", "Caius", "Marcellus", "Flavius", "Aventus"],
-            "female": ["Serana", "Valeria", "Aurelia", "Livia", "Octavia", "Rikke", "Vittoria", "Elissia", "Claudia", "Antonia", "Marcia", "Aeliana", "Flavia", "Cornelia", "Licinia"],
+            "male": IMPERIAL_MALE_NAMES_NOBLE,
+            "female": IMPERIAL_FEMALE_NAMES_NOBLE
         },
         "commoner": {
-            "male": ["Gaius", "Marcus", "Tiber", "Lucius", "Rufus", "Marcurio", "Belrand", "Severio", "Amaund", "Quintus", "Adrian", "Silus", "Festus", "Pavo", "Nura", "Vinius"],
-            "female": ["Claudia", "Julia", "Fausta", "Silvia", "Vespasia", "Carlotta", "Wilmuth", "Herminia", "Gisli", "Alessia", "Camilla", "Lucia", "Sabina", "Minerva", "Petra"],
+            "male": IMPERIAL_MALE_NAMES_COMMONER,
+            "female": IMPERIAL_FEMALE_NAMES_COMMONER
+        }
+    },
+    "nord": {
+        "noble": {
+            "male": NORD_MALE_NAMES_NOBLE,
+            "female": NORD_FEMALE_NAMES_NOBLE
+        },
+        "commoner": {
+            "male": NORD_MALE_NAMES_COMMONER,
+            "female": NORD_FEMALE_NAMES_COMMONER
+        }
+    },
+    "redguard": {
+        "commoner": {
+            "male": REDGUARD_MALE_NAMES_COMMONER,
+            "female": REDGUARD_FEMALE_NAMES_COMMONER
+        },
+        "noble": {
+            "male": REDGUARD_MALE_NAMES_NOBLE,
+            "female": REDGUARD_FEMALE_NAMES_NOBLE
         }
     },
     "breton": {
         "noble": {
-            "male": ["Gaston", "Didier", "Armand", "Guillaume", "Thierry", "Farengar", "Ainethach", "Gallus", "Mercer", "Alain", "Etienne", "Tristan", "Jorunn", "Roland", "Benoit"],
-            "female": ["Genevieve", "Isabelle", "Marguerite", "Annette", "Elodie", "Sybille", "Tonilia", "Muiri", "Lisette", "Vivienne", "Cecile", "Aurore", "Giselle", "Madeleine", "Seraphine"],
+            "male": BRETON_MALE_NAMES_NOBLE,
+            "female": BRETON_FEMALE_NAMES_NOBLE
         },
         "commoner": {
-            "male": ["Pierre", "Jean", "Louis", "François", "Antoine", "Belethor", "Enthir", "Delvin", "Orthus", "Pascal", "Luc", "Mathieu", "Claude", "Remy", "Sebastien", "Michel"],
-            "female": ["Marie", "Sophie", "Jeanne", "Claire", "Nicole", "Colette", "Ysolda", "Lisbet", "Sorine", "Amelie", "Brigitte", "Eloise", "Laurentia", "Celeste", "Valerie"],
-        }
-    },
-    "redguard": {
-        "noble": {
-            "male": ["Ahmad", "Jamal", "Khalid", "Rashid", "Zafir", "Isran", "Nazir", "Sayyid", "Kematu", "A'tor", "Hassim", "Tariq", "Malik", "Ibrahim", "Yusuf"],
-            "female": ["Zafira", "Yasmina", "Samira", "Layla", "Aisha", "Iman", "Anora", "Rayya", "Faleen", "Nura", "Fatima", "Amira", "Safiya", "Lamia", "Zahra"],
-        },
-        "commoner": {
-            "male": ["Cyrus", "Nazir", "Kematu", "Sadir", "Malik", "Nazeem", "Brenuin", "Revus", "Ahlam", "Hassan", "Omar", "Jalal", "Faris", "Karim", "Salih"],
-            "female": ["Imani", "Sana", "Nadia", "Zara", "Amina", "Saadia", "Shiri", "Safia", "Umana", "Laila", "Halima", "Rania", "Jamila", "Soraya", "Mina"],
+            "male": BRETON_MALE_NAMES_COMMONER,
+            "female": BRETON_FEMALE_NAMES_COMMONER
         }
     },
     "dunmer": {
         "noble": {
-            "male": ["Nerevar", "Drathis", "Aryon", "Aralen", "Othral", "Neloth", "Savos", "Jiub", "Adril", "Brandyl", "Theryn", "Voryn", "Falen", "Ravyn", "Galyn"],
-            "female": ["Morwen", "Fjola", "Jenassa", "Brelyna", "Aranea", "Karliah", "Irileth", "Lythandas", "Vendil", "Almalexia", "Drasa", "Selveni", "Vevrana", "Nisswo", "Milore"],
+            "male": DARK_ELF_MALE_NAMES_NOBLE,
+            "female": DARK_ELF_FEMALE_NAMES_NOBLE
         },
         "commoner": {
-            "male": ["Brand-Shei", "Revyn", "Adril", "Malborn", "Erandur", "Romlyn", "Tythis", "Garyn", "Belyn", "Fethis", "Drovas", "Talen", "Ralen", "Velyn", "Nerano"],
-            "female": ["Jenassa", "Fethis", "Mogrul", "Nilene", "Brelyna", "Suvaris", "Dravynea", "Avrusa", "Mirri", "Eldrin", "Selvura", "Nirya", "Vaynelle", "Idesa", "Talmoro"],
+            "male": DARK_ELF_MALE_NAMES_COMMONER,
+            "female": DARK_ELF_FEMALE_NAMES_COMMONER
         }
     },
     "altmer": {
         "noble": {
-            "male": ["Ancano", "Ondolemar", "Rulindil", "Estormo", "Vingalmo", "Naarifin", "Mannimarco", "Quaranir", "Ocato", "Alandro", "Calindil", "Tandilwe", "Lorcalin", "Faelar", "Eldrin"],
-            "female": ["Elenwen", "Niranye", "Taarie", "Linwe", "Alwinarwe", "Ayrenn", "Nalime", "Celmire", "Liriel", "Arandil", "Sinderion", "Valinwe", "Elanwe", "Merildor", "Alandra"],
+            "male": HIGH_ELF_MALE_NAMES_NOBLE,
+            "female": HIGH_ELF_FEMALE_NAMES_NOBLE
         },
         "commoner": {
-            "male": ["Faralda", "Calcelmo", "Enthir", "Runil", "Aicantar", "Nelacar", "Nirya", "Orthorn", "Melaran", "Falion", "Taurion", "Vinglor", "Nelandil", "Sanyon", "Eldrin"],
-            "female": ["Endarie", "Vivienne", "Fasendil", "Nenya", "Atahba", "Minette", "Lirien", "Saliache", "Alandra", "Celmine", "Tindoria", "Merethil", "Valerwe", "Nalanya", "Elandra"]
+            "male": HIGH_ELF_MALE_NAMES_COMMONER,
+            "female": HIGH_ELF_FEMALE_NAMES_COMMONER
         }
     },
     "bosmer": {
         "noble": {
-            "male": ["Faelan", "Niruin", "Borvir", "Maluril", "Orion", "Aengoth", "Glavis", "Cuinanthil", "Faelar", "Thalindor", "Eldrin", "Balfiera", "Gwilinwe"],
-            "female": ["Niruin", "Grelka", "Nimphaneth", "Caminda", "Eridor", "Finna", "Anori", "Lirien", "Selvyn", "Aralindel"]
+            "male": WOOD_ELF_MALE_NAMES_NOBLE,
+            "female": WOOD_ELF_FEMALE_NAMES_NOBLE
         },
         "commoner": {
-            "male": ["Faendal", "Anoriath", "Valindor", "Elrindir", "Ma'randru-jo", "Gwilin", "Eothram", "Pavo", "Thalindra", "Beron", "Faelar", "Cirdir", "Lorcalin"],
-            "female": ["Nimrodel", "Gilfre", "Indara", "Ardwen", "Drynea", "Elrinde", "Lirienwe", "Celmine", "Anoriel", "Selvynia", "Faelindra", "Thalindra", "Vindrel"]
+            "male": WOOD_ELF_MALE_NAMES_COMMONER,
+            "female": WOOD_ELF_FEMALE_NAMES_COMMONER
         }
     },
     "orc": {
         "noble": {
-            "male": ["Ghorbash", "Urag", "Yashnag", "Burguk", "Larak", "Murob", "Gularzob", "Ogol", "Dushnamub", "Yamarz", "Gorzod", "Shuftharz", "Bazrag"],
-            "female": ["Mogakh", "Shel", "Borba", "Batul", "Gharol", "Ugor", "Shuftharz", "Lashgra", "Bagrak", "Gul", "Atub", "Sharamph", "Urgarlag"],
+            "male": ORC_MALE_NAMES_NOBLE,
+            "female": ORC_FEMALE_NAMES_NOBLE
         },
         "commoner": {
-            "male": ["Grogmar", "Muzgonk", "Shagrol", "Urzog", "Yamorz", "Gat", "Oglub", "Durak", "Bazgrol", "Ulag", "Garoth", "Malkus", "Durgash"],
-            "female": ["Urzoga", "Yatul", "Bagrak", "Gharol", "Uglarz", "Borgakh", "Dulug", "Lash", "Sharamph", "Gul", "Borzog", "Orzoga", "Murgol"],
+            "male": ORC_MALE_NAMES_COMMONER,
+            "female": ORC_FEMALE_NAMES_COMMONER
         }
     },
     "argonian": {
         "noble": {
-            "male": ["Swims-in-Deep-Waters", "Hides-His-Eyes", "Chal-Ei", "Meer-Zish", "Raises-The-Spine", "Teeba-Ei", "Veezara", "Jaree-Ra", "From-His-Shell", "Walks-in-Darkness"],
-            "female": ["From-Deepest-Fathoms", "Scales-of-Steel", "Druja", "Wanan-To", "Sheer-Meedish", "Pale-Heart-Washes", "Neetrenaza", "Waves-of-Dusk", "Sees-All-Colors", "Drinks-the-Tide"]
+            "male": ARGONIAN_MALE_NAMES_NOBLE,
+            "female": ARGONIAN_FEMALE_NAMES_NOBLE
         },
         "commoner": {
-            "male": ["Derkeethus", "Stands-In-Shadows", "Walks-Softly", "Madesi", "Talendri", "Beem-Ja", "Scouts-Many-Marshes", "Deep-In-His-Cups", "Haj-Ei", "Neet-Loh", "Reezus", "Jee-Lar", "Tsleeixth"],
-            "female": ["Shahvee", "Keerava", "Deekus", "Wujeeta", "Reek-Neeus", "Gives-No-Fuss", "Watches-Waves", "Dives-Into-Reeds", "Sings-of-Stars", "Tail-of-Tides", "Bright-Throat"]
+            "male": ARGONIAN_MALE_NAMES_COMMONER,
+            "female": ARGONIAN_FEMALE_NAMES_COMMONER
         }
     },
     "khajiit": {
         "noble": {
-            "male": ["J'zargo", "Ma'iq", "Dro'marash", "Ra'virr", "Ri'saad", "Kharjo", "J'darr", "Ma'jhad", "Razum-dar", "Za'ji", "Jo'ran", "Ra'jirr", "Ka'zhar"],
-            "female": ["Ahkari", "Razhinda", "Zaynabi", "Shavari", "Tsrava", "Ma'kara", "Atahbah", "Ri'zhaja", "Khali", "Shazara-Ta", "Tsabhi", "Ri'datta", "Za'jirra"]
+            "male": KHAJIIT_MALE_NAMES_NOBLE,
+            "female": KHAJIIT_FEMALE_NAMES_NOBLE
         },
         "commoner": {
-            "male": ["M'aiq", "J'datharr", "Qa'jo", "Dro'shavir", "Kesh", "Vasha", "Ahjmal", "Zaymar", "Ra'khan", "Jo'dar", "S'jir", "Ma'zaka", "Ra'zhar"],
-            "female": ["Shuravi", "Ra'kheran", "Dro'barri", "Tsrasuna", "Bahb-Bi", "S'kasha", "Ri'zala", "Za'darra", "Khayla", "S'rashi", "Ma'zabi", "Jo'vanni", "Ra'tesh"]
+            "male": KHAJIIT_MALE_NAMES_COMMONER,
+            "female": KHAJIIT_FEMALE_NAMES_COMMONER
         }
-    },
+    }
 }
-
-# Add a unique ID to each NPC name in NAME_POOLS for tracking purposes
-def assign_unique_npc_ids(name_pools):
-    for race_data in name_pools.values():
-        for name_type_data in race_data.values():
-            for gender_name_list in name_type_data.values():
-                if isinstance(gender_name_list, list):
-                    for i in range(len(gender_name_list)):
-                        original_name = gender_name_list[i].split('_')[0]
-                        unique_id = f"{original_name.lower().replace(' ', '_')}_{random.randint(100, 999)}"
-                        gender_name_list[i] = unique_id
