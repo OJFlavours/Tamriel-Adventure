@@ -5,7 +5,7 @@ from npc_entities import NPC
 from npc_roles import FRIENDLY_ROLES, HOSTILE_ROLES # Import role sets
 from ui import UI
 #from locations import RAW_LOCATION_DATA_MAP # Removed this line
-from locations import location_manager # Added this line
+ # Added this line
 from fixed_npc_data import FIXED_NPC_DATA
 
 def determine_npc_count(tags_list, location_data):
@@ -88,7 +88,7 @@ def determine_npc_role(tags_list, base_role_pool):
     return random.choice(final_pool)
 
 
-def generate_npcs_for_location(location_obj, npc_registry, find_hierarchy_func):
+def generate_npcs_for_location(location_obj, npc_registry, find_hierarchy_func, location_manager):
     try:
         #raw_location_data = RAW_LOCATION_DATA_MAP.get(location_obj.id, {}) # Removed this line
         raw_location_data = {} # Added this line

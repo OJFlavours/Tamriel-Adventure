@@ -1,140 +1,149 @@
 import json
+import os
 from typing import Dict, List, Optional
-import os # Import the 'os' module to handle file paths
 
-# --- Data Loading (Corrected) ---
-def load_json_data(filepath: str) -> dict:
-    """Loads data from a JSON file, handling paths correctly."""
-    try:
-        # Get the directory where this script (locations.py) is located.
-        script_dir = os.path.dirname(os.path.realpath(__file__))
-        # Construct the full, absolute path to the data file.
-        full_path = os.path.join(script_dir, filepath)
-        with open(full_path, 'r') as f:
-            return json.load(f)
-    except FileNotFoundError:
-        print(f"FATAL ERROR: Data file not found at {full_path}. Ensure 'game_data' directory is in the same folder as your scripts.")
-        return {}
-    except json.JSONDecodeError:
-        print(f"FATAL ERROR: Could not decode JSON from {full_path}. Check for syntax errors.")
-        return {}
-
-# Load all location data using the corrected loader
-LOCATION_DESCRIPTIONS = load_json_data('game_data/locations/location_descriptions.json')
-LOCATION_TAGS = load_json_data('game_data/locations/location_tags.json')
-LOCATION_POPULATION_DATA = load_json_data('game_data/locations/location_population.json')
-LOCATION_TRAVEL_CONNECTIONS = load_json_data('game_data/locations/location_travel.json')
-LOCATION_MISC_ATTRIBUTES = load_json_data('game_data/locations/location_misc_attributes.json')
-LOCATION_STRUCTURES = load_json_data('game_data/locations/map_hierarchy.json')
-
-
-# --- Global Registries ---
-ALL_LOCATIONS_INSTANCES: Dict[int, 'Location'] = {}
-RAW_LOCATION_DATA_MAP: Dict[int, dict] = {} # This will be rebuilt for compatibility
-
+# Import location data from all python modules
+from locations_whiterun import WHITERUN_LOCATIONS
+from locations_the_pale import THE_PALE_LOCATIONS
+from locations_winterhold import WINTERHOLD_LOCATIONS
+from locations_eastmarch import EASTMARCH_LOCATIONS
+from locations_the_rift import THE_RIFT_LOCATIONS
+from locations_hjaalmarch import HJAALMARCH_LOCATIONS
+from locations_falkreath import FALKREATH_LOCATIONS
+from locations_haafingar import HAAFINGAR_LOCATIONS
+from locations_misc import MISC_LOCATIONS
 
 class Location:
-    def __init__(self, id: int, name: str, parent_id: Optional[int] = None):
-        self.id = id
-        self.name = name
+    """Represents a single location in the game world."""
+    def __init__(self, loc_data: dict, parent_id: Optional[int] = None):
+        self.id = loc_data.get('id')
+        self.name = loc_data.get('name')
         self.parent_id = parent_id
-        
+        self.sub_location_ids: List[int] = [sub.get('id') for sub in loc_data.get('sub_locations', []) if sub.get('id') is not None]
+
         # Initialize attributes to default values
         self.description: str = "A mysterious place."
         self.travel_desc: str = "A mysterious place."
         self.tags: List[str] = []
         self.demographics: Dict[str, int] = {}
         self.density: str = "sparse"
-        self.is_dark: bool = False
+        self.travel: dict = {}
+        self.context_tags: List[str] = []
+        self.exit_label_from_parent: str = f"Enter {self.name}"
+        self.exit_label_to_parent: str = f"Exit to {self.name}'s parent"
         self.exits: Dict[str, 'Location'] = {}
-        self.travel_links: dict = {}
-        self.sub_location_ids: List[int] = []
 
-    def populate_attributes(self):
-        """Populates the location's attributes from the centrally loaded data."""
-        desc_data = LOCATION_DESCRIPTIONS.get(str(self.id), {})
-        self.description = desc_data.get("desc", self.description)
-        self.travel_desc = desc_data.get("travel_desc", self.travel_desc)
-
-        self.tags = LOCATION_TAGS.get(str(self.id), [])
-
-        pop_data = LOCATION_POPULATION_DATA.get(str(self.id), {})
-        self.demographics = pop_data.get("demographics", {})
-        self.density = pop_data.get("density", "sparse")
+    def populate_attributes_from_data(self, data_sources: dict):
+        """Populates the location's attributes from various data sources."""
+        loc_id_str = str(self.id)
         
-        self.travel_links = LOCATION_TRAVEL_CONNECTIONS.get(str(self.id), {})
-
-        misc_data = LOCATION_MISC_ATTRIBUTES.get(str(self.id), {})
-        self.is_dark = misc_data.get("is_dark", False)
-
-    def add_exit(self, direction: str, location_obj: 'Location'):
-        self.exits[direction] = location_obj
+        # Merge data from all sources, with python file data as base
+        merged_data = data_sources['python_data'].get(self.id, {})
+        merged_data.update(data_sources['descriptions'].get(loc_id_str, {}))
+        merged_data.update(data_sources['population'].get(loc_id_str, {}))
+        merged_data.update(data_sources['misc'].get(loc_id_str, {}))
         
+        # Overwrite or set specific attributes
+        self.name = data_sources['names'].get(loc_id_str, self.name)
+        self.description = merged_data.get('desc', self.description)
+        self.travel_desc = merged_data.get('travel_desc', self.travel_desc)
+        self.tags = data_sources['tags'].get(loc_id_str, self.tags)
+        self.demographics = merged_data.get('demographics', self.demographics)
+        self.density = merged_data.get('density', self.density)
+        self.travel = data_sources['travel'].get(loc_id_str, self.travel)
+        self.context_tags = merged_data.get('context_tags', self.context_tags)
+        self.exit_label_from_parent = merged_data.get('exit_label_from_parent', f"Enter {self.name}")
+        self.exit_label_to_parent = merged_data.get('exit_label_to_parent', f"Exit to parent of {self.name}")
+
     def __str__(self) -> str:
         return self.name
 
-def _create_location_objects_recursive(location_data_list: List[dict], parent_obj: Optional[Location] = None):
-    """Recursively creates Location objects, populates them, and links them."""
-    for loc_data in location_data_list:
-        loc_id = loc_data['id']
+class LocationManager:
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(LocationManager, cls).__new__(cls)
+            cls._instance._initialized = False
+        return cls._instance
+
+    def __init__(self):
+        if self._initialized:
+            return
+        self._initialized = True
+        self.locations: Dict[int, Location] = {}
+        self._load_all_locations()
+
+    def _load_json_data(self, filepath: str) -> dict:
+        script_dir = os.path.dirname(os.path.realpath(__file__))
+        full_path = os.path.join(script_dir, filepath)
+        try:
+            with open(full_path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            print(f"Error loading {filepath}: {e}")
+            return {}
+
+    def _load_all_locations(self):
+        all_location_lists = [
+            WHITERUN_LOCATIONS, THE_PALE_LOCATIONS, WINTERHOLD_LOCATIONS,
+            EASTMARCH_LOCATIONS, THE_RIFT_LOCATIONS, HJAALMARCH_LOCATIONS,
+            FALKREATH_LOCATIONS, HAAFINGAR_LOCATIONS, MISC_LOCATIONS
+        ]
+
+        python_loc_data = {}
+        def recurse_extract(loc_list):
+            for loc in loc_list:
+                python_loc_data[loc['id']] = loc
+                if 'sub_locations' in loc:
+                    recurse_extract(loc['sub_locations'])
+        for data_list in all_location_lists:
+            recurse_extract(data_list)
         
-        loc_obj = Location(id=loc_id, name=loc_data['name'], parent_id=parent_obj.id if parent_obj else None)
-        loc_obj.populate_attributes()
-        
-        ALL_LOCATIONS_INSTANCES[loc_id] = loc_obj
-
-        if parent_obj:
-            parent_obj.sub_location_ids.append(loc_id)
-            misc_attrs = LOCATION_MISC_ATTRIBUTES.get(str(loc_id), {})
-            exit_label = misc_attrs.get("exit_label_from_parent", f"Enter {loc_obj.name}")
-            parent_obj.add_exit(exit_label, loc_obj)
-            
-            exit_label_to_parent = misc_attrs.get("exit_label_to_parent", f"Exit to {parent_obj.name}")
-            loc_obj.add_exit(exit_label_to_parent, parent_obj)
-
-        if "sub_locations" in loc_data:
-            _create_location_objects_recursive(loc_data["sub_locations"], loc_obj)
-
-def _connect_travel_routes():
-    """Connects locations based on the travel connections data."""
-    for loc_id_str, travel_data in LOCATION_TRAVEL_CONNECTIONS.items():
-        loc_id = int(loc_id_str)
-        origin_loc = ALL_LOCATIONS_INSTANCES.get(loc_id)
-        if not origin_loc: continue
-
-        for link in travel_data.get("links", []):
-            dest_name = link.get("name")
-            conn_type = link.get("connection_type", "Path")
-            
-            dest_loc = next((loc for loc in ALL_LOCATIONS_INSTANCES.values() if loc.name == dest_name), None)
-
-            if dest_loc:
-                origin_loc.add_exit(f"{conn_type} to {dest_loc.name}", dest_loc)
-                dest_loc.add_exit(f"{conn_type} to {origin_loc.name}", origin_loc)
-
-def initialize_skyrim_map() -> Dict[int, Location]:
-    """Initializes all locations, populates their data, and connects them."""
-    if ALL_LOCATIONS_INSTANCES:
-        return ALL_LOCATIONS_INSTANCES
-
-    _create_location_objects_recursive(LOCATION_STRUCTURES)
-    _connect_travel_routes()
-
-    for loc_id, loc_obj in ALL_LOCATIONS_INSTANCES.items():
-        sub_locs_data = [RAW_LOCATION_DATA_MAP.get(sub_id, {}) for sub_id in loc_obj.sub_location_ids]
-        RAW_LOCATION_DATA_MAP[loc_id] = {
-            "id": loc_id,
-            "name": loc_obj.name,
-            "desc": loc_obj.description,
-            "travel_desc": loc_obj.travel_desc,
-            "tags": loc_obj.tags,
-            "demographics": loc_obj.demographics,
-            "density": loc_obj.density,
-            "is_dark": loc_obj.is_dark,
-            "travel": loc_obj.travel_links,
-            "sub_locations": sub_locs_data
+        data_sources = {
+            'python_data': python_loc_data,
+            'descriptions': self._load_json_data('location_descriptions.json'),
+            'tags': self._load_json_data('location_tags.json'),
+            'population': self._load_json_data('location_population.json'),
+            'travel': self._load_json_data('location_travel.json'),
+            'misc': self._load_json_data('location_misc_attributes.json'),
+            'names': self._load_json_data('location_names.json')
         }
-    return ALL_LOCATIONS_INSTANCES
+        
+        map_hierarchy = self._load_json_data('map_hierarchy.json')
 
-# To maintain compatibility with scripts that might import from the top-level
-LOCATIONS = LOCATION_STRUCTURES
+        def process_recursive(loc_data_list, parent_id=None):
+            for loc_data in loc_data_list:
+                loc_id = loc_data['id']
+                loc_obj = Location(loc_data, parent_id)
+                loc_obj.populate_attributes_from_data(data_sources)
+                self.locations[loc_id] = loc_obj
+                if 'sub_locations' in loc_data:
+                    process_recursive(loc_data['sub_locations'], loc_id)
+        
+        process_recursive(map_hierarchy)
+        self._connect_exits()
+
+    def _connect_exits(self):
+        for loc_id, loc_obj in self.locations.items():
+            if loc_obj.parent_id and loc_obj.parent_id in self.locations:
+                parent_obj = self.locations[loc_obj.parent_id]
+                parent_exit_label = parent_obj.exit_label_to_parent if hasattr(parent_obj, 'exit_label_to_parent') else f"Exit to {parent_obj.name}"
+                loc_obj.exits[loc_obj.exit_label_to_parent] = parent_obj
+                parent_obj.exits[loc_obj.exit_label_from_parent] = loc_obj
+
+            adjacent_ids = loc_obj.travel.get('adjacent_locations', [])
+            for adj_id in adjacent_ids:
+                if adj_id in self.locations:
+                    adj_loc = self.locations[adj_id]
+                    loc_obj.exits[f"Path to {adj_loc.name}"] = adj_loc
+                    adj_loc.exits[f"Path to {loc_obj.name}"] = loc_obj
+
+    def get_location(self, loc_id: int) -> Optional[Location]:
+        return self.locations.get(loc_id)
+
+    def get_location_by_name(self, name: str) -> Optional[Location]:
+        for loc in self.locations.values():
+            if loc.name.lower() == name.lower():
+                return loc
+        return None
