@@ -101,7 +101,7 @@ HJAALMARCH_LOCATIONS = [
                 "tags": ["structure_type_natural_cave", "monster_den_spider_major_potential", "monster_den_chaurus_potential", "dungeon_minor", "terrain_marsh", "alchemy_ingredient_source_rich_potential_venom_eggs", "exploration_point_dangerous_creatures"],
                 "density": "average",
                 "exit_label_from_parent": "Cavern Entrance",
-                "exit_label_to_parent": "Exit Cavern"
+                "exit_label_to_parent": "Exit Cave"
             },
             {
                 "id": 46,
@@ -158,10 +158,7 @@ HJAALMARCH_LOCATIONS = [
                 "name": "Robber's Gorge",
                 "desc": "A bandit-controlled ravine and bridge southwest of Rorikstead, on the edge of Hjaalmarch, a notorious spot for ambushes.",
                 "travel_desc": "Bandit-controlled ravine and bridge, ambush spot.",
-                "tags": ["bandit_main_stronghold_ravine", "terrain_canyon_river_gorge", "structure_type_bridge_structure_wooden", "dungeon_major", "state_or_condition_current_bandit_controlled_area", "toll_road_illegal_ambush_spot", "quest_location_bounty_leader_potential"],
-                "density": "average",
-                "exit_label_from_parent": "Path to Gorge",
-                "exit_label_to_parent": "Leave Gorge Area"
+                "tags": ["bandit_main_stronghold_ravine", "terrain_canyon_river_gorge", "structure_type_bridge_structure_wooden", "dungeon_major", "state_or_condition_current_bandit_controlled_area", "toll_road_illegal_ambush_spot", "quest_location_bounty_leader_potential"]
             },
             {
                 "id": 40003,
@@ -268,8 +265,8 @@ HJAALMARCH_LOCATIONS = [
                 "name": "Bogbound Barrow",
                 "desc": "A small, partially flooded Nordic barrow slowly being reclaimed by the swamp. It's likely home to draugr who guard meager treasures.",
                 "travel_desc": "Small, partially flooded Nordic barrow.",
-                "tags": ["nordic_burial_site_minor_barrow", "structure_condition_flooded_partially", "dungeon_minor", "undead_presence_strong", "draugr_heavy_meager_treasure_guardians", "terrain_marsh_reclaimed", "exploration_point_minor_tomb"],
-                "density": "sparse",
+                "tags": ["structure_type_ruined_shrine_nordic_watchtower_potential", "nordic_burial_site_minor_potential", "terrain_marsh_sinking_stones", "structure_condition_collapsed_half_sunk", "treasure_cache_rumored_meager", "cultural_historical_significance_nordic_ancient_site_reclaimed_by_marsh", "exploration_point_minor_ruin"],
+                "density": "empty",
                 "exit_label_from_parent": "Barrow Entrance",
                 "exit_label_to_parent": "Exit Barrow"
             },
@@ -312,6 +309,13 @@ HJAALMARCH_LOCATIONS = [
                 "density": "bustling",
                 "exit_label_from_parent": "Ruin Entrance",
                 "exit_label_to_parent": "Exit Ruin"
+            },
+            {
+                "id": 40001,
+                "name": "Robber's Gorge",
+                "desc": "A bandit-controlled ravine and bridge southwest of Rorikstead, on the edge of Hjaalmarch, a notorious spot for ambushes.",
+                "travel_desc": "Bandit-controlled ravine and bridge, ambush spot.",
+                "tags": ["bandit_main_stronghold_ravine", "terrain_canyon_river_gorge", "structure_type_bridge_structure_wooden", "dungeon_major", "state_or_condition_current_bandit_controlled_area", "toll_road_illegal_ambush_spot", "quest_location_bounty_leader_potential"]
             }
         ]
     }

@@ -83,5 +83,49 @@ FALKREATH_CITY_LOCATIONS = [
         "density": "empty",
         "exit_label_from_parent": "Path to Sanctuary",
         "exit_label_to_parent": "Leave Sanctuary Area"
+    },
+    {
+        "id": 50001,
+        "name": "Knifepoint Ridge",
+        "desc": "A bandit camp located on a ridge near Falkreath.",
+        "travel_desc": "Bandit camp on a ridge near Falkreath.",
+        "tags": ["structure_type_bandit_camp", "bandit_camp"],
+        "density": "sparse",
+        "context_tags": ["exterior", "bandit_camp"],
+        "exit_label_from_parent": "Camp Entrance",
+        "exit_label_to_parent": "Exit Camp"
+    },
+    {
+        "id": 50002,
+        "name": "Bilegulch Mine",
+        "desc": "A mine located near Falkreath.",
+        "travel_desc": "Mine near Falkreath.",
+        "tags": ["structure_type_mine", "mine"],
+        "density": "sparse",
+        "context_tags": ["interior", "mine"],
+        "exit_label_from_parent": "Mine Entrance",
+        "exit_label_to_parent": "Exit Mine"
+    },
+    {
+        "id": 5008,
+        "name": "Dengeir's House",
+        "desc": "The residence of Dengeir of Stuhn, a former Jarl of Falkreath.",
+        "travel_desc": "Residence of Dengeir of Stuhn.",
+        "tags": ["structure_type_residence", "residence"],
+        "density": "sparse",
+        "context_tags": ["interior", "residence"],
+        "exit_label_from_parent": "House Entrance",
+        "exit_label_to_parent": "Exit House"
+    },
+    {
+        "id": 5009,
+        "name": "Falkreath Barracks",
+        "desc": "The barracks for the Falkreath guard.",
+        "travel_desc": "Barracks for the Falkreath guard.",
+        "tags": ["structure_type_barracks", "barracks"],
+        "density": "sparse",
+        "context_tags": ["interior", "barracks"],
+        "exit_label_from_parent": "Barracks Entrance",
+        "exit_label_to_parent": "Exit Barracks"
     }
 ]

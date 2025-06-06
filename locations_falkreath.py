@@ -375,6 +375,13 @@ FALKREATH_LOCATIONS = [
                 "density": "sparse",
                 "exit_label_from_parent": "Path to Cabin",
                 "exit_label_to_parent": "Leave Cabin Area"
+            },
+            {
+                "id": 50001,
+                "name": "Knifepoint Ridge",
+                "desc": "A bandit-occupied mine and camp in the northwestern part of Falkreath Hold, from which raids are launched. Rumored to be connected to a Daedric artifact.",
+                "travel_desc": "Bandit-occupied mine and camp, rumored to be connected to a Daedric artifact.",
+                "tags": ["structure_type_mine_active_camp_integrated", "economic_activity_mining_corundum_potential", "bandit_main_stronghold_raiding_base", "dungeon_major", "quest_location_daedric_boethiah_champion", "state_or_condition_current_bandit_controlled_area", "terrain_northwestern_falkreath_hold", "artifact_location_daedric_related_potential"]
             }
         ]
     }

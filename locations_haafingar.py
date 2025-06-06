@@ -330,11 +330,31 @@ HAAFINGAR_LOCATIONS = [
                 "name": "The Dainty Sload",
                 "desc": "A notorious pirate or smuggler ship that sometimes anchors in hidden coves along Haafingar's coast, or might even brazenly try to trade illicit goods at the Solitude Docks under a false flag.",
                 "travel_desc": "Notorious pirate or smuggler ship.",
-                "tags": ["structure_type_ship_pirate_smuggler_notorious_dainty_sload", "faction_hostile_pirate_sload_crew", "environment_coastal_encounter_hostile_potential_hidden_coves_docks", "economic_activity_smuggling_illicit_trade_skooma_contraband", "black_market_connection_rumor_riften_solitude", "unique_encounter_named_ship_pirate_captain", "quest_location_bounty_target_potential_ship_captain"],
-                "density": "average",
-                "exit_label_from_parent": "Board Ship",
-                "exit_label_to_parent": "Disembark Ship"
+                "tags": ["structure_type_ship_pirate_smuggler_notorious_dainty_sload", "faction_hostile_pirate_sload_crew", "environment_coastal_encounter_hostile_potential_hidden_coves_docks", "economic_activity_smuggling_illicit_trade_skooma_contraband", "black_market_connection_rumor_riften_solitude", "unique_encounter_named_ship_pirate_captain", "quest_location_bounty_target_potential_ship_captain"]
             }
         ]
-    }
+    },
+    {
+        "id": 8012,
+        "name": "Solitude Caravan Camp",
+        "desc": "A temporary camp set up by traveling merchants outside Solitude. It's a place of trade and rest for those journeying through Haafingar.",
+        "travel_desc": "Caravan camp outside Solitude.",
+        "tags": ["structure_type_encampment", "settlement_features_caravan_camp", "economic_activity_trade_caravans", "travel_hub_roadside"],
+        "density": "sparse",
+        "context_tags": ["exterior", "encampment_type", "trade_zone"],
+        "demographics": {"Nord": 40, "Imperial": 30, "Khajiit": 20, "Breton": 10},
+        "exit_label_from_parent": "Camp Entrance",
+        "exit_label_to_parent": "Exit Camp"
+    },
+    {
+        "id": 80011,
+        "name": "Pelagius Wing",
+        "desc": "A sealed-off wing of the Blue Palace, rumored to be haunted by the mad Emperor Pelagius Septim III.",
+        "travel_desc": "Sealed-off wing of the Blue Palace, rumored to be haunted.",
+        "tags": ["structure_type_castle_wing_sealed", "haunted_location_ghosts_spirits", "unique_landmark_historical_site", "blue_palace_extension", "imperial_history_related"],
+        "density": "sparse",
+        "context_tags": ["interior", "castle_wing"],
+        "exit_label_from_parent": "Wing Entrance",
+        "exit_label_to_parent": "Exit Wing"
+    },
 ]

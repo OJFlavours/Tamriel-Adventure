@@ -142,341 +142,111 @@ EASTMARCH_LOCATIONS = [
                 "density": "sparse",
                 "exit_label_from_parent": "Path to Crest",
                 "exit_label_to_parent": "Leave Crest Area"
-            },
-            {
-                "id": 77,
-                "name": "Cronvangr Cave",
-                "desc": "A large cave system in the hot springs region of Eastmarch, heavily infested with giant frostbite spiders. Rumors also speak of a hidden vampire presence within.",
-                "travel_desc": "Large cave system infested with giant frostbite spiders.",
-                "tags": ["structure_type_natural_cave_large", "monster_den_spider_major_frostbite", "specific_landmark_type_vampire_coven_minor_potential_hidden_section", "dungeon_major", "terrain_hot_springs_nearby_eastmarch", "alchemy_ingredient_source_rich_venom_spider_eggs", "quest_location_bounty_potential_spiders_vampires"],
-                "density": "bustling",
-                "exit_label_from_parent": "Cave Entrance",
-                "exit_label_to_parent": "Exit Cave"
-            },
-            {
-                "id": 78,
-                "name": "Darkwater Crossing",
-                "desc": "A small mining settlement on the Darkwater River, primarily focused on corundum ore. A mix of Nords and Argonians work and live here.",
-                "travel_desc": "Small mining settlement focused on corundum ore.",
-                "tags": ["populated_village_mining", "settlement_minor", "economic_activity_mining_corundum", "argonian_culture_local_workers", "terrain_river_delta_darkwater", "climate_volcanic_tundra_edge", "quest_giver_potential_local_issues_mine_related_argonian_concerns"],
-                "density": "sparse",
-                "exit_label_from_parent": "Path to Settlement",
-                "exit_label_to_parent": "Leave Settlement",
-                "sub_locations": [
-                    {
-                        "id": 7801,
-                        "name": "Goldenrock Mine",
-                        "desc": "The corundum mine that supports Darkwater Crossing, known for its rich veins.",
-                        "travel_desc": "Corundum mine supporting Darkwater Crossing.",
-                        "tags": ["structure_type_mine_active", "economic_activity_mining_corundum", "resource_node_corundum"],
-                        "density": "average",
-                        "exit_label_from_parent": "Mine Entrance",
-                        "exit_label_to_parent": "Exit Mine"
-                    }
-                ]
-            },
-            {
-                "id": 79,
-                "name": "Gallows Rock",
-                "desc": "A ruined fort southwest of Windhelm, now serving as a major stronghold for the Silver Hand, hunters of werewolves. A dangerous place for any lycanthrope.",
-                "travel_desc": "Ruined fort, a major Silver Hand stronghold.",
-                "tags": ["structure_type_ruined_fort", "specific_landmark_type_silver_hand_hq_major", "dungeon_major", "quest_location_companions_guild_hall_silver_hand_conflict", "faction_hostile_silver_hand_stronghold", "state_or_condition_current_enemy_controlled_area_silver_hand", "werewolf_lore_silver_hand_hunters"],
-                "density": "average",
-                "exit_label_from_parent": "Fort Entrance",
-                "exit_label_to_parent": "Exit Fort"
-            },
-            {
-                "id": 70001,
-                "name": "Gloomreach",
-                "desc": "A dark and winding cave system in the southern mountains of Eastmarch, often inhabited by Falmer, Chaurus, or other dangerous subterranean creatures.",
-                "travel_desc": "Dark, winding cave system inhabited by Falmer and Chaurus.",
-                "tags": ["structure_type_natural_cave_winding", "falmer_presence_strong_potential", "chaurus_nest_potential", "dungeon_major", "terrain_mountainous_southern_eastmarch", "environment_underground_dark_gloomreach", "state_or_condition_current_lawless_area_falmer_territory_potential", "exploration_challenge_dangerous_subterranean"],
-                "density": "average",
-                "exit_label_from_parent": "Cave Entrance",
-                "exit_label_to_parent": "Exit Cave"
-            },
-            {
-                "id": 70002,
-                "name": "Lost Knife Hideout",
-                "desc": "A large cave system serving as a major bandit hideout, located near the border with The Rift. Known for its ruthless gang, the 'Lost Knife' bandits.",
-                "travel_desc": "Large cave system, a major bandit hideout.",
-                "tags": ["structure_type_natural_cave_large_hideout", "bandit_main_stronghold_lost_knife_gang", "dungeon_major", "state_or_condition_current_bandit_controlled_area", "quest_location_bounty_leader_lost_knife", "economic_activity_looting_storage_bandit_operations", "terrain_eastmarch_rift_border"],
-                "density": "average",
-                "exit_label_from_parent": "Cave Entrance",
-                "exit_label_to_parent": "Exit Cave"
-            },
-            {
-                "id": 70003,
-                "name": "Mixwater Mill",
-                "desc": "A lumber mill on the White River in Eastmarch, run by Gilfre. A quiet spot, but travelers sometimes report strange noises from the nearby woods at night.",
-                "travel_desc": "Lumber mill on the White River, run by Gilfre.",
-                "tags": ["structure_type_lumber_mill_site", "settlement_minor", "economic_activity_logging_timber", "terrain_river_delta_white_river", "climate_volcanic_tundra_edge", "mystery_local_rumor_strange_noises_woods", "peaceful_area_potential", "quest_giver_potential_gilfre_marriage_local_issues"],
-                "density": "sparse",
-                "exit_label_from_parent": "Path to Mill",
-                "exit_label_to_parent": "Leave Mill"
-            },
-            {
-                "id": 70004,
-                "name": "Morvunskar",
-                "desc": "A ruined fort south of Windhelm, now occupied by hostile mages. During particular revelries, a portal to Sanguine's realm of Oblivion might be found here.",
-                "travel_desc": "Ruined fort occupied by hostile mages, portal to Sanguine's realm.",
-                "tags": ["structure_type_ruined_fort", "specific_landmark_type_mage_lair_hostile_conjurers", "quest_location_daedric_sanguine_a_night_to_remember", "dungeon_major", "magical_properties_daedric_influence_overt_temporary_sanguine_portal", "undead_presence_potential_conjured", "portal_to_oblivion_sanguine_temporary_misty_grove", "terrain_south_windhelm_roadside"],
-                "density": "average",
-                "exit_label_from_parent": "Fort Entrance",
-                "exit_label_to_parent": "Exit Fort"
-            },
-            {
-                "id": 70005,
-                "name": "Refugees' Rest",
-                "desc": "A small, ruined Nordic structure east of Windhelm, marking a somber historical event related to the Night of Tears or similar ancient tragedy. Often haunted by sorrowful spirits.",
-                "travel_desc": "Small, ruined Nordic structure marking a somber event.",
-                "tags": ["structure_type_ruined_shrine_nordic_somber", "cultural_historical_significance_nordic_ancient_site_tragedy_night_of_tears_refugees", "magical_properties_haunted_aura_sorrowful_spirits", "undead_presence_ghosts_potential", "terrain_volcanic_tundra_east_windhelm", "night_of_tears_related_rumor", "exploration_point_historic_memorial"],
-                "density": "empty",
-                "exit_label_from_parent": "Path to Ruin",
-                "exit_label_to_parent": "Leave Ruin"
-            },
-            {
-                "id": 70006,
-                "name": "Riverside Shack",
-                "desc": "A small, isolated shack on the banks of the White River, sometimes home to a reclusive fisherman, a desperate poacher, or even a territorial creature.",
-                "travel_desc": "Small, isolated shack on the banks of the White River.",
-                "tags": ["structure_type_shack_or_hut_isolated", "terrain_river_delta_white_river", "hermit_lair_potential_fisherman_poacher", "economic_activity_fishing_subsistence_potential", "monster_den_mudcrab_potential", "isolated_location", "exploration_point_minor_dwelling"],
-                "density": "sparse",
-                "exit_label_from_parent": "Path to Shack",
-                "exit_label_to_parent": "Leave Shack Area"
-            },
-            {
-                "id": 70007,
-                "name": "Stony Creek Cave",
-                "desc": "A cave in the southern part of Eastmarch's volcanic tundra, inhabited by bandits who have discovered a valuable alchemical ingredient deep within - Finn's Lute for the Bards College.",
-                "travel_desc": "Cave inhabited by bandits, contains Finn's Lute.",
-                "tags": ["structure_type_natural_cave", "bandit_minor_camp", "dungeon_minor", "alchemy_ingredient_source_rich_unique_flora_deep_within", "quest_location_bards_college_finns_lute", "terrain_volcanic_tundra_southern_eastmarch", "treasure_cache_rumored_bandit_loot", "state_or_condition_current_bandit_controlled_area"],
-                "density": "sparse",
-                "exit_label_from_parent": "Cave Entrance",
-                "exit_label_to_parent": "Exit Cave"
-            },
-            {
-                "id": 70008,
-                "name": "Traitor's Post",
-                "desc": "A small, abandoned shack east of Windhelm, rumored to have been used by outlaws or spies. It's often a meeting point for clandestine activities.",
-                "travel_desc": "Small, abandoned shack, rumored outlaw meeting point.",
-                "tags": ["structure_type_shack_or_hut_abandoned_ominous", "bandit_minor_camp_potential_clandestine_meeting_spot", "spy_network_rumor_outlaws", "treasure_cache_rumored_hidden", "terrain_volcanic_tundra_roadside_east_windhelm", "quest_location_minor_intrigue_potential", "exploration_point_mystery_shack"],
-                "density": "sparse",
-                "exit_label_from_parent": "Path to Post",
-                "exit_label_to_parent": "Leave Post Area"
-            },
-            {
-                "id": 70009,
-                "name": "Uttering Hills Cave",
-                "desc": "A cave system southwest of Windhelm, serving as a hideout for a group of bandits.",
-                "travel_desc": "Cave system, hideout for Summerset Shadows bandits.",
-                "tags": ["structure_type_natural_cave_system", "bandit_main_stronghold_altmer_summerset_shadows", "dungeon_major", "faction_hostile_summerset_shadows", "quest_location_thieves_guild_potential_summerset_shadows_quest", "altmer_presence_hostile_bandits", "state_or_condition_current_bandit_controlled_area_altmer", "terrain_southwest_windhelm_hills"],
-                "density": "average",
-                "exit_label_from_parent": "Cave Entrance",
-                "exit_label_to_parent": "Exit Cave"
-            },
-            {
-                "id": 70010,
-                "name": "Witchmist Grove",
-                "desc": "A mystical grove in the southern hot springs region of Eastmarch, home to unique flora, spriggans, and possibly a reclusive hagraven or witch.",
-                "travel_desc": "Mystical grove with unique flora and spriggans.",
-                "tags": ["unique_natural_formation_magical_grove_mystical", "monster_den_spriggan_strong_guardians", "specific_landmark_type_hagraven_coven_lair_potential_reclusive_witch", "terrain_hot_springs_southern_eastmarch", "alchemy_ingredient_source_rich_unique_flora_witchmist", "ritual_site_nature_magic_potential_primal", "magical_properties_enchanted_neutral_wild_magic", "witch_coven_potential_rumor"],
-                "density": "sparse",
-                "exit_label_from_parent": "Path to Grove",
-                "exit_label_to_parent": "Leave Grove"
-            },
-            {
-                "id": 70013,
-                "name": "Cragwallow Slope",
-                "desc": "A dangerous, rocky slope in the volcanic tundra, known for its frequent rockfalls and as a nesting ground for cliff racers or other aerial predators if they were native.",
-                "travel_desc": "Dangerous, rocky slope known for frequent rockfalls.",
-                "tags": ["terrain_volcanic_tundra_slope_dangerous", "dangerous_terrain_rockslides_frequent", "monster_den_cliff_racer_skyrim_equivalent_potential_aerial_predators", "environment_wilderness_hazard_zone", "exploration_challenge_environmental_perilous", "climate_subarctic_volcanic", "dungeon_minor_outdoor_hazard_area"],
-                "density": "sparse",
-                "exit_label_from_parent": "Path to Slope",
-                "exit_label_to_parent": "Leave Slope Area"
-            },
-            {
-                "id": 70014,
-                "name": "Steamcrag Camp",
-                "desc": "A large camp of giants and mammoths situated in the hot springs region of Eastmarch, generally peaceful unless provoked.",
-                "travel_desc": "Large camp of giants and mammoths in hot springs region.",
-                "tags": ["specific_landmark_type_giant_camp_established_major", "mammoth_herd_grazing_large", "terrain_hot_springs_eastmarch", "neutral_encounter_giant_mammoth_peaceful_unless_provoked", "terrain_volcanic_tundra", "cultural_historical_significance_giant_territory_traditional_camp"],
-                "density": "average",
-                "exit_label_from_parent": "Path to Camp",
-                "exit_label_to_parent": "Leave Camp Area"
-            },
-            {
-                "id": 70015,
-                "name": "Abandoned Lodge of the Nine Holds",
-                "desc": "A once-grand hunting lodge in the eastern forests, now fallen into disrepair and rumored to be haunted by its former occupants or used by bandits.",
-                "travel_desc": "Once-grand hunting lodge, now ruined and rumored haunted.",
-                "tags": ["structure_type_lodge_abandoned_grand_historic", "structure_condition_ruined_extensively_dilapidated", "magical_properties_haunted_aura_potential_former_occupants", "bandit_minor_camp_potential_hideout", "terrain_forest_eastmarch_isolated", "dungeon_minor", "cultural_historical_significance_historic_site_minor_nine_holds_lodge"],
-                "density": "sparse",
-                "exit_label_from_parent": "Path to Lodge",
-                "exit_label_to_parent": "Leave Lodge Area"
-            },
-            {
-                "id": 70016,
-                "name": "Witchmist Grove Cave",
-                "desc": "A damp, mossy cave system connected to or near Witchmist Grove, likely sharing its magical and dangerous nature, possibly extending the spriggan or hagraven territory.",
-                "travel_desc": "Damp, mossy cave system near Witchmist Grove.",
-                "tags": ["structure_type_natural_cave_damp_mossy", "monster_den_spriggan_potential_witchmist_connection", "specific_landmark_type_hagraven_coven_lair_potential_extension_witchmist", "dungeon_minor", "terrain_hot_springs_nearby_witchmist_grove", "magical_properties_enchanted_neutral_nature_magic", "alchemy_ingredient_source_rich_potential_cave_flora"],
-                "density": "sparse",
-                "exit_label_from_parent": "Cave Entrance",
-                "exit_label_to_parent": "Exit Cave"
-            },
-            {
-                "id": 70017,
-                "name": "Dunmer Refugee Camp (Eastmarch)",
-                "desc": "A small, struggling camp of Dunmer refugees who have fled Morrowind, located in a less hospitable part of Eastmarch, seeking safety but finding hardship.",
-                "travel_desc": "Small, struggling camp of Dunmer refugees.",
-                "tags": ["populated_village_makeshift_refugee_camp", "settlement_minor_refugee_dunmer", "dunmer_culture_local_displaced", "social_issue_poverty_displacement_hardship", "terrain_volcanic_tundra_edge_eastmarch", "state_or_condition_current_struggling_seeking_safety", "morrowind_border_region_refugees"],
-                "density": "average",
-                "exit_label_from_parent": "Path to Camp",
-                "exit_label_to_parent": "Leave Camp Area"
-            },
-            {
-                "id": 70018,
-                "name": "Ashfall Farm",
-                "desc": "A small, struggling farm in the volcanic tundra of Eastmarch, where hardy Nords attempt to grow crops despite the harsh ashfall and geothermal activity.",
-                "travel_desc": "Small, struggling farm in volcanic tundra.",
-                "tags": ["structure_type_farmstead_struggling", "economic_activity_farming_crops_struggling_hardy_crops", "terrain_volcanic_tundra_ashfall_zone", "climate_harsh_volcanic_geothermal", "settlement_minor", "state_or_condition_current_struggling_resilient_farmers"],
-                "density": "sparse",
-                "exit_label_from_parent": "Path to Farm",
-                "exit_label_to_parent": "Leave Farm Area"
-            },
-            {
-                "id": 70019,
-                "name": "Boiling Springs Camp",
-                "desc": "A tiny settlement of hunters and trappers who have made their camp near Eastmarch's famous hot springs, utilizing the warm waters and local game.",
-                "travel_desc": "Tiny settlement of hunters near hot springs.",
-                "tags": ["populated_village_makeshift_camp", "settlement_minor_hunter_trapper", "economic_activity_hunting_furs_meat", "terrain_hot_springs_eastmarch", "resource_node_game_geothermal_warmth", "climate_subarctic_volcanic", "unique_lifestyle_hot_springs_campers"],
-                "density": "sparse",
-                "exit_label_from_parent": "Path to Camp",
-                "exit_label_to_parent": "Leave Camp Area"
-            },
-            {
-                "id": 70020,
-                "name": "Sulfur-Spring Grotto",
-                "desc": "A small cave system near Eastmarch's volcanic hot springs, filled with sulfurous fumes and often home to creatures adapted to the heat, or desperate outcasts.",
-                "travel_desc": "Small cave system near hot springs, filled with sulfurous fumes.",
-                "tags": ["structure_type_natural_cave_grotto", "terrain_hot_springs_volcanic_sulfurous", "monster_den_fire_atronach_potential_heat_adapted_creatures", "alchemy_ingredient_source_rich_sulfur_minerals", "dangerous_environment_fumes_heat", "dungeon_minor", "climate_subarctic_volcanic", "exploration_point_geothermal_cave"],
-                "density": "sparse",
-                "exit_label_from_parent": "Grotto Entrance",
-                "exit_label_to_parent": "Exit Grotto"
-            },
-            {
-                "id": 70021,
-                "name": "Ruins of Old Amol",
-                "desc": "The scattered, ancient foundations and a few crumbling walls of a settlement that predated Fort Amol, now mostly reclaimed by the volcanic tundra.",
-                "travel_desc": "Scattered ancient foundations of a pre-Fort Amol settlement.",
-                "tags": ["structure_type_ruined_settlement_nordic_ancient", "cultural_historical_significance_nordic_ancient_site_minor_pre_amol", "structure_condition_ruined_extensively_reclaimed_by_tundra", "terrain_volcanic_tundra", "exploration_point_historic_foundations", "archaeology_site_potential_early_nordic"],
-                "density": "empty",
-                "exit_label_from_parent": "Path to Ruins",
-                "exit_label_to_parent": "Leave Ruins"
-            },
-            {
-                "id": 70022,
-                "name": "Shrine of Mara (Eastmarch Hot Springs)",
-                "desc": "A small, secluded shrine to Mara, Goddess of Love, nestled among the steaming vents and warm pools of Eastmarch's hot springs. A place of unexpected serenity.",
-                "travel_desc": "Secluded shrine to Mara among hot springs.",
-                "tags": ["structure_type_shrine_outdoor_structure_secluded", "religious_site_aedric", "mara_shrine", "terrain_hot_springs_eastmarch", "secluded_nature_spot_serene", "magical_properties_holy_ground_aedric_potential", "peaceful_area_unexpected_serenity", "exploration_point_religious_hidden"],
-                "density": "empty",
-                "exit_label_from_parent": "Path to Shrine",
-                "exit_label_to_parent": "Leave Shrine Area"
-            },
-            {
-                "id": 70023,
-                "name": "Shrine of Malacath (Narzulbur Outskirts)",
-                "desc": "A crude, outdoor shrine dedicated to Malacath, located a short distance from the Orc stronghold of Narzulbur. Used by Orcs for private offerings or rituals.",
-                "travel_desc": "Crude outdoor shrine to Malacath near Narzulbur.",
-                "tags": ["structure_type_shrine_outdoor_structure_crude_orcish", "religious_site_daedric_orcish_malacath", "malacath_shrine", "orc_culture_strong", "ritual_site_tribal_potential_offerings", "narzulbur_outskirts", "cultural_historical_significance_orc_tradition_worship"],
-                "density": "empty",
-                "exit_label_from_parent": "Path to Shrine",
-                "exit_label_to_parent": "Leave Shrine Area"
-            },
-            {
-                "id": 70024,
-                "name": "Riverside Shack (Eastmarch Volcanic Plains)",
-                "desc": "An isolated, ramshackle hut on the banks of a river cutting through Eastmarch's volcanic plains. Could be home to a reclusive fisherman or a desperate outcast.",
-                "travel_desc": "Isolated, ramshackle hut on river banks.",
-                "tags": ["structure_type_shack_or_hut_ramshackle", "terrain_volcanic_tundra_river_bank", "hermit_lair_potential_fisherman_outcast", "economic_activity_fishing_subsistence_potential", "isolated_location", "climate_subarctic_volcanic", "exploration_point_minor_dwelling_isolated"],
-                "density": "sparse",
-                "exit_label_from_parent": "Path to Shack",
-                "exit_label_to_parent": "Leave Shack Area"
-            },
-            {
-                "id": 70025,
-                "name": "Volcanic Vent Cave",
-                "desc": "A small cave system formed near an active volcanic vent, filled with heated air and strange mineral deposits. May be home to fire atronachs or other heat-adapted creatures.",
-                "travel_desc": "Small cave system near an active volcanic vent.",
-                "tags": ["structure_type_natural_cave_volcanic_vent", "terrain_volcanic_tundra_vent_active", "monster_den_fire_atronach_potential_heat_adapted", "alchemy_ingredient_source_rich_minerals_volcanic", "dangerous_environment_heat_fumes", "dungeon_minor", "climate_subarctic_volcanic", "unique_natural_formation_geothermal_cave"],
-                "density": "sparse",
-                "exit_label_from_parent": "Cave Entrance",
-                "exit_label_to_parent": "Exit Cave"
-            },
-            {
-                "id": 70026,
-                "name": "The Atronach Stone",
-                "desc": "A Standing Stone located in the volcanic tundra of Eastmarch, south of Windhelm. It grants a larger pool of magicka but hinders natural regeneration, forcing reliance on absorption or potions.",
-                "travel_desc": "Standing Stone granting larger magicka pool but hindering regeneration.",
-                "tags": ["specific_landmark_type_standing_stone_magical", "magical_properties_enchanted_neutral_powerful_double_edged", "terrain_volcanic_tundra_south_windhelm", "cultural_historical_significance_ancient_magical_site", "buff_magicka_increased_large", "debuff_magicka_regen_slowed_significantly", "power_magic_absorption_passive"],
-                "density": "empty",
-                "exit_label_from_parent": "Path to Stone",
-                "exit_label_to_parent": "Leave Stone Area"
-            },
-            {
-                "id": 70027,
-                "name": "Kagrenzel",
-                "desc": "A remote Dwemer ruin in the mountains of Eastmarch, known for its peculiar entrance trap that drops explorers into a deep chasm leading to a Falmer-infested cave system.",
-                "travel_desc": "Remote Dwemer ruin with a peculiar entrance trap.",
-                "tags": ["dwemer_ruin_minor_outpost_remote", "dungeon_major_trap_complex_deadly_entrance", "falmer_presence_strong_connected_cave_system", "ancient_technology_dwemer_trap_peculiar", "terrain_mountainous_eastmarch_velothi_border", "chaurus_nest_potential_deep_within", "cultural_historical_significance_dwemer_ruin_site", "exploration_challenge_deadly_trap_puzzle"],
-                "density": "average",
-                "exit_label_from_parent": "Ruin Entrance",
-                "exit_label_to_parent": "Exit Ruin"
-            },
-            {
-                "id": 70028,
-                "name": "Mistwatch",
-                "desc": "A ruined fort in southern Eastmarch, overlooking the road to The Rift. It is currently occupied by a band of bandits led by a charismatic chief, and is connected to a local family's tragedy.",
-                "travel_desc": "Ruined fort occupied by bandits, connected to a local tragedy.",
-                "tags": ["structure_type_ruined_fort", "bandit_main_stronghold_charismatic_leader", "dungeon_major", "quest_location_local_legend_rescue_family_tragedy", "terrain_rift_border_overlook_eastmarch", "state_or_condition_current_bandit_controlled_area", "strategic_lookout_decayed_fort"],
-                "density": "average",
-                "exit_label_from_parent": "Fort Entrance",
-                "exit_label_to_parent": "Exit Fort"
-            },
-            {
-                "id": 70029,
-                "name": "Mara's Eye Pond",
-                "desc": "A small, tranquil pond in Eastmarch, west of Morvunskar. Beneath its surface lies the entrance to Mara's Eye Den, a cave often used by vampires or other creatures.",
-                "travel_desc": "Small, tranquil pond with a hidden cave entrance beneath.",
-                "tags": ["unique_natural_formation_pond_tranquil_surface", "dungeon_access_hidden_underwater_mara_eye_den", "specific_landmark_type_vampire_coven_minor_potential_den", "terrain_volcanic_tundra_edge_west_morvunskar", "mystery_local_hidden_lair", "secluded_nature_spot_deceptive_danger_below"],
-                "density": "empty",
-                "exit_label_from_parent": "Path to Pond",
-                "exit_label_to_parent": "Leave Pond Area",
-                "sub_locations": [
-                    {
-                        "id": 700291,
-                        "name": "Mara's Eye Den",
-                        "desc": "A damp cave system accessible from Mara's Eye Pond, often serving as a den for vampires or other creatures seeking a hidden lair.",
-                        "travel_desc": "Damp cave system, often a den for vampires.",
-                        "tags": ["structure_type_natural_cave", "specific_landmark_type_vampire_coven_minor", "dungeon_minor", "monster_den_vampire", "magical_properties_tainted_by_dark_magic_potential", "secret_location_underwater_access"],
-                        "density": "sparse",
-                        "exit_label_from_parent": "Den Entrance",
-                        "exit_label_to_parent": "Exit Den"
-                    }
-                ]
-            },
-            {
-                "id": 70030,
-                "name": "Abandoned Prison",
-                "desc": "A crumbling, forgotten prison in the wilds of Eastmarch, its cells now empty or home to desperate squatters, bandits, or restless spirits of former inmates.",
-                "travel_desc": "Crumbling, forgotten prison in the wilds.",
-                "tags": ["structure_type_ruined_prison_forgotten", "structure_condition_abandoned_ruined_crumbling", "dungeon_minor", "bandit_minor_camp_potential_squatters", "magical_properties_haunted_aura_potential_former_inmates", "cultural_historical_significance_historic_site_abandoned_prison", "urban_issues_or_atmosphere_eerie_atmosphere_despair", "exploration_point_historic_ruin_dark_past"],
-                "density": "sparse",
-                "exit_label_from_parent": "Path to Prison",
-                "exit_label_to_parent": "Leave Prison Area"
             }
         ]
+    },
+    {
+        "id": 7000,
+        "name": "Windhelm Streets",
+        "desc": "The main thoroughfares of Windhelm, filled with merchants, guards, and citizens. The streets reflect the city's ancient history and current political tensions.",
+        "travel_desc": "The main streets of Windhelm.",
+        "tags": ["urban_area", "city_district", "settlement_features_market_district", "settlement_features_residential_district", "settlement_features_guard_presence", "political_tension_high_civil_war_focus_rebellion_capital"],
+        "density": "bustling",
+        "context_tags": ["exterior", "urban_town", "city_street"],
+        "demographics": {"Nord": 85, "Dunmer": 10, "Argonian": 3, "Imperial": 2},
+        "exit_label_from_parent": "Street Entrance",
+        "exit_label_to_parent": "Exit Street"
+    },
+    {
+        "id": 7006,
+        "name": "Windhelm Market Square",
+        "desc": "A bustling open-air market near the city gates of Windhelm, featuring various stalls. Aval Atheron sells general goods, while Niranye, an Altmer pawnbroker, deals in more discreet transactions. The atmosphere can be tense due to the city's political climate and racial undertones.",
+        "travel_desc": "Windhelm's bustling open-air market.",
+        "tags": ["settlement_features_market_square", "economic_activity_trade_hub_local", "social_hub_popular", "urban_issues_or_atmosphere_tense_atmosphere", "item_type_food_vendor", "item_type_general_goods_vendor_stalls"],
+        "density": "bustling",
+        "context_tags": ["exterior", "urban_city", "market_type"],
+        "demographics": {"Nord": 85, "Dunmer": 10, "Argonian": 3, "Imperial": 2},
+        "exit_label_from_parent": "Enter Market",
+        "exit_label_to_parent": "Leave Market"
+    },
+    {
+        "id": 7007,
+        "name": "Temple of Talos (Windhelm)",
+        "desc": "A place of clandestine Talos worship, highly significant given the Stormcloak cause and the Thalmor's ban. Attended by those loyal to traditional Nord beliefs.",
+        "travel_desc": "Place of clandestine Talos worship.",
+        "tags": ["structure_type_temple_building", "religious_site_aedric_secret", "talos_shrine", "nordic_culture_strong", "political_tension_high_religious", "stormcloak_presence_strong", "thalmor_presence_hostile_potential"],
+        "density": "sparse",
+        "exit_label_from_parent": "Temple Doors",
+        "exit_label_to_parent": "Exit Temple"
+    },
+    {
+        "id": 7008,
+        "name": "Gray Quarter (Dunmer District)",
+        "desc": "The segregated district where most of Windhelm's Dunmer refugee population resides, often facing prejudice and harsh living conditions.",
+        "travel_desc": "Segregated district for Windhelm's Dunmer refugees.",
+        "tags": ["settlement_features_district_ethnic_dunmer_gray_quarter", "dunmer_culture_strong", "urban_issues_or_atmosphere_oppressive_atmosphere", "social_issue_racism_segregation", "social_issue_poverty"],
+        "density": "bustling",
+        "exit_label_from_parent": "Enter Gray Quarter",
+        "exit_label_to_parent": "Leave Gray Quarter"
+    },
+    {
+        "id": 7009,
+        "name": "Argonian Assemblage (Docks)",
+        "desc": "The dockside area where Windhelm's Argonian dockworkers are forced to live in cramped and poor conditions, working for low wages.",
+        "travel_desc": "Dockside area where Argonian dockworkers live.",
+        "tags": ["settlement_features_district_ethnic_argonian_assemblage", "argonian_culture_local", "urban_issues_or_atmosphere_oppressive_atmosphere", "social_issue_racism_segregation", "economic_activity_manual_labor", "settlement_features_docks_harbor"],
+        "density": "bustling",
+        "exit_label_from_parent": "Enter Assemblage",
+        "exit_label_to_parent": "Leave Assemblage"
+    },
+    {
+        "id": 7011,
+        "name": "Hall of the Dead (Windhelm)",
+        "desc": "Windhelm's catacombs for honoring the dead, maintained by Helgird, a priestess of Arkay, who also deals with the city's recent murder victims.",
+        "travel_desc": "Windhelm's catacombs for honoring the dead.",
+        "tags": ["structure_type_catacombs_structure", "religious_site_aedric", "arkay_presence", "nordic_burial_site_major", "quest_location_investigation_serial_killer", "undead_presence_rumored_low"],
+        "density": "empty",
+        "exit_label_from_parent": "Hall Entrance",
+        "exit_label_to_parent": "Exit Hall"
+    },
+    {
+        "id": 7012,
+        "name": "Windhelm Port",
+        "desc": "The icy docks of Windhelm, a vital hub for trade with northern Tamriel and Solstheim, despite the harsh conditions. Home to the East Empire Company office.",
+        "travel_desc": "Icy docks of Windhelm, a vital trade hub.",
+        "tags": ["settlement_features_docks_harbor", "economic_activity_trade_hub_major_maritime", "travel_hub_sea_solstheim", "climate_arctic_coastal", "east_empire_company_presence", "argonian_culture_local_nearby"],
+        "density": "bustling",
+        "exit_label_from_parent": "Enter Port",
+        "exit_label_to_parent": "Leave Port"
+    },
+    {
+        "id": 70001,
+        "name": "Gallows Rock",
+        "desc": "A fortress in Eastmarch.",
+        "travel_desc": "A fortress in Eastmarch.",
+        "tags": ["structure_type_fortress"],
+        "density": "average",
+        "exit_label_from_parent": "Enter Fortress",
+        "exit_label_to_parent": "Leave Fortress"
+    },
+    {
+        "id": 7006,
+        "name": "House of Clan Shatter-Shield",
+        "desc": "The home of Clan Shatter-Shield, a prominent Nord family in Windhelm.",
+        "travel_desc": "Home of Clan Shatter-Shield.",
+        "tags": ["structure_type_residence", "nordic_culture_strong"],
+        "density": "sparse",
+        "exit_label_from_parent": "Enter House",
+        "exit_label_to_parent": "Leave House"
+    },
+    {
+        "id": 7007,
+        "name": "Viola Giordano's House",
+        "desc": "The home of Viola Giordano, a Nord woman living in Windhelm.",
+        "travel_desc": "Home of Viola Giordano.",
+        "tags": ["structure_type_residence", "nordic_culture_strong"],
+        "density": "sparse",
+        "exit_label_from_parent": "Enter House",
+        "exit_label_to_parent": "Leave House"
     }
 ]

@@ -208,7 +208,7 @@ WINTERHOLD_LOCATIONS = [
                 "name": "Frostedge Fishery",
                 "desc": "A struggling fishing outpost on the treacherous icy coast of Winterhold, where a few hardy souls attempt to make a living from the frozen sea.",
                 "travel_desc": "Struggling fishing outpost on treacherous icy coast.",
-                "tags": ["populated_village_outpost", "settlement_minor_fishing", "economic_activity_fishing_industry_local_struggling", "environment_coastal_treacherous_icy", "climate_glacial_harsh", "state_or_condition_current_economically_depressed_isolated"],
+                "tags": ["structure_type_populated_village_outpost", "settlement_minor_fishing", "economic_activity_fishing_industry_local_struggling", "environment_coastal_treacherous_icy", "climate_glacial_harsh", "state_or_condition_current_isolated_and_forgotten_struggling"],
                 "density": "sparse",
                 "exit_label_from_parent": "Path to Fishery",
                 "exit_label_to_parent": "Leave Fishery"
@@ -268,7 +268,7 @@ WINTERHOLD_LOCATIONS = [
                 "name": "Shrine of Jhunal (Lost)",
                 "desc": "The snow-swept, crumbling ruins of an ancient shrine dedicated to Jhunal, the Nordic god of knowledge and runes, predating the College's dominance. A few weathered carvings remain.",
                 "travel_desc": "Crumbling ruins of an ancient shrine to Jhunal.",
-                "tags": ["structure_type_ruined_shrine_nordic", "religious_site_aedric_jhunal_runes_knowledge", "cultural_historical_significance_nordic_ancient_site_pre_college", "magical_properties_arcane_focus_minor_potential_runic", "lore_clue_potential_weathered_carvings", "climate_glacial", "terrain_ice_field_snow_swept", "exploration_point_historic_religious_site"],
+                "tags": ["structure_type_ruined_shrine_nordic", "religious_site_aedric", "jhunal_shrine", "cultural_historical_significance_nordic_ancient_site_pre_college", "magical_properties_arcane_focus_minor_potential_runic", "lore_clue_potential_weathered_carvings", "climate_glacial", "terrain_ice_field_snow_swept", "exploration_point_historic_religious_site"],
                 "density": "empty",
                 "exit_label_from_parent": "Path to Shrine",
                 "exit_label_to_parent": "Leave Shrine Area"
@@ -308,10 +308,7 @@ WINTERHOLD_LOCATIONS = [
                 "name": "Yngvild",
                 "desc": "An icy Nordic ruin on an island northeast of Dawnstar (near Winterhold border). It is haunted by the ghosts of women enthralled by the necromancer Arondil.",
                 "travel_desc": "Icy Nordic ruin haunted by enthralled ghosts.",
-                "tags": ["nordic_burial_site_major_icy", "structure_condition_ruined_extensively", "dungeon_major", "specific_landmark_type_necromancer_lair_arondil", "magical_properties_haunted_aura_strong_enthralled_ghosts", "undead_presence_strong_ghosts_draugr", "quest_location_investigation_necromancer_arondil", "terrain_island_northeast_dawnstar", "environment_coastal", "climate_glacial", "artifact_location_unique_item_potential_arondils_journals"],
-                "density": "average",
-                "exit_label_from_parent": "Path to Ruin",
-                "exit_label_to_parent": "Leave Ruin"
+                "tags": ["nordic_burial_site_major_icy", "structure_condition_ruined_extensively", "dungeon_major", "specific_landmark_type_necromancer_lair_arondil", "magical_properties_haunted_aura_strong_enthralled_ghosts", "undead_presence_strong_ghosts_draugr", "quest_location_investigation_necromancer_arondil", "terrain_island_northeast_dawnstar", "environment_coastal", "climate_glacial", "artifact_location_unique_item_potential_arondils_journals"]
             }
         ]
     }
