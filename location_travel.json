@@ -1,17 +1,482 @@
 {
-  "1": {
-    "fast_travel": true,
-    "travel_time_modifiers": {},
-    "adjacent_locations": [11, 12, 13, 14, 15, 16, 17, 18, 19, 10001, 10002, 10003, 10004, 10005, 10006, 10007, 10008, 10009, 10010, 10011, 10012, 10013, 10014, 10015, 10016, 10017, 10]
-  },
-  "10": {
-    "fast_travel": true,
-    "travel_time_modifiers": {},
-    "adjacent_locations": []
-  },
-  "11": {
-    "fast_travel": true,
-    "travel_time_modifiers": {},
-    "adjacent_locations": []
-  }
+    "1": {
+        "links": [
+            {
+                "name": "The Rift",
+                "connection_type": "Road"
+            },
+            {
+                "name": "Eastmarch",
+                "connection_type": "Road"
+            },
+            {
+                "name": "The Reach",
+                "connection_type": "Road"
+            },
+            {
+                "name": "Haafingar",
+                "connection_type": "Road"
+            },
+            {
+                "name": "Falkreath Hold",
+                "connection_type": "Road"
+            },
+            {
+                "name": "The Pale",
+                "connection_type": "Road"
+            },
+            {
+                "name": "Riverwood",
+                "connection_type": "Path"
+            },
+            {
+                "name": "Rorikstead",
+                "connection_type": "Path"
+            },
+            {
+                "name": "Helgen",
+                "connection_type": "Path"
+            }
+        ]
+    },
+    "2": {
+        "links": [
+            {
+                "name": "Whiterun Hold",
+                "connection_type": "Road"
+            },
+            {
+                "name": "Winterhold",
+                "connection_type": "Road"
+            },
+            {
+                "name": "Eastmarch",
+                "connection_type": "Road"
+            },
+            {
+                "name": "Hjaalmarch",
+                "connection_type": "Road"
+            },
+            {
+                "name": "Icespire Trail",
+                "connection_type": "Path"
+            },
+            {
+                "name": "Frostmere Road",
+                "connection_type": "Path"
+            }
+        ]
+    },
+    "3": {
+        "links": [
+            {
+                "name": "The Pale",
+                "connection_type": "Road"
+            },
+            {
+                "name": "Eastmarch",
+                "connection_type": "Road"
+            },
+            {
+                "name": "Saarthal Trail",
+                "connection_type": "Path"
+            },
+            {
+                "name": "Glacial Path",
+                "connection_type": "Path"
+            },
+            {
+                "name": "Sea of Ghosts Ice Floes (dangerous)",
+                "connection_type": "Sea Route"
+            }
+        ]
+    },
+    "4": {
+        "links": [
+            {
+                "name": "The Pale",
+                "connection_type": "Road"
+            },
+            {
+                "name": "The Reach",
+                "connection_type": "Road"
+            },
+            {
+                "name": "Haafingar",
+                "connection_type": "Road"
+            },
+            {
+                "name": "Stonehills Trail",
+                "connection_type": "Path"
+            },
+            {
+                "name": "Drajkmyr Marsh Path",
+                "connection_type": "Path"
+            }
+        ]
+    },
+    "5": {
+        "links": [
+            {
+                "name": "Whiterun Hold",
+                "connection_type": "Road"
+            },
+            {
+                "name": "The Reach",
+                "connection_type": "Road"
+            },
+            {
+                "name": "Cyrodiil (Fort Neugrad Pass)",
+                "connection_type": "Road"
+            },
+            {
+                "name": "Helgen Pass (functional)",
+                "connection_type": "Path"
+            },
+            {
+                "name": "Pine Forest Trail",
+                "connection_type": "Path"
+            },
+            {
+                "name": "Jerall Mountains Path",
+                "connection_type": "Path"
+            }
+        ]
+    },
+    "6": {
+        "links": [
+            {
+                "name": "Whiterun Hold",
+                "connection_type": "Road"
+            },
+            {
+                "name": "Haafingar",
+                "connection_type": "Road"
+            },
+            {
+                "name": "Falkreath Hold",
+                "connection_type": "Road"
+            },
+            {
+                "name": "Hjaalmarch",
+                "connection_type": "Road"
+            },
+            {
+                "name": "Karth River Valley",
+                "connection_type": "Path"
+            },
+            {
+                "name": "Sundered Hills Pass",
+                "connection_type": "Path"
+            },
+            {
+                "name": "Hag Rock Trail",
+                "connection_type": "Path"
+            },
+            {
+                "name": "Deep Folk Crossing Path",
+                "connection_type": "Path"
+            }
+        ]
+    },
+    "7": {
+        "links": [
+            {
+                "name": "Whiterun Hold",
+                "connection_type": "Road"
+            },
+            {
+                "name": "The Rift",
+                "connection_type": "Road"
+            },
+            {
+                "name": "The Pale",
+                "connection_type": "Road"
+            },
+            {
+                "name": "Winterhold",
+                "connection_type": "Road"
+            },
+            {
+                "name": "Volcanic Tundra Trail",
+                "connection_type": "Path"
+            },
+            {
+                "name": "Dunmeth Pass to Morrowind (treacherous)",
+                "connection_type": "Path"
+            }
+        ]
+    },
+    "8": {
+        "links": [
+            {
+                "name": "The Reach",
+                "connection_type": "Road"
+            },
+            {
+                "name": "Whiterun Hold",
+                "connection_type": "Road"
+            },
+            {
+                "name": "Hjaalmarch",
+                "connection_type": "Road"
+            },
+            {
+                "name": "Dragon Bridge Road",
+                "connection_type": "Path"
+            },
+            {
+                "name": "Coastal Sea Route (to other ports)",
+                "connection_type": "Sea Route"
+            },
+            {
+                "name": "Northwatch Keep Trail",
+                "connection_type": "Path"
+            }
+        ]
+    },
+    "9": {
+        "links": [
+            {
+                "name": "Whiterun Hold",
+                "connection_type": "Road"
+            },
+            {
+                "name": "Eastmarch",
+                "connection_type": "Road"
+            },
+            {
+                "name": "Falkreath Hold",
+                "connection_type": "Road"
+            },
+            {
+                "name": "Cyrodiil (Lost Prospect Pass)",
+                "connection_type": "Road"
+            },
+            {
+                "name": "Morrowind (Velothi Mountains route)",
+                "connection_type": "Road"
+            },
+            {
+                "name": "Goldenglow Path",
+                "connection_type": "Path"
+            },
+            {
+                "name": "Jerall Mountain Trail",
+                "connection_type": "Path"
+            },
+            {
+                "name": "Velothi Mountains Pass",
+                "connection_type": "Path"
+            },
+            {
+                "name": "Lake Honrich Shoreline",
+                "connection_type": "Path"
+            }
+        ]
+    },
+    "100": {
+        "links": [
+            {
+                "name": "Seven Thousand Steps from Ivarstead",
+                "connection_type": "Path"
+            }
+        ]
+    },
+    "101": {
+        "links": [
+            {
+                "name": "Path from High Hrothgar Summit (restricted)",
+                "connection_type": "Path"
+            }
+        ]
+    },
+    "102": {
+        "links": [
+            {
+                "name": "Alftand Elevator",
+                "connection_type": "Elevator"
+            },
+            {
+                "name": "Mzinchaleft Elevator",
+                "connection_type": "Elevator"
+            },
+            {
+                "name": "Raldbthar Elevator (hidden access points)",
+                "connection_type": "Elevator"
+            }
+        ]
+    },
+    "103": {
+        "links": [
+            {
+                "name": "Passage via extreme spiritual/magical means (highly restricted/legendary)",
+                "connection_type": "Portal"
+            }
+        ]
+    },
+    "104": {
+        "links": [
+            {
+                "name": "Ancient Nordic Path (decayed)",
+                "connection_type": "Road"
+            },
+            {
+                "name": "Hjaalmarch Foothills (near Morthal, treacherous approach)",
+                "connection_type": "Path"
+            }
+        ]
+    },
+    "109": {
+        "links": [
+            {
+                "name": "Unknown/Magical means only (legendary)",
+                "connection_type": "Portal"
+            }
+        ]
+    },
+    "110": {
+        "links": [
+            {
+                "name": "Winding mountain path from Winterhold vicinity (difficult)",
+                "connection_type": "Path"
+            }
+        ]
+    },
+    "111": {
+        "links": [
+            {
+                "name": "Obscure path from The Pale foothills, near Dawnstar",
+                "connection_type": "Path"
+            }
+        ]
+    },
+    "112": {
+        "links": [
+            {
+                "name": "Path from The Rift plains, near Forelhost",
+                "connection_type": "Path"
+            }
+        ]
+    },
+    "113": {
+        "links": [
+            {
+                "name": "Treacherous path from Eastmarch mountains, east of Traitor's Post",
+                "connection_type": "Path"
+            }
+        ]
+    },
+    "114": {
+        "links": [
+            {
+                "name": "Isolated path from The Reach mountains, northwest of Karthwasten",
+                "connection_type": "Path"
+            }
+        ]
+    },
+    "116": {
+        "links": [
+            {
+                "name": "Path from Dragon Bridge area, Mount Kilkreath ascent",
+                "connection_type": "Path"
+            }
+        ]
+    },
+    "117": {
+        "links": [
+            {
+                "name": "Darkfall Cave system (legendary, undiscovered)",
+                "connection_type": "Cave System"
+            }
+        ]
+    },
+    "118": {
+        "links": [
+            {
+                "name": "Portal via specific, powerful necromantic ritual or vampire pact (extremely rare)",
+                "connection_type": "Portal"
+            }
+        ]
+    },
+    "119": {
+        "links": [
+            {
+                "name": "Icewater Jetty (Haafingar north coast - perilous journey)",
+                "connection_type": "Boat"
+            }
+        ]
+    },
+    "120": {
+        "links": [
+            {
+                "name": "Hidden path through Dayspring Canyon (The Rift)",
+                "connection_type": "Path"
+            }
+        ]
+    },
+    "121": {
+        "links": [
+            {
+                "name": "Ship from Windhelm Docks (Solstheim)",
+                "connection_type": "Ship"
+            }
+        ]
+    },
+    "122": {
+        "links": [
+            {
+                "name": "Path across Solstheim ashlands (dangerous)",
+                "connection_type": "Path"
+            }
+        ]
+    },
+    "123": {
+        "links": [
+            {
+                "name": "Black Books (portals from Solstheim and Tamriel, rare and hidden)",
+                "connection_type": "Portal"
+            }
+        ]
+    },
+    "124": {
+        "links": [
+            {
+                "name": "Path from Whiterun-Pale border mountains",
+                "connection_type": "Path"
+            }
+        ]
+    },
+    "125": {
+        "links": [
+            {
+                "name": "Open plains of Whiterun Hold",
+                "connection_type": "Path"
+            }
+        ]
+    },
+    "126": {
+        "links": [
+            {
+                "name": "Path from Old Hroldan area",
+                "connection_type": "Path"
+            }
+        ]
+    },
+    "127": {
+        "links": [
+            {
+                "name": "Dunmeth Pass Road",
+                "connection_type": "Road"
+            }
+        ]
+    },
+    "128": {
+        "links": [
+            {
+                "name": "Path from Kynesgrove vicinity",
+                "connection_type": "Path"
+            }
+        ]
+    }
 }

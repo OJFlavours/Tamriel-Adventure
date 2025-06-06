@@ -1,54 +1,766 @@
 [
-  {
-    "id": 1,
-    "name": "Whiterun Hold",
-    "sub_locations": [
-      {
-        "id": 10,
-        "name": "Whiterun",
+    {
+        "id": 1,
+        "name": "Whiterun Hold",
         "sub_locations": [
-          { "id": 1001, "name": "Dragonsreach" },
-          { "id": 1002, "name": "Jorrvaskr" },
-          { "id": 1003, "name": "The Bannered Mare" },
-          { "id": 1004, "name": "Warmaiden's" },
-          { "id": 1005, "name": "Arcadia's Cauldron" },
-          { "id": 1006, "name": "Temple of Kynareth" },
-          { "id": 1007, "name": "Plains District Market" },
-          { "id": 1008, "name": "The Drunken Huntsman" },
-          { "id": 1009, "name": "Belethor's General Goods" },
-          { "id": 1010, "name": "Hall of the Dead" },
-          { "id": 1011, "name": "Carlotta Valentia's House" },
-          { "id": 1012, "name": "House Gray-Mane" },
-          { "id": 1013, "name": "House Battle-Born" },
-          { "id": 1014, "name": "Breezehome" }
+            {
+                "id": 10,
+                "name": "Whiterun",
+                "sub_locations": [
+                    {
+                        "id": 1001,
+                        "name": "Dragonsreach",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 1002,
+                        "name": "Jorrvaskr",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 1003,
+                        "name": "The Bannered Mare",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 1004,
+                        "name": "Warmaiden's",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 1005,
+                        "name": "Arcadia's Cauldron",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 1006,
+                        "name": "Temple of Kynareth",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 1007,
+                        "name": "Plains District Market",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 1008,
+                        "name": "The Drunken Huntsman",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 1009,
+                        "name": "Belethor's General Goods",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 1010,
+                        "name": "Hall of the Dead",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 1011,
+                        "name": "Carlotta Valentia's House",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 1012,
+                        "name": "House Gray-Mane",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 1013,
+                        "name": "House Battle-Born",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 1014,
+                        "name": "Breezehome",
+                        "sub_locations": []
+                    }
+                ]
+            },
+            {
+                "id": 11,
+                "name": "Riverwood",
+                "sub_locations": [
+                    {
+                        "id": 1101,
+                        "name": "Sleeping Giant Inn",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 1102,
+                        "name": "Riverwood Trader",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 1103,
+                        "name": "Alvor's Smithy",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 1104,
+                        "name": "Faendal's House",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 1105,
+                        "name": "Sven and Hilde's House",
+                        "sub_locations": []
+                    }
+                ]
+            },
+            {
+                "id": 12,
+                "name": "Rorikstead",
+                "sub_locations": [
+                    {
+                        "id": 1201,
+                        "name": "Frostfruit Inn",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 1202,
+                        "name": "Rorikstead General Supplies",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 1203,
+                        "name": "Lemkil's Farmhouse",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 1204,
+                        "name": "Jouane Manette's House",
+                        "sub_locations": []
+                    }
+                ]
+            },
+            {
+                "id": 13,
+                "name": "Honningbrew Meadery",
+                "sub_locations": []
+            },
+            {
+                "id": 14,
+                "name": "Western Watchtower",
+                "sub_locations": []
+            },
+            {
+                "id": 15,
+                "name": "Bleak Falls Barrow",
+                "sub_locations": []
+            },
+            {
+                "id": 16,
+                "name": "Silent Moons Camp",
+                "sub_locations": []
+            },
+            {
+                "id": 17,
+                "name": "Lund's Hut",
+                "sub_locations": []
+            },
+            {
+                "id": 18,
+                "name": "Gjukar's Monument",
+                "sub_locations": []
+            },
+            {
+                "id": 19,
+                "name": "Secunda's Kiss",
+                "sub_locations": []
+            },
+            {
+                "id": 10001,
+                "name": "Sleeping Tree Camp",
+                "sub_locations": []
+            },
+            {
+                "id": 10002,
+                "name": "Swindler's Den",
+                "sub_locations": []
+            },
+            {
+                "id": 10003,
+                "name": "White River Watch",
+                "sub_locations": []
+            },
+            {
+                "id": 10004,
+                "name": "Halted Stream Camp",
+                "sub_locations": []
+            },
+            {
+                "id": 10005,
+                "name": "Chillfurrow Farm",
+                "sub_locations": []
+            },
+            {
+                "id": 10006,
+                "name": "Pelagia Farm",
+                "sub_locations": []
+            },
+            {
+                "id": 10007,
+                "name": "Valtheim Towers",
+                "sub_locations": []
+            },
+            {
+                "id": 10008,
+                "name": "Greenspring Hollow",
+                "sub_locations": []
+            },
+            {
+                "id": 10009,
+                "name": "Redoran's Retreat",
+                "sub_locations": []
+            },
+            {
+                "id": 10010,
+                "name": "Guldun Rock Overlook",
+                "sub_locations": []
+            },
+            {
+                "id": 10011,
+                "name": "Dustman's Cairn",
+                "sub_locations": []
+            },
+            {
+                "id": 10012,
+                "name": "Fellglow Keep",
+                "sub_locations": []
+            },
+            {
+                "id": 10013,
+                "name": "Battle-Born Farm",
+                "sub_locations": []
+            },
+            {
+                "id": 10014,
+                "name": "Gray-Mane Farm",
+                "sub_locations": []
+            },
+            {
+                "id": 10015,
+                "name": "Whiterun Pass Cave",
+                "sub_locations": []
+            },
+            {
+                "id": 10016,
+                "name": "Granite Hill Redoubt",
+                "sub_locations": []
+            },
+            {
+                "id": 10017,
+                "name": "Lone Hunter's Shack",
+                "sub_locations": []
+            }
         ]
-      },
-      { "id": 11, "name": "Riverwood" },
-      { "id": 12, "name": "Rorikstead" },
-      { "id": 13, "name": "Honningbrew Meadery" },
-      { "id": 14, "name": "Western Watchtower" },
-      { "id": 15, "name": "Bleak Falls Barrow" },
-      { "id": 16, "name": "Silent Moons Camp" },
-      { "id": 17, "name": "Lund's Hut" },
-      { "id": 18, "name": "Gjukar's Monument" },
-      { "id": 19, "name": "Secunda's Kiss" },
-      { "id": 10001, "name": "Sleeping Tree Camp" },
-      { "id": 10002, "name": "Swindler's Den" },
-      { "id": 10003, "name": "White River Watch" },
-      { "id": 10004, "name": "Halted Stream Camp" },
-      { "id": 10005, "name": "Chillfurrow Farm" },
-      { "id": 10006, "name": "Pelagia Farm" },
-      { "id": 10007, "name": "Valtheim Towers" },
-      { "id": 10008, "name": "Greenspring Hollow" },
-      { "id": 10009, "name": "Redoran's Retreat" },
-      { "id": 10010, "name": "Guldun Rock Overlook" },
-      { "id": 10011, "name": "Dustman's Cairn" },
-      { "id": 10012, "name": "Fellglow Keep" },
-      { "id": 10013, "name": "Battle-Born Farm" },
-      { "id": 10014, "name": "Gray-Mane Farm" },
-      { "id": 10015, "name": "Whiterun Pass Cave" },
-      { "id": 10016, "name": "Granite Hill Redoubt" },
-      { "id": 10017, "name": "Lone Hunter's Shack" }
-    ]
-  }
+    },
+    {
+        "id": 2,
+        "name": "The Pale",
+        "sub_locations": [
+            {
+                "id": 20,
+                "name": "Dawnstar",
+                "sub_locations": [
+                    {
+                        "id": 2001,
+                        "name": "Windpeak Inn",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 2002,
+                        "name": "Quicksilver Mine",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 2003,
+                        "name": "The Mortar and Pestle",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 2004,
+                        "name": "The White Hall",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 2005,
+                        "name": "Rustleif's House and Smithy",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 2006,
+                        "name": "Brina's House",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 2008,
+                        "name": "Dawnstar Caravan Camp",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 2007,
+                        "name": "Dawnstar Sanctuary",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 20001,
+                        "name": "Nightcaller Temple",
+                        "sub_locations": []
+                    }
+                ]
+            },
+            {
+                "id": 21,
+                "name": "Nightcaller Temple",
+                "sub_locations": []
+            },
+            {
+                "id": 22,
+                "name": "Iron-Breaker Mine",
+                "sub_locations": []
+            },
+            {
+                "id": 23,
+                "name": "Wreck of the Brinehammer",
+                "sub_locations": []
+            },
+            {
+                "id": 24,
+                "name": "Frostflow Lighthouse",
+                "sub_locations": []
+            },
+            {
+                "id": 25,
+                "name": "Loreius Farm",
+                "sub_locations": []
+            },
+            {
+                "id": 26,
+                "name": "Nightgate Inn",
+                "sub_locations": []
+            },
+            {
+                "id": 27,
+                "name": "Red Road Pass",
+                "sub_locations": []
+            },
+            {
+                "id": 28,
+                "name": "Shearpoint",
+                "sub_locations": []
+            },
+            {
+                "id": 29,
+                "name": "Shrouded Grove",
+                "sub_locations": []
+            },
+            {
+                "id": 20001,
+                "name": "Silverdrift Lair",
+                "sub_locations": []
+            },
+            {
+                "id": 20002,
+                "name": "Weynon Stones",
+                "sub_locations": []
+            },
+            {
+                "id": 20003,
+                "name": "Fort Dunstad",
+                "sub_locations": []
+            },
+            {
+                "id": 20004,
+                "name": "Windward Ruins",
+                "sub_locations": []
+            },
+            {
+                "id": 20005,
+                "name": "Pale Pass",
+                "sub_locations": []
+            },
+            {
+                "id": 20006,
+                "name": "Great Henge of the Ice-Speakers",
+                "sub_locations": []
+            },
+            {
+                "id": 20007,
+                "name": "Snowpoint Overlook Cave",
+                "sub_locations": []
+            },
+            {
+                "id": 20008,
+                "name": "Forgotten Stones of the North",
+                "sub_locations": []
+            },
+            {
+                "id": 20009,
+                "name": "Icerunner's Rest",
+                "sub_locations": []
+            },
+            {
+                "id": 20010,
+                "name": "Snowdrift Cabin",
+                "sub_locations": []
+            },
+            {
+                "id": 20011,
+                "name": "Frostmoon Crag Cave",
+                "sub_locations": []
+            },
+            {
+                "id": 20012,
+                "name": "Ruins of the Lost Patrol",
+                "sub_locations": []
+            },
+            {
+                "id": 20013,
+                "name": "Yorgrim's Overlook",
+                "sub_locations": []
+            },
+            {
+                "id": 20014,
+                "name": "Stillborn Cave (The Pale)",
+                "sub_locations": []
+            },
+            {
+                "id": 20015,
+                "name": "The Lord Stone",
+                "sub_locations": []
+            },
+            {
+                "id": 20016,
+                "name": "Korvanjund",
+                "sub_locations": []
+            },
+            {
+                "id": 20017,
+                "name": "Irkngthand",
+                "sub_locations": []
+            },
+            {
+                "id": 20018,
+                "name": "Duskglow Crevice",
+                "sub_locations": []
+            }
+        ]
+    },
+    {
+        "id": 3,
+        "name": "Winterhold Hold",
+        "sub_locations": [
+            {
+                "id": 30,
+                "name": "Winterhold (Town Remnants)",
+                "sub_locations": [
+                    {
+                        "id": 3001,
+                        "name": "The Frozen Hearth",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 3002,
+                        "name": "College of Winterhold",
+                        "sub_locations": [
+                            {
+                                "id": 30021,
+                                "name": "The Midden",
+                                "sub_locations": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": 3003,
+                        "name": "Jarl's Longhouse (Winterhold)",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 3004,
+                        "name": "Birna's Oddments",
+                        "sub_locations": []
+                    }
+                ]
+            },
+            {
+                "id": 31,
+                "name": "Saarthal",
+                "sub_locations": []
+            },
+            {
+                "id": 32,
+                "name": "Hob's Fall Cave",
+                "sub_locations": []
+            },
+            {
+                "id": 33,
+                "name": "Yngol Barrow",
+                "sub_locations": []
+            },
+            {
+                "id": 34,
+                "name": "Alftand",
+                "sub_locations": [
+                    {
+                        "id": 3401,
+                        "name": "Alftand Glacial Ruins",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 3402,
+                        "name": "Alftand Animonculory",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 3403,
+                        "name": "Alftand Cathedral",
+                        "sub_locations": []
+                    }
+                ]
+            },
+            {
+                "id": 35,
+                "name": "Frostmere Crypt",
+                "sub_locations": []
+            },
+            {
+                "id": 36,
+                "name": "Pilgrim's Trench",
+                "sub_locations": []
+            },
+            {
+                "id": 37,
+                "name": "Sightless Pit",
+                "sub_locations": []
+            },
+            {
+                "id": 38,
+                "name": "Skytemple Ruins",
+                "sub_locations": []
+            },
+            {
+                "id": 39,
+                "name": "Snowpoint Beacon",
+                "sub_locations": []
+            },
+            {
+                "id": 30001,
+                "name": "Ysgramor's Tomb",
+                "sub_locations": []
+            },
+            {
+                "id": 30002,
+                "name": "The Serpent Stone",
+                "sub_locations": []
+            },
+            {
+                "id": 30003,
+                "name": "Driftshade Refuge",
+                "sub_locations": []
+            },
+            {
+                "id": 30004,
+                "name": "Bleakcoast Cave",
+                "sub_locations": []
+            },
+            {
+                "id": 30005,
+                "name": "The Wreck of the Winter Warbler",
+                "sub_locations": []
+            },
+            {
+                "id": 30006,
+                "name": "Japhet's Folly",
+                "sub_locations": []
+            },
+            {
+                "id": 30007,
+                "name": "Frostedge Fishery",
+                "sub_locations": []
+            },
+            {
+                "id": 30008,
+                "name": "Hermit's Peak Cave",
+                "sub_locations": []
+            },
+            {
+                "id": 30009,
+                "name": "Glacial Crevice",
+                "sub_locations": []
+            },
+            {
+                "id": 30010,
+                "name": "Forgotten Scholar's Hovel",
+                "sub_locations": []
+            },
+            {
+                "id": 30011,
+                "name": "Snow-Shod Stables & Farm (Winterhold Outskirts)",
+                "sub_locations": []
+            },
+            {
+                "id": 30012,
+                "name": "Whistling Mine",
+                "sub_locations": []
+            },
+            {
+                "id": 30013,
+                "name": "Shrine of Jhunal (Lost)",
+                "sub_locations": []
+            },
+            {
+                "id": 30014,
+                "name": "Frozen Mammoth Cave",
+                "sub_locations": []
+            },
+            {
+                "id": 30015,
+                "name": "The Tower Stone",
+                "sub_locations": []
+            },
+            {
+                "id": 30016,
+                "name": "Mount Anthor",
+                "sub_locations": []
+            },
+            {
+                "id": 30018,
+                "name": "Yngvild",
+                "sub_locations": []
+            }
+        ]
+    },
+    {
+        "id": 7,
+        "name": "Eastmarch",
+        "sub_locations": [
+            {
+                "id": 70,
+                "name": "Windhelm",
+                "sub_locations": [
+                    {
+                        "id": 7001,
+                        "name": "Candlehearth Hall",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 7002,
+                        "name": "Oengul's Smithy",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 7003,
+                        "name": "Palace of the Kings",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 7004,
+                        "name": "The White Phial",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 7005,
+                        "name": "Sadri's Used Wares",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 7006,
+                        "name": "House of Clan Shatter-Shield",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 7007,
+                        "name": "Temple of Talos (Windhelm)",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 7008,
+                        "name": "Gray Quarter (Dunmer District)",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 7009,
+                        "name": "Argonian Assemblage (Docks)",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 7010,
+                        "name": "Aretino Residence",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 7011,
+                        "name": "Hall of the Dead (Windhelm)",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 7012,
+                        "name": "Windhelm Port",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 7013,
+                        "name": "New Gnisis Cornerclub",
+                        "sub_locations": []
+                    }
+                ]
+            },
+            {
+                "id": 71,
+                "name": "Kynesgrove",
+                "sub_locations": [
+                    {
+                        "id": 7101,
+                        "name": "Braidwood Inn",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 7102,
+                        "name": "Steamscorch Mine",
+                        "sub_locations": []
+                    }
+                ]
+            },
+            {
+                "id": 72,
+                "name": "Fort Amol",
+                "sub_locations": []
+            },
+            {
+                "id": 73,
+                "name": "Eldergleam Sanctuary",
+                "sub_locations": []
+            },
+            {
+                "id": 74,
+                "name": "Narzulbur",
+                "sub_locations": [
+                    {
+                        "id": 7401,
+                        "name": "Mauhulakh's Longhouse",
+                        "sub_locations": []
+                    },
+                    {
+                        "id": 7402,
+                        "name": "Gloombound Mine (Ebony)",
+                        "sub_locations": []
+                    }
+                ]
+            },
+            {
+                "id": 75,
+                "name": "Ansilvund",
+                "sub_locations": []
+            },
+            {
+                "id": 76,
+                "name": "Bonestrewn Crest",
+                "sub_locations": []
+            }
+        ]
+    }
 ]
