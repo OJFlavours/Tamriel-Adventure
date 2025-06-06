@@ -98,6 +98,92 @@ FIXED_NPC_DATA = {
         {"name": "Ulfric Stormcloak", "race": "Nord", "role": "jarl", "level": 30},
         {"name": "Galmar Stone-Fist", "race": "Nord", "role": "stormcloak_general", "level": 25},
         {"name": "Wuunferth the Unliving", "race": "Nord", "role": "court_wizard", "level": 20},
+    ],
+
+    # === WINTERHOLD (Town Remnants) ===
+    # The Frozen Hearth (ID: 3001)
+    3001: [
+        {"name": "Dagur", "race": "Nord", "role": "innkeeper", "level": 7},
+        {"name": "Nelacar", "race": "Altmer", "role": "scholar_mage_reclusive", "level": 10}
+    ],
+    # Birna's Oddments (ID: 3004)
+    3004: [
+        {"name": "Birna", "race": "Nord", "role": "merchant_general_goods", "level": 3}
+    ],
+
+    # === DAWNSTAR (City) ===
+    # Windpeak Inn (ID: 2001)
+    2001: [
+        {"name": "Thoring", "race": "Nord", "role": "innkeeper", "level": 6},
+        {"name": "Karita", "race": "Nord", "role": "bard_local", "level": 4}
+    ],
+    # Quicksilver Mine (ID: 2002)
+    2002: [
+       {"name": "Leigelf", "race": "Nord", "role": "mine_owner", "level": 7}
+    ],
+    # The Mortar and Pestle (ID: 2003)
+    2003: [
+        {"name": "Frida", "race": "Nord", "role": "alchemist_merchant", "level": 5}
+    ],
+    # The White Hall (ID: 2004)
+    2004: [
+        {"name": "Skald the Elder", "race": "Nord", "role": "jarl_stormcloak", "level": 10},
+        {"name": "Brina Merilis", "race": "Imperial", "role": "jarl_advisor", "level": 8}
+    ],
+    # Rustleif's House and Smithy (ID: 2005)
+    2005: [
+        {"name": "Rustleif", "race": "Nord", "role": "blacksmith", "level": 6},
+        {"name": "Seren", "race": "Redguard", "role": "blacksmith_spouse", "level": 3}
+    ],
+
+    # === FALKREATH (Town) ===
+    # Dead Man's Drink (ID: 5001)
+    5001: [
+        {"name": "Valga Vinicia", "race": "Imperial", "role": "innkeeper", "level": 6},
+        {"name": "Narri", "race": "Nord", "role": "tavern_staff_server", "level": 3},
+        {"name": "Tekla", "race": "Nord", "role": "tavern_staff_server", "level": 3}
+    ],
+    # Gray Pine Goods (ID: 5004)
+    5004: [
+        {"name": "Solaf", "race": "Nord", "role": "merchant_general_goods", "level": 5}
+    ],
+    # Lod's House and Smithy (ID: 5005)
+    5005: [
+        {"name": "Lod", "race": "Nord", "role": "blacksmith", "level": 6}
+    ],
+
+    # === EASTMARCH (Kynesgrove) ===
+    # Braidwood Inn (ID: 7101)
+    7101: [
+        {"name": "Iddra", "race": "Nord", "role": "innkeeper", "level": 5},
+        {"name": "Roggi Knot-Beard", "race": "Nord", "role": "miner_patron", "level": 3}
+    ],
+
+    # === MARKARTH (City) ===
+    # Silver-Blood Inn (ID: 6001)
+    6001: [
+        {"name": "Kleppr", "race": "Nord", "role": "innkeeper", "level": 6},
+        {"name": "Frabbi", "race": "Nord", "role": "server", "level": 4}
+    ],
+    # Arnleif and Sons Trading Company (ID: 6004)
+    6004: [
+        {"name": "Lisbet", "race": "Breton", "role": "merchant_general_goods", "level": 5}
+    ],
+    # The Hag's Cure (ID: 6005)
+    6005: [
+        {"name": "Bothela", "race": "Breton", "role": "alchemist_merchant_elder", "level": 8},
+        {"name": "Muiri", "race": "Breton", "role": "alchemist_apprentice", "level": 3}
+    ],
+    # Ghorza's Smithy (ID: 6008)
+    6008: [
+        {"name": "Ghorza gra-Bagol", "race": "Orc", "role": "blacksmith_trainer", "level": 7}
+    ],
+
+    # === RIFTEN (City) ===
+    # The Bee and Barb (ID: 9001)
+    9001: [
+        {"name": "Talen-Jei", "race": "Argonian", "gender": "Male", "role": "publican", "level": 6},
+        {"name": "Keerava", "race": "Argonian", "gender": "Female", "role": "publican", "level": 6}
     ]
     # This dictionary can be expanded with every fixed NPC in Skyrim.
 }

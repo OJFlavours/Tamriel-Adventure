@@ -5,6 +5,7 @@ from npc_entities import NPC
 from npc_roles import FRIENDLY_ROLES, HOSTILE_ROLES # Import role sets
 from ui import UI
 from locations import RAW_LOCATION_DATA_MAP
+from fixed_npc_data import FIXED_NPC_DATA
 
 def determine_npc_count(tags_list, location_data):
     """Determines the number of NPCs to generate based on location tags and density."""
@@ -95,11 +96,15 @@ def generate_npcs_for_location(location_obj, npc_registry, find_hierarchy_func):
         npc_registry[location_obj.id] = []
         
         # --- FIXED NPC SPAWNING ---
-        # (Assuming you create fixed_npc_data.py and import FIXED_NPC_DATA)
-        # from fixed_npc_data import FIXED_NPC_DATA
-        # if location_obj.id in FIXED_NPC_DATA:
-        #     for npc_data in FIXED_NPC_DATA[location_obj.id]:
-        #         # ... logic to create and add fixed NPCs ...
+        if location_obj.id in FIXED_NPC_DATA:
+            for npc_data in FIXED_NPC_DATA[location_obj.id]:
+                fixed_npc = NPC(
+                    name=npc_data.get("name"),
+                    race=npc_data.get("race"),
+                    role=npc_data.get("role"),
+                    level=npc_data.get("level", 5)
+                )
+                npc_registry[location_obj.id].append(fixed_npc)
 
         # --- RANDOM NPC GENERATION ---
         parent_hold, parent_city, _ = find_hierarchy_func(location_obj.id)
@@ -129,6 +134,11 @@ def generate_npcs_for_location(location_obj, npc_registry, find_hierarchy_func):
         # Determine the base role pool (friendly or hostile)
         is_hostile_area = any(tag in location_tags for tag in HOSTILE_ROLES)
         role_pool = HOSTILE_ROLES if is_hostile_area else FRIENDLY_ROLES
+
+        # Adjust npc_count to not include fixed NPCs
+        num_fixed_npcs = len(npc_registry.get(location_obj.id, []))
+        npc_count -= num_fixed_npcs
+        npc_count = max(0, npc_count)
 
         for _ in range(npc_count):
             npc_role = determine_npc_role(location_tags, role_pool)

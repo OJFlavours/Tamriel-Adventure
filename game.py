@@ -1,6 +1,8 @@
 import random
-from items import generate_random_item
 import logging
+from datetime import datetime, timezone, timedelta
+import time
+import traceback
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG, filename='debug.log', filemode='w', format='%(asctime)s - %(levelname)s - %(message)s')
@@ -21,7 +23,6 @@ def add_random_item_with_rarity(player, category, rarity):
 # game.py
 
 import time
-import random
 import traceback
 from datetime import datetime, timezone, timedelta
 
@@ -29,14 +30,11 @@ try:
     from locations import LOCATIONS, Location, initialize_skyrim_map, RAW_LOCATION_DATA_MAP, HOLD_NAME_TO_MAIN_ID_MAP # Updated imports
     from player import Player # Import Player from player.py
     from stats import Stats, RACES, CLASSES # Import Stats, RACES, CLASSES from stats.py
-    from npc import NPC # NPC class
+    from npc_entities import NPC # NPC class
     from npc_roles import FRIENDLY_ROLES, HOSTILE_ROLES # Roles
     from npc_names import NAME_POOLS # Name pools
     npc_registry = {}
-    # define_fixed_npcs(npc_registry) # This function call is removed
-    from npc_entities import define_specific_npcs
-    specific_npcs = define_specific_npcs()
-    from combat_core import Combat
+    from combat_manager import Combat
     from ui import UI
     from items import generate_random_item, Item, generate_item_from_key, Torch
     from events import trigger_random_event, explore_location # Now triggers events with more detail
@@ -50,7 +48,7 @@ try:
     from character_creation import initialize_player
     from npc_generation import ( # Added
         determine_npc_count, determine_npc_culture, determine_npc_role,
-        generate_tavern_npcs, generate_standard_npcs, generate_npcs_for_location
+        generate_npcs_for_location
     )
     from exploration import ( # Added
         get_hold_by_id, get_known_holds, get_known_primary_locations_in_hold,
@@ -206,7 +204,7 @@ def handle_player_choice(choice, player, current_loc_obj: Location, menu_options
     action = None
     new_current_location_obj = current_loc_obj
     time_advance_minutes = 0
-    game_time_obj = game_time_obj_param # Use the passed game_time
+    game_time_obj = game_time_obj_param
 
     if choice.isdigit():
         choice_num = int(choice)
@@ -232,12 +230,6 @@ def handle_player_choice(choice, player, current_loc_obj: Location, menu_options
 
     if action == "explore known world":
         UI.print_heading(f"Travel from {current_loc_obj.name}")
-        # ** FIX STARTS HERE **
-        # The 'discovered_for_startup' variable does not exist in this function's scope.
-        # This check should be removed.
-        # if discovered_for_startup:
-        #     UI.slow_print(f"You know of: {', '.join(reversed(discovered_for_startup))}")
-        # ** FIX ENDS HERE **
         if current_loc_obj.exits:
             UI.slow_print("Available destinations:")
             exit_options = list(current_loc_obj.exits.items())
@@ -256,7 +248,7 @@ def handle_player_choice(choice, player, current_loc_obj: Location, menu_options
                         UI.slow_print(f"Traveling to {new_current_location_obj.name}...")
                         new_current_location_obj.enter(player)
                         generate_npcs_for_location(new_current_location_obj, npc_registry, _find_hierarchy)
-                        time_advance_minutes = getattr(new_dest_obj, 'travel_time', 60) # Default to 60 if not set
+                        time_advance_minutes = getattr(new_dest_obj, 'travel_time', 60)
                     else:
                         UI.slow_print("Invalid choice.")
                 except ValueError:
@@ -269,8 +261,7 @@ def handle_player_choice(choice, player, current_loc_obj: Location, menu_options
             list_npcs_at_location(current_loc_obj, player, npc_registry) 
         else:
             UI.slow_print("You must first be somewhere to find others.")
-        if new_current_location_obj == current_loc_obj: # No location change
-             # Return a specific signal if no actual interaction happened, or just pass time
+        if new_current_location_obj == current_loc_obj:
             return "NO_EVENT_THIS_TURN", game_time_obj + timedelta(minutes=time_advance_minutes)
     elif action == "behold thy spirit":
         UI.display_player_stats(player)
@@ -280,7 +271,6 @@ def handle_player_choice(choice, player, current_loc_obj: Location, menu_options
         new_current_location_obj = combat_demo(player, current_loc_obj, _find_hierarchy, npc_registry)
     elif action == "inspect thy possessions":
         handle_inventory_menu(player)
-        # No time advance from this action itself
     elif action == "look around the area":
         new_current_location_obj = look_around_area(player, current_loc_obj, npc_registry, GAME_LOCATIONS_MAP, UI)
         time_advance_minutes = action_time_map.get(action, 15)
@@ -289,19 +279,16 @@ def handle_player_choice(choice, player, current_loc_obj: Location, menu_options
         time_advance_minutes = action_time_map.get(action, 5)
     elif action == "view world map":
         display_world_map(player, GAME_LOCATIONS_MAP)
-        # No time advance
     elif action == "use item from inventory":
         handle_item_use(player)
-        # Time advance might depend on item, handle within handle_item_use or assume minor
     elif action == "wait / pass time":
         UI.slow_print("Time passes...")
         time_advance_minutes = action_time_map.get(action, 60)
-        for _ in range(time_advance_minutes // 60): # Restore per hour waited
+        for _ in range(time_advance_minutes // 60):
             player.stats.restore_fatigue(max(1, player.stats.level // 2) * 2)
             player.stats.restore_magicka(max(1, player.stats.level // 3) * 2)
         UI.slow_print("You feel somewhat rested.")
     elif action == "depart this realm":
-        # This case is handled at the top
         pass
     else:
         UI.slow_print("Your will wavers, or perhaps the spirits muddle your intent.")
@@ -365,8 +352,6 @@ def initialize_starting_location(player: Player):
             current_for_discovery = GAME_LOCATIONS_MAP.get(current_for_discovery.parent_id)
         else:
             break
-    #if discovered_for_startup:
-    #    UI.slow_print(f"You know of: {', '.join(reversed(discovered_for_startup))}")
     hold_obj, city_obj, _ = _find_hierarchy(starting_loc_obj)
     hold_name_display = hold_obj.name if hold_obj else "an unknown hold"
     city_name_display = city_obj.name if city_obj else "an unknown city"
@@ -377,13 +362,10 @@ def initialize_starting_location(player: Player):
     wrapped_message = UI.wrap_text(message, width=120)
     padding = " " * ((120 - len(wrapped_message)) // 2)
     UI.slow_print(padding + wrapped_message)
-    #UI.slow_print(starting_loc_obj.description)
-    #UI.print_line()
     centered_text = "Your journey begins..."
     wrapped_centered_text = UI.wrap_text(centered_text, width=120)
     padding = " " * ((120 - len(wrapped_centered_text)) // 2)
     UI.slow_print(padding + wrapped_centered_text)
-    #UI.print_line()
     text_to_center = "The warm fire crackles. A few patrons murmur over their drinks. Adventure awaits."
     wrapped_centered_text = UI.wrap_text(text_to_center, width=120)
     centered_text = " " * ((120 - len(wrapped_centered_text)) // 2) + wrapped_centered_text
@@ -393,17 +375,16 @@ def initialize_starting_location(player: Player):
 
 def initialize_game_state(player: Player):
     logging.debug("Before initialize_game_state")
-    # Removed global game_start_time, as it's handled by game_time object now
     global npc_registry
     player.known_location_ids.clear()
     player.known_locations_objects.clear()
     npc_registry.clear()
-    initialize_game_events() # Initialize game events
+    initialize_game_events()
 
 def start_game():
     global GAME_LOCATIONS_MAP
     current_location_global_obj: Location = None
-    game_time = datetime(201, 1, 1, 8, 0, 0, tzinfo=timezone.utc) # Initial game time
+    game_time = datetime(201, 1, 1, 8, 0, 0, tzinfo=timezone.utc)
 
     try:
         try:
@@ -419,7 +400,7 @@ def start_game():
             UI.print_failure("Failed to initialize player. Exiting.")
             return
 
-        initialize_game_state(player) # This now calls initialize_game_events()
+        initialize_game_state(player)
         logging.debug("After initialize_game_state")
 
         current_location_global_obj = initialize_starting_location(player)
@@ -441,7 +422,6 @@ def start_game():
                 player.stats.restore_fatigue(max(1, player.stats.level // 2))
                 player.stats.restore_magicka(max(1, player.stats.level // 3))
 
-                # Check and trigger game events before player action
                 check_and_trigger_events(game_time, player, current_location_global_obj, npc_registry, GAME_LOCATIONS_MAP, UI)
 
                 for quest in player.quest_log.active_quests:
@@ -466,39 +446,29 @@ def start_game():
                 if player.stats.current_encumbrance > player.stats.encumbrance_limit:
                     UI.slow_print("Your heavy load weighs you down.", speed=0.005)
                     
-                    UI.print_line('=')
-                    # ** FIX STARTS HERE **
-                    # The 'starting_loc_obj' variable does not exist in this scope.
-                    # It should be 'current_location_global_obj'.
-                    UI.slow_print(current_location_global_obj.description)
-                    # ** FIX ENDS HERE **
-                    UI.print_line('=')
-                    UI.print_info(f"Location: {current_location_global_obj.name} | {get_current_game_time_string(game_time)}\nHP: {player.stats.current_health}/{player.stats.max_health} | MP: {player.stats.current_magicka}/{player.stats.max_magicka} | FP: {player.stats.current_fatigue}/{player.stats.max_fatigue}")
+                UI.print_line('=')
+                UI.slow_print(current_location_global_obj.description)
+                UI.print_line('=')
+                UI.print_info(f"Location: {current_location_global_obj.name} | {get_current_game_time_string(game_time)}\nHP: {player.stats.current_health}/{player.stats.max_health} | MP: {player.stats.current_magicka}/{player.stats.max_magicka} | FP: {player.stats.current_fatigue}/{player.stats.max_fatigue}")
                     
-                menu_options = [] # Initialize menu_options here
-                logging.debug("Before menu options")
-                
                 menu_options = [
                     "Explore Known World", "Parley with Souls", "Behold Thy Spirit",
                     "Test Thy Steel", "Inspect Thy Possessions", "Look Around The Area",
                     "Review Quest Log", "View World Map", "Use Item from Inventory",
                     "Wait / Pass Time", "Depart This Realm (Quit)"
                 ]
-                logging.debug("After printing 'What is thy will?'")
                 UI.print_menu(menu_options)
                 player_input = UI.print_prompt("Your choice: ")
-                logging.debug("After getting player choice")
 
                 action_result, game_time = handle_player_choice(player_input, player, current_location_global_obj, menu_options, game_time)
 
-                # Check and trigger game events again after player action and time advancement
                 check_and_trigger_events(game_time, player, current_location_global_obj, npc_registry, GAME_LOCATIONS_MAP, UI)
 
                 if action_result == "QUIT_GAME_SIGNAL":
                     main_loop_running = False
                 elif action_result == "STATS_MENU_ACTION" or action_result == "NO_EVENT_THIS_TURN":
                     pass 
-                elif isinstance(action_result, Location): # If only location object is returned
+                elif isinstance(action_result, Location):
                     new_loc_obj = action_result
                     if new_loc_obj and new_loc_obj != current_location_global_obj:
                         current_location_global_obj = new_loc_obj
@@ -506,25 +476,20 @@ def start_game():
                         current_location_raw_data = get_location_raw_data(current_location_global_obj.id)
                         location_tags = RAW_LOCATION_DATA_MAP.get(current_location_global_obj.id, {}).get("tags", [])
                         trigger_random_event(location_tags, player, UI, current_location_raw_data)
-                # If action_result is a tuple (new_loc_obj, updated_game_time), it's handled by game_time update already
-                # and new_loc_obj is assigned if it changed.
-                # Ensure new_loc_obj from tuple is handled if it's not the primary return for location change
                 elif isinstance(action_result, tuple) and len(action_result) == 2 and isinstance(action_result[0], Location):
                      new_loc_obj_from_tuple = action_result[0]
                      if new_loc_obj_from_tuple and new_loc_obj_from_tuple != current_location_global_obj:
                          current_location_global_obj = new_loc_obj_from_tuple
                          player.update_current_location_for_quest(current_location_global_obj)
-                         # Trigger event only if location changed significantly
                          current_location_raw_data = get_location_raw_data(current_location_global_obj.id)
                          location_tags = RAW_LOCATION_DATA_MAP.get(current_location_global_obj.id, {}).get("tags", [])
                          trigger_random_event(location_tags, player, UI, current_location_raw_data)
-
 
             except Exception as e:
                 UI.print_failure(f"UNEXPECTED ERROR IN MAIN LOOP: {e}")
                 traceback.print_exc()
                 UI.press_enter()
-                main_loop_running = False # Terminate loop on error
+                main_loop_running = False
 
         UI.slow_print("The threads of fate have been severed. Until we meet again...")
 
@@ -542,3 +507,79 @@ if __name__ == "__main__":
     start_game()
     print("--- START_GAME() COMPLETED ---")
     logging.debug("--- START_GAME() COMPLETED ---")
+
+import random
+import logging
+from datetime import datetime, timezone, timedelta
+import time
+import traceback
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG, filename='debug.log', filemode='w', format='%(asctime)s - %(levelname)s - %(message)s')
+
+try:
+    from locations import LOCATIONS, Location, initialize_skyrim_map, RAW_LOCATION_DATA_MAP
+    from player import Player
+    from stats import Stats, RACES, CLASSES
+    from npc_entities import NPC
+    from npc_roles import HOSTILE_ROLES
+    from combat_manager import Combat
+    from ui import UI
+    from items import generate_random_item, Item, generate_item_from_key
+    from events import trigger_random_event, explore_location
+    from quests import QuestLog, generate_location_appropriate_quest, Quest
+    from character_creation import initialize_player
+    from npc_generation import generate_npcs_for_location, determine_npc_culture
+    from exploration import display_world_map
+    from inventory_manager import handle_inventory_menu, handle_item_use
+    from npc_dialogue_logic import handle_npc_dialogue
+    from game_events import initialize_game_events, check_and_trigger_events
+    import tags
+    import flavor
+except ImportError as e:
+    print(f"Error importing modules: {e}")
+    traceback.print_exc()
+    input("Press Enter to exit...")
+    exit(1)
+
+# Globals
+npc_registry = {}
+GAME_LOCATIONS_MAP = {}
+action_time_map = {
+    "travel": 120, "search": 45, "rest": 480, "craft": 360, "combat": 30,
+    "dialogue": 5, "wait / pass time": 60, "look around the area": 15
+}
+
+def list_npcs_at_location(location_obj, player, npc_registry_param):
+    try:
+        if not location_obj:
+            UI.slow_print("You are nowhere in particular.")
+            return
+    except Exception as e:
+        UI.print_failure(f"Error in list_npcs_at_location: {e}")
+
+        npcs_here = npc_registry_param.get(location_obj.id, [])
+        active_npcs = [npc for npc in npcs_here if npc.stats.is_alive()]
+
+        if not active_npcs:
+            UI.slow_print("No souls linger here, save the whispers of the wind.")
+            return
+
+        UI.print_heading(f"Souls at {location_obj.name}")
+        for i, npc in enumerate(active_npcs, 1):
+            attitude = npc.tags.get("npc", {}).get("attitude", "neutral")
+            role_display = npc.role.replace('_', ' ').title()
+            UI.print_info(f"[{i}] {npc.full_name} — {role_display} ({npc.race.capitalize()}) ({attitude.capitalize()})")
+        
+        UI.print_line()
+        sel = UI.print_prompt("With whom do you wish to parley? (0 to pass)").strip()
+
+        if sel.isdigit():
+            choice_index = int(sel)
+            if 1 <= choice_index <= len(active_npcs):
+                selected_npc = active_npcs[choice_index - 1]
+                is_hostile = "hostile" in selected_npc.tags.get("npc", {}).get("attitude", "")
+
+                if is_hostile and player.combat is None:
+                    UI.slow_print(f"{selected_npc.name} snarls and lunges with clear hostile intent!")
+                    combat_instance = Combat(player, [selected_npc], location_obj)

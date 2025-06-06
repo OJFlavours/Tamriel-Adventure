@@ -4,12 +4,13 @@ from typing import TYPE_CHECKING, List
 
 from ui import UI
 from combat_targeting import get_target_logic
-from combat_logic import calculate_damage_logic, apply_and_log_weapon_effects_logic
+from damage_utils import calculate_damage_logic
+from combat_manager import apply_and_log_weapon_effects_logic
 
 if TYPE_CHECKING:
     from player import Player
     from npc import NPC
-    from combat_module import Combat # To avoid circular import
+    from combat_manager import Combat # To avoid circular import
 
 def handle_npc_turn(combat_instance: 'Combat', npc: 'NPC') -> bool:
     player = combat_instance.player
