@@ -8,7 +8,7 @@ from typing import List, Dict, Any, Optional
 init(autoreset=True)
 
 # --- Configuration ---
-LINE_WIDTH = 105
+LINE_WIDTH = 120
 SLOW_PRINT_SPEED = 0.0001# Adjust for faster/slower text crawl
 HEADING_COLOR = Fore.CYAN + Style.BRIGHT
 SUBHEADING_COLOR = Fore.GREEN + Style.BRIGHT
@@ -16,7 +16,7 @@ PROMPT_COLOR = Fore.YELLOW + Style.BRIGHT
 INFO_COLOR = Fore.WHITE
 SUCCESS_COLOR = Fore.GREEN
 FAILURE_COLOR = Fore.RED
-MENU_COLOR = Fore.MAGENTA
+MENU_COLOR = Fore.MAGENTA + Style.BRIGHT
 HIGHLIGHT_COLOR = Fore.YELLOW
 COMBAT_TEXT_COLOR = Fore.RED
 SYSTEM_MESSAGE_COLOR = Fore.BLUE + Style.BRIGHT # Used for debug messages
@@ -35,9 +35,11 @@ class UI:
         os.system('cls' if os.name == 'nt' else 'clear')
 
     @staticmethod
-    def print_line(char='-', width=LINE_WIDTH):
+    def print_line(char='=', width=LINE_WIDTH):
         """Prints a horizontal line."""
-        print(char * width)
+        print()
+        print(Fore.WHITE + char * width + Style.RESET_ALL)
+        print()
 
     @staticmethod
     def slow_print(text, speed=SLOW_PRINT_SPEED, end='\n', width=LINE_WIDTH):
@@ -73,17 +75,26 @@ class UI:
 
     @staticmethod
     def print_heading(text):
-        """Prints a formatted heading."""
+        """Prints a formatted heading, centered."""
         print()
         UI.print_line()
-        print(f"{HEADING_COLOR}{UI.wrap_text(text.upper())}{Style.RESET_ALL}")
+        print()
+        print()
+        wrapped_text = UI.wrap_text(text.upper())
+        padding = " " * ((LINE_WIDTH - len(wrapped_text)) // 2)
+        print(f"{HEADING_COLOR}{padding}{wrapped_text}{Style.RESET_ALL}")
+        print()
+        print()
         UI.print_line()
+        print()
         print()
 
     @staticmethod
     def print_subheading(text):
-        """Prints a formatted subheading."""
-        print(f"\n{SUBHEADING_COLOR}{UI.wrap_text(text)}{Style.RESET_ALL}")
+        """Prints a formatted subheading, centered."""
+        wrapped_text = UI.wrap_text(text, width=LINE_WIDTH)
+        padding = " " * ((LINE_WIDTH - len(wrapped_text)) // 2)
+        print(f"\n\n{SUBHEADING_COLOR}{padding}{wrapped_text}{Style.RESET_ALL}\n\n")
 
     @staticmethod
     def print_prompt(text):
@@ -98,6 +109,9 @@ class UI:
     def print_info(text):
         """Prints informational text."""
         print(f"{INFO_COLOR}{UI.wrap_text(text)}{Style.RESET_ALL}")
+        print()
+        print()
+        print()
 
     @staticmethod
     def print_success(text):
@@ -118,10 +132,15 @@ class UI:
     @staticmethod
     def print_menu(options):
         """Prints a formatted menu of options."""
-        print(MENU_COLOR)
+        print()
+        print(Fore.YELLOW + "Choose your path:" + Style.RESET_ALL)
+        print()
+        print()
         for i, option in enumerate(options):
-            print(f"  [{i + 1}] {UI.wrap_text(option)}")
-        print(Style.RESET_ALL)
+            print(f"{MENU_COLOR}  [{i + 1}] {UI.wrap_text(option)}{Style.RESET_ALL}")
+        print()
+        print()
+        print()
 
     @staticmethod
     def print_highlight(text):

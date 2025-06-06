@@ -98,3 +98,11 @@ if __name__ == "__main__":
         "npc": {"attitude": ["hostile"]}
     })
     print("Mixed Flavor:", get_flavor(mixed_entity))
+
+def get_flavor_text(item_name):
+    """
+    Retrieves a random flavor text vignette for a given item name.
+    """
+    if item_name in ITEM_FLAVORS:
+        return random.choice(ITEM_FLAVORS[item_name])
+    return None

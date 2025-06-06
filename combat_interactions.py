@@ -1,8 +1,10 @@
+
 # combat_interactions.py
 import random
 from ui import UI
+from combat_core import Combat
 
-from combat_logic import Combat
+
 from npc import NPC # NPC class
 from npc_roles import HOSTILE_ROLES # HOSTILE_ROLES is now in npc_roles.py
 from items import generate_item_from_key
@@ -17,12 +19,12 @@ def list_npcs_at_location(location_obj, player, npc_registry_param):
             UI.slow_print("You are nowhere in particular.")
             return
 
-        npcs_here = npc_registry_param.get(location_obj.id, [])
+        npcs_here = npc_registry_param.get(location_obj.id if hasattr(location_obj, 'id') else None, [])
         if not npcs_here:
             UI.slow_print("No souls linger here, save the whispers of the wind.")
             return
 
-        UI.print_heading(f"Souls at {location_obj.name}")
+        UI.print_heading(f"Souls at {location_obj.name if hasattr(location_obj, 'name') else location_obj}")
         active_npcs = [npc for npc in npcs_here if npc.stats.is_alive()]
 
         if not active_npcs:
@@ -34,8 +36,8 @@ def list_npcs_at_location(location_obj, player, npc_registry_param):
             attitude_display_val = npc_info_tags.get("attitude", "neutral")
             attitude_display = f"({attitude_display_val.capitalize()})" if attitude_display_val else ""
             role_display = 'Server' if npc.role == 'server' else npc.role.replace('_', ' ').title()
-            UI.print_info(f"[{i}] {npc.full_name} — {role_display} ({npc.race.capitalize()}) {attitude_display}")
-        UI.print_line()
+            UI.slow_print(f"[{i}] {npc.full_name} — {role_display} ({npc.race.capitalize()}) {attitude_display}")
+        
 
         sel = UI.print_prompt("With whom do you wish to parley? (0 to pass)").strip()
         if sel.isdigit():
@@ -158,26 +160,26 @@ def combat_demo(player, current_location_obj, find_hierarchy_func, npc_registry_
         return current_location_obj
 
 # --- Complex Interactions ---
-class Combo:
-    def __init__(self, name, moves, damage_multiplier, stamina_cost):
-        self.name = name
-        self.moves = moves  # List of move names (e.g., ["attack", "block", "attack"])
-        self.damage_multiplier = damage_multiplier
-        self.stamina_cost = stamina_cost
+# class Combo:
+    #     def __init__(self, name, moves, damage_multiplier, stamina_cost):
+        #         self.name = name
+        #         self.moves = moves  # List of move names (e.g., ["attack", "block", "attack"])
+        #         self.damage_multiplier = damage_multiplier
+        #         self.stamina_cost = stamina_cost
 
-    def execute(self, attacker, defender):
+    #     def execute(self, attacker, defender):
         """Executes the combo, applying damage and stamina cost."""
-        total_damage = attacker.stats.attack * self.damage_multiplier
-        defender.stats.take_damage(total_damage)
-        attacker.stats.stamina -= self.stamina_cost
-        return f"{attacker.name} executes {self.name} for {total_damage} damage!"
+        #         total_damage = attacker.stats.attack * self.damage_multiplier
+        #         defender.stats.take_damage(total_damage)
+        #         attacker.stats.stamina -= self.stamina_cost
+        #         return f"{attacker.name} executes {self.name} for {total_damage} damage!"
 
 # --- Dynamic Interactions ---
-def create_dynamic_interaction(name, condition, effect):
+# def create_dynamic_interaction(name, condition, effect):
     """Creates a dynamic interaction based on a condition and effect."""
-    def dynamic_interaction(attacker, defender):
-        if condition(attacker, defender):
-            return effect(attacker, defender)
-        return None
-    dynamic_interaction.__name__ = name  # Set the name of the function
-    return dynamic_interaction
+    #     def dynamic_interaction(attacker, defender):
+        #         if condition(attacker, defender):
+            #             return effect(attacker, defender)
+        #         return None
+    #     dynamic_interaction.__name__ = name  # Set the name of the function
+    #     return dynamic_interaction

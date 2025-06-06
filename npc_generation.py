@@ -53,6 +53,8 @@ def determine_npc_role(tags_list, base_role_pool):
         return "miner" if random.random() < 0.7 else "mine_foreman"
     if "bandit_camp" in tags_list or ("camp" in tags_list and "bandit" in tags_list) or "bandit_hideout" in tags_list:
         return random.choice(["bandit", "bandit_thug", "bandit_archer", "bandit_leader"])
+    if any(indicator in tags_list for indicator in ["bandit", "dungeon", "ruin", "forsworn", "necromancer", "vampire_lair", "monster_den", "lair"]):
+        return random.choice(list(HOSTILE_ROLES))
     if "forsworn_camp" in tags_list or "forsworn_redoubt" in tags_list:
         return random.choice(["forsworn_raider", "forsworn_shaman", "forsworn_briarheart"])
     if ("temple" in tags_list or "shrine" in tags_list) and "ruined" not in tags_list and "abandoned" not in tags_list:
@@ -295,8 +297,9 @@ def generate_npcs_for_location(location_obj, npc_registry, find_hierarchy_func):
         role_pool = set(FRIENDLY_ROLES) - {"local"}
         hostile_location_indicators = ["bandit", "dungeon", "ruin", "forsworn", "necromancer", "vampire_lair", "monster_den", "lair"]
         # Use location_obj.name directly as it's an attribute
-        if any(indicator in combined_tags_for_npc_gen for indicator in hostile_location_indicators) or \
-           any(indicator in location_obj.name.lower() for indicator in hostile_location_indicators):
+        if any(indicator in tag for tag in combined_tags_for_npc_gen for indicator in hostile_location_indicators) or \
+           any(indicator in location_obj.name.lower() for indicator in hostile_location_indicators) or \
+           "bandit_hideout" in combined_tags_for_npc_gen:  # Explicitly add HOSTILE_ROLES for bandit hideouts
             role_pool.update(HOSTILE_ROLES)
         if "city" not in combined_tags_for_npc_gen and "town" not in combined_tags_for_npc_gen:
             role_pool = role_pool - {"merchant", "noble", "bard", "scholar"}
@@ -312,19 +315,12 @@ def generate_npcs_for_location(location_obj, npc_registry, find_hierarchy_func):
         # Also, taverns might have other standard NPCs besides tavern-specific ones.
         # The role_pool for standard NPCs should also respect filled_roles.
         if npc_count_to_generate_randomly > 0:
-             generate_standard_npcs(location_obj, combined_tags_for_npc_gen, npc_count_to_generate_randomly, role_pool, demographics, npc_registry, filled_roles)
+            generate_standard_npcs(location_obj, combined_tags_for_npc_gen, npc_count_to_generate_randomly, role_pool, demographics, npc_registry, filled_roles)
 
     except Exception as e:
         # Use getattr for safe access to name in case location_obj is not fully initialized
         location_name_for_error = getattr(location_obj, 'name', 'Unknown Location')
         UI.print_failure(f"Error in generate_npcs_for_location for {location_name_for_error}: {e}")
-def add_fixed_npc(npc_registry, location_id, npc_name, npc_race, npc_role, npc_level):
-    """Adds a fixed NPC to a specific location."""
-    new_npc = NPC(name=npc_name, race=npc_race, role=npc_role, level=npc_level)
-    if location_id in npc_registry:
-        npc_registry[location_id].append(new_npc)
-    else:
-        npc_registry[location_id] = [new_npc]
 
 def create_npc(name: str, race: str, role: str, level: int, template: dict = None) -> NPC:
     """Creates a new NPC based on a template."""
@@ -345,13 +341,3 @@ def create_npc(name: str, race: str, role: str, level: int, template: dict = Non
     except Exception as e:
         print(f"Error creating NPC: {e}")
         return None
-
-# Add the new NPCs
-# Stormcloak recruiter in Windhelm
-add_fixed_npc(npc_registry={}, location_id=70, npc_name="Torin Battle-Born", npc_race="Nord", npc_role="stormcloak_recruiter", npc_level=5)
-
-# Imperial deserter hiding in the wilderness (Eastmarch)
-add_fixed_npc(npc_registry={}, location_id=7, npc_name="Marcus Varo", npc_race="Imperial", npc_role="imperial_deserter", npc_level=3)
-
-# Dominion spy gathering information in Riften
-add_fixed_npc(npc_registry={}, location_id=100, npc_name="Elenwen's Eye", npc_race="Altmer", npc_role="dominion_spy", npc_level=7)

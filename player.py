@@ -17,7 +17,8 @@ class Player:
         self.full_name = name
         self.name = name.split(" ")[0] # First name for simpler references
         self.race = race
-        self.subclass = subclass_name # Store the subclass name
+        self.subclass_name = subclass_name # Store the subclass name
+        self.class_key = None # Add class_key attribute
         self.stats = stats_instance # This is the Stats object instance
         self.skills = skills
         self.quest_log = QuestLog()
@@ -60,7 +61,8 @@ class Player:
 
 
         # Integrated from original player.py
-        self.inventory = self.stats.inventory # Player's inventory is managed by the Stats object
+        # Remove this line:
+        # self.inventory = self.stats.inventory # Player's inventory is managed by the Stats object
         self.visibility = 10  # Initial visibility, modified by torches, spells, etc.
 
     @property
@@ -95,6 +97,10 @@ class Player:
 
     def add_item(self, item_to_add: Item) -> bool:
         """Adds an item to inventory, checking encumbrance via Stats object."""
+        # Simplified: Rely on Stats object for inventory management
+        if self.has_item(item_to_add.name):
+            print(f"Item {item_to_add.name} already in inventory, skipping add.")
+            return False
         added = self.stats.add_to_inventory(item_to_add)
         if added:
             UI.slow_print(f"You obtained {item_to_add.name}.")
@@ -280,8 +286,8 @@ class Player:
             try:
                 self.stats.inventory.sort(key=lambda item_obj: str(getattr(item_obj, key, "")).lower())
                 UI.slow_print(f"Inventory sorted by {key.capitalize()}.")
-            except AttributeError:
-                UI.print_warning(f"Cannot sort by '{key}'.")
+            except AttributeError as e:
+                UI.print_warning(f"Cannot sort by '{{key}}'.")
         else:
             UI.print_warning("Inventory not available for sorting.")
 

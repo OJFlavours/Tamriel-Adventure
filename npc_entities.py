@@ -14,10 +14,35 @@ from tags import TAGS, get_tags # For NPC tagging
 # from exploration_data import EXPLORATION_RESULTS # Not directly used by NPC entity
 # from rumors import generate_rumor # Rumor generation is part of dialogue logic
 from spells import get_spell, Spell # For NPC spell list
-from npc_roles import NOBLE_ROLES, COMMONER_ROLES, HOSTILE_ROLES, FRIENDLY_ROLES # For role-based logic
+# from npc_roles import NOBLE_ROLES, COMMONER_ROLES, HOSTILE_ROLES, FRIENDLY_ROLES # For role-based logic
 from npc_names import NAME_POOLS # assign_unique_npc_ids is not used directly by the class
 from npc_dialogue_generation import generate_greeting, generate_purpose # For initial greeting/purpose
 import json
+
+# Define roles that imply noble or commoner status
+NOBLE_ROLES = {"noble", "jarl", "thane", "baron", "lady", "duke", "duchess", "court_mage", "advisor"}
+COMMONER_ROLES = {
+    "merchant", "guard", "farmer", "hunter", "priest", "adventurer", "blacksmith", "healer",
+    "innkeeper", "bard", "scholar", "miner", "laborer", "citizen", "traveler", "farm_hand",
+    "stormcloak_supporter", "imperial_citizen", "mage_apprentice", "warrior",
+    "thief_lookout", "pickpocket", "guild_rogue", "db_initiate",
+    "explorer", "sailor", "dock_worker", "ship_captain_ashore", "fishmonger", "acolyte", "temple_guardian",
+    "stall_owner", "shop_assistant", "city_guard", "mine_foreman", "farmer_spouse",
+    "server", "cook", "beggar", "elder", "stormcloak_recruiter", "imperial_deserter", "publican", "tavern_staff_server", "mine_owner", "alchemist_merchant", "jarl_advisor", "blacksmith_spouse", "jarl_stormcloak", "merchant_general_goods", "blacksmith", "blacksmith_trainer", "alchemist_apprentice", "untalented_bard", "mage_conjurer_scholar_vampire_expert", "merchant_clothing_tailor_haughty", "merchant_fletcher", "shop_assistant_woodcutter", "merchant_clothing_tailor", "stormcloak_officer", "jarl", "thane", "blacksmith_spouse", "bard_local", "mine_patron"
+}
+
+# Define roles that are typically hostile
+HOSTILE_ROLES = {
+    "bandit", "bandit_raider", "bandit_scout", "bandit_thug", "bandit_archer", "bandit_leader",
+    "necromancer", "vampire", "vampire_thrall", "forsworn_raider", "forsworn_shaman", "forsworn_briarheart",
+    "thief",
+    "draugr", "skeleton", "ghost",
+    "bear", "wolf", "spider",
+    "dwarven_sphere", "falmer", "chaurus",
+    "mage", "cultist", "thalmor_justiciar", "dominion_spy"
+}
+
+FRIENDLY_ROLES = COMMONER_ROLES.union(NOBLE_ROLES) - HOSTILE_ROLES
 
 class NPC:
     def __init__(self, name: str, race: str, role: str, level: int, disposition: int = 50, gold: int = 0, patrol_route: List[str] = None):
@@ -146,7 +171,7 @@ class NPC:
                 spell_keys_to_add = ["healing", "lesser_ward"]
             elif "necromancer" in role_l or "cultist" in role_l:
                 spell_keys_to_add = ["firebolt"]
-                if self.level > 3: spell_keys_to_add.append("conjure_familiar")
+            if self.level > 3: spell_keys_to_add.append("conjure_familiar")
             elif "shaman" in role_l:
                 spell_keys_to_add = ["flames"]
                 if self.level > 4: spell_keys_to_add.append("healing")
@@ -291,61 +316,80 @@ class NPC:
 
     # Dialogue-related methods (dialogue, share_rumor, _offer_quest, _discuss_place)
     # have been moved to npc_dialogue_logic.py
-# Adding specific NPCs for 200 4E
 
-# Jarls
-jarl_laila_lawgiver = NPC(name="Laila Law-Giver", race="nord", role="jarl", level=25, disposition=60, gold=500)
-jarl_laila_lawgiver.add_tag("location", "governs", "riften")
-jarl_laila_lawgiver.add_tag("political", "affiliation", "empire")
+def define_specific_npcs():
+    """Defines specific NPCs for the game world."""
+    from npc_entities import NPC # Import here to avoid circular dependency
 
-jarl_korir = NPC(name="Korir", race="nord", role="jarl", level=28, disposition=40, gold=600)
-jarl_korir.add_tag("location", "governs", "winterhold")
-jarl_korir.add_tag("political", "affiliation", "empire")
+    # Jarls
+    jarl_laila_lawgiver = NPC(name="Laila Law-Giver", race="nord", role="jarl", level=25, disposition=60, gold=500)
+    jarl_laila_lawgiver.add_tag("location", "governs", "riften")
+    jarl_laila_lawgiver.add_tag("political", "affiliation", "empire")
 
-# Important Merchants
-birna = NPC(name="Birna", race="nord", role="merchant", level=15, disposition=50, gold=300)
-birna.add_tag("location", "lives_in", "winterhold")
-birna.add_tag("trade", "sells", "general_goods")
+    jarl_korir = NPC(name="Korir", race="nord", role="jarl", level=28, disposition=40, gold=600)
+    jarl_korir.add_tag("location", "governs", "winterhold")
+    jarl_korir.add_tag("political", "affiliation", "empire")
 
-# Guild Leaders (if applicable in 200 4E)
-endrast_direnni = NPC(name="Endrast Direnni", race="altmer", role="mage_guild_leader", level=35, disposition=45, gold=700)
-endrast_direnni.add_tag("location", "lives_in", "winterhold")
-endrast_direnni.add_tag("guild", "leader_of", "college_of_winterhold")
+    # Important Merchants
+    birna = NPC(name="Birna", race="nord", role="merchant", level=15, disposition=50, gold=300)
+    birna.add_tag("location", "lives_in", "winterhold")
+    birna.add_tag("trade", "sells", "general_goods")
 
-# Other Influential Figures
-vulwulf_snow_shod = NPC(name="Vulwulf Snow-Shod", race="nord", role="thane", level=22, disposition=55, gold=400)
-vulwulf_snow_shod.add_tag("location", "lives_in", "windhelm")
-vulwulf_snow_shod.add_tag("political", "affiliation", "stormcloak")
-# Adding more specific NPCs for 200 4E
+    # Guild Leaders (if applicable in 200 4E)
+    endrast_direnni = NPC(name="Endrast Direnni", race="altmer", role="mage_guild_leader", level=35, disposition=45, gold=700)
+    endrast_direnni.add_tag("location", "lives_in", "winterhold")
+    endrast_direnni.add_tag("guild", "leader_of", "college_of_winterhold")
 
-jarl_elisif_the_fair = NPC(name="Elisif the Fair", race="nord", role="jarl", level=27, disposition=65, gold=550)
-jarl_elisif_the_fair.add_tag("location", "governs", "solitude")
-jarl_elisif_the_fair.add_tag("political", "affiliation", "empire")
+    # Other Influential Figures
+    vulwulf_snow_shod = NPC(name="Vulwulf Snow-Shod", race="nord", role="thane", level=22, disposition=55, gold=400)
+    vulwulf_snow_shod.add_tag("location", "lives_in", "windhelm")
+    vulwulf_snow_shod.add_tag("political", "affiliation", "stormcloak")
+    # Adding more specific NPCs for 200 4E
 
-bryling = NPC(name="Bryling", race="nord", role="merchant", level=18, disposition=52, gold=350)
-bryling.add_tag("location", "lives_in", "solitude")
-bryling.add_tag("trade", "sells", "clothing")
+    # Jarls
+    jarl_elisif_the_fair = NPC(name="Elisif the Fair", race="nord", role="jarl", level=27, disposition=65, gold=550)
+    jarl_elisif_the_fair.add_tag("location", "governs", "solitude")
+    jarl_elisif_the_fair.add_tag("political", "affiliation", "empire")
 
-galmar_stone_fist = NPC(name="Galmar Stone-Fist", race="nord", role="stormcloak_officer", level=30, disposition=48, gold=650)
-galmar_stone_fist.add_tag("location", "lives_in", "windhelm")
-galmar_stone_fist.add_tag("political", "affiliation", "stormcloak")
-# Additional NPCs for 200 4E
+    bryling = NPC(name="Bryling", race="nord", role="merchant", level=18, disposition=52, gold=350)
+    bryling.add_tag("location", "lives_in", "solitude")
+    bryling.add_tag("trade", "sells", "clothing")
 
-# Jarls
-jarl_vignar_gray_mane = NPC(name="Vignar Gray-Mane", race="nord", role="jarl", level=26, disposition=55, gold=520)
-jarl_vignar_gray_mane.add_tag("location", "governs", "whiterun")
-jarl_vignar_gray_mane.add_tag("political", "affiliation", "neutral")
+    galmar_stone_fist = NPC(name="Galmar Stone-Fist", race="nord", role="stormcloak_officer", level=30, disposition=48, gold=650)
+    galmar_stone_fist.add_tag("location", "lives_in", "windhelm")
+    galmar_stone_fist.add_tag("political", "affiliation", "stormcloak")
+    # Additional NPCs for 200 4E
 
-# Merchants
-aeri = NPC(name="Aeri", race="wood elf", role="merchant", level=12, disposition=45, gold=250)
-aeri.add_tag("location", "lives_in", "angas_mill")
-aeri.add_tag("location", "region", "the_pale")
-aeri.add_tag("trade", "sells", "wood")
+    # Jarls
+    jarl_vignar_gray_mane = NPC(name="Vignar Gray-Mane", race="nord", role="jarl", level=26, disposition=55, gold=520)
+    jarl_vignar_gray_mane.add_tag("location", "governs", "whiterun")
+    jarl_vignar_gray_mane.add_tag("political", "affiliation", "neutral")
 
-hroki = NPC(name="Hroki", race="nord", role="blacksmith", level=17, disposition=58, gold=330)
-hroki.add_tag("location", "lives_in", "markarth")
-hroki.add_tag("trade", "sells", "weapons_armor")
+    # Merchants
+    aeri = NPC(name="Aeri", race="wood elf", role="merchant", level=12, disposition=45, gold=250)
+    aeri.add_tag("location", "lives_in", "angas_mill")
+    aeri.add_tag("location", "region", "the_pale")
+    aeri.add_tag("trade", "sells", "wood")
 
-lisbet = NPC(name="Lisbet", race="nord", role="merchant", level=15, disposition=50, gold=300)
-lisbet.add_tag("location", "lives_in", "markarth")
-lisbet.add_tag("trade", "sells", "jewelry")
+    hroki = NPC(name="Hroki", race="nord", role="blacksmith", level=17, disposition=58, gold=330)
+    hroki.add_tag("location", "lives_in", "markarth")
+    hroki.add_tag("trade", "sells", "weapons_armor")
+
+    lisbet = NPC(name="Lisbet", race="nord", role="merchant", level=15, disposition=50, gold=300)
+    lisbet.add_tag("location", "lives_in", "markarth")
+    lisbet.add_tag("trade", "sells", "jewelry")
+
+    return {
+        "jarl_laila_lawgiver": jarl_laila_lawgiver,
+        "jarl_korir": jarl_korir,
+        "birna": birna,
+        "endrast_direnni": endrast_direnni,
+        "vulwulf_snow_shod": vulwulf_snow_shod,
+        "jarl_elisif_the_fair": jarl_elisif_the_fair,
+        "bryling": bryling,
+        "galmar_stone_fist": galmar_stone_fist,
+        "jarl_vignar_gray_mane": jarl_vignar_gray_mane,
+        "aeri": aeri,
+        "hroki": hroki,
+        "lisbet": lisbet,
+    }

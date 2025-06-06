@@ -39,7 +39,9 @@ class Quest:
     def add_tag(self, tag_category: str, tag_type: str, tag_value: str) -> None:
         if tag_category not in self.tags:
             self.tags[tag_category] = {}
-        self.tags[tag_category][tag_type] = tag_value
+        if tag_type not in self.tags[tag_category]:
+            self.tags[tag_category][tag_type] = []
+        self.tags[tag_category][tag_type].append(tag_value)
 
     def _initialize_stage_progress(self) -> None:
         self.current_stage_progress.clear()

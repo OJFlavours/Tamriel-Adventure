@@ -15,7 +15,7 @@ from items_data import (
     MISC,
     TOMES
 )
-ITEM_MAPPING = {item["name"].lower(): item for item in INITIAL_INVENTORY_MAPPING.values()}
+ITEM_MAPPING = {key: item for key, item in INITIAL_INVENTORY_MAPPING.items()}
 # from ui import UI # Not strictly needed here if errors are handled or logged differently
 
 import os
@@ -131,7 +131,7 @@ def generate_random_item(category: str, level: int = 1, rarity: str = "common") 
             name = f"{material} {name_base}"
             if "Ring" in name_base:
                 equipment_tag = "ring"
-            elif "Amulet" in name_base or "Locket" in name_base or "Pendant" in name_base:
+            elif any(tag in name_base for tag in ["Amulet", "Locket", "Pendant"]):
                 equipment_tag = "amulet"
             else:
                 equipment_tag = "jewelry"
@@ -169,8 +169,8 @@ def generate_random_item(category: str, level: int = 1, rarity: str = "common") 
         return item
     except Exception as e:
         print(f"Error in generate_random_item: {e}")
-        return None
-
+        print(f"Warning: Item key 'Returning default Item.")
+        return Item("Default Item", "misc", "Common")
 
 def generate_item_from_key(item_key: str, level: int = 1) -> Item | None:
     """Generates an item from a given item key using a dictionary lookup."""
@@ -178,7 +178,8 @@ def generate_item_from_key(item_key: str, level: int = 1) -> Item | None:
         item_info = ITEM_MAPPING.get(item_key.lower())
         if not item_info:
             # print(f"Warning: Item key '{item_key}' not found. Returning None.") # Optional: log or handle differently
-            return None
+            print(f"Warning: Item key '{item_key}' not found. Returning default Item.")
+            return Item("Default Item", "misc", "Common")
 
         name = item_info["name"]
         category = item_info["category"]
@@ -201,7 +202,8 @@ def generate_item_from_key(item_key: str, level: int = 1) -> Item | None:
         return item
     except Exception as e:
         print(f"Error in generate_item_from_key: {e}")
-        return None
+        print(f"Warning: Item key '{item_key}' not found. Returning default Item.")
+        return Item("Default Item", "misc", "Common")
 
 def get_item_value(item: Item) -> int:
     """Calculates the value of an item based on its rarity, material, and enchantments."""
@@ -250,6 +252,7 @@ def apply_item_bonuses(item: Item, target) -> None:
         if item.equipment_tag == "ring":
             target.max_health += 10
         # Add more logic to apply bonuses based on item properties
+        
     except Exception as e:
         print(f"Error in apply_item_bonuses: {e}")
 
@@ -301,3 +304,9 @@ def damage_item(item: Item, damage_amount: int) -> None:
                 # Implement item breaking logic here
     except Exception as e:
         print(f"Error in damage_item: {e}")
+
+def test_item_generation():
+    from items_data import INITIAL_INVENTORY_MAPPING
+    for key in INITIAL_INVENTORY_MAPPING:
+        item = generate_item_from_key(key)
+        print(f'{key}: {item.name} ({item.category})')

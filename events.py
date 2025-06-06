@@ -139,7 +139,12 @@ def trigger_random_event(location_tags, player, ui, current_location_raw_data): 
     except Exception as e:
         ui.print_failure(f"Error in trigger_random_event: {e}")
         return None
-        
+
+def get_recent_events():
+    """Returns a list of recent events in the game world."""
+    # Replace with actual logic to fetch recent events
+    return ["A dragon was spotted near Whiterun!", "A group of bandits attacked a caravan on the road to Riften."]
+
 # --- Functions (from your provided code, enhanced to use new quest/NPC structures) ---
 
 def explore_location(player, current_location, random_encounters, npc_registry, all_locations_list, ui):

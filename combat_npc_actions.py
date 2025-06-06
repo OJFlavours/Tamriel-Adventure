@@ -9,7 +9,7 @@ from combat_logic import calculate_damage_logic, apply_and_log_weapon_effects_lo
 if TYPE_CHECKING:
     from player import Player
     from npc import NPC
-    from combat import Combat # To avoid circular import
+    from combat_module import Combat # To avoid circular import
 
 def handle_npc_turn(combat_instance: 'Combat', npc: 'NPC') -> bool:
     player = combat_instance.player

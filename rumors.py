@@ -20,7 +20,7 @@ from rumor_utils import (
 )
 
 # --- Constants ---
-PROBABILITY_OF_QUEST_RUMOR = 0.20 # 20% chance an NPC offers a quest
+PROBABILITY_OF_QUEST_RUMOR = 0.10 # 10% chance an NPC offers a quest
 
 # --- Dummy Class (can stay here or move to utils if more broadly used) ---
 class DummyRumor:
@@ -68,20 +68,32 @@ def generate_location_appropriate_quest(player_level: int, current_location_data
         quest.add_tag("quest", "type", "generic_errand")
         return quest
 
+    if not possible_templates:
+        return generate_location_appropriate_quest(player_level, current_location_data, quest_giver_id, rumor_text)
     chosen_template = random.choice(possible_templates)
-    final_quest_location_obj = random.choice(LOCATIONS) # Default
+    final_quest_location_obj = random.choice([loc for hold in LOCATIONS for loc in hold]) # Default
     if chosen_template["location_tags_required"]:
         candidate_locations_for_quest_events = []
         for tag_needed_for_event in chosen_template["location_tags_required"]:
             # find_locations_by_tag returns list of location dicts
             candidate_locations_for_quest_events.extend(find_locations_by_tag(tag_needed_for_event))
-        if candidate_locations_for_quest_events:
-            # Deduplicate based on location 'id'
-            candidate_locations_for_quest_events = list({loc["id"]: loc for loc in candidate_locations_for_quest_events}.values())
-            if candidate_locations_for_quest_events: # Ensure not empty after deduplication
-                 final_quest_location_obj = random.choice(candidate_locations_for_quest_events)
-            # else: final_quest_location_obj remains the default random.choice(LOCATIONS)
-    
+    if candidate_locations_for_quest_events:
+        # Deduplicate based on location 'id'
+        candidate_locations_for_quest_events = list({loc["id"]: loc for loc in candidate_locations_for_quest_events}.values())
+    if candidate_locations_for_quest_events: # Ensure not empty after deduplication
+        final_quest_location_obj = random.choice(candidate_locations_for_quest_events)
+    else:
+        final_quest_location_obj = random.choice([loc for hold in LOCATIONS for loc in hold])
+    # Ensure final_quest_location_obj is a dictionary
+    if not isinstance(final_quest_location_obj, dict):
+        try:
+            final_quest_location_obj = final_quest_location_obj.__dict__
+        except Exception as e:
+            UI.print_system_message(f"ERROR: Could not convert final_quest_location_obj to dict: {e}")
+            final_quest_location_obj = {"name": "a mysterious location"} # Provide a default value
+
+    # Add logging
+    UI.print_system_message(f"DEBUG: final_quest_location_obj type: {type(final_quest_location_obj)}")
     actual_ruin_name = _get_dynamic_placeholder("[Ruin_Name_Specific]", current_location_data)
     actual_artifact_name = _get_dynamic_placeholder("[Item_Type_Valuable]", current_location_data)
     actual_artifact_key = actual_artifact_name.lower().replace(" ","_") + "_relic"
@@ -94,9 +106,10 @@ def generate_location_appropriate_quest(player_level: int, current_location_data
         beast_type_id = beast_type.lower().replace(" ", "_")
         # Ensure find_locations_by_tag returns a list of dicts, and handle empty list
         potential_f_m_locs = find_locations_by_tag("forest") + find_locations_by_tag("mountain")
-        if potential_f_m_locs:
-            forest_or_mountain_name = random.choice(potential_f_m_locs)["name"]
-        # else: forest_or_mountain_name keeps its default from _get_dynamic_placeholder
+    if potential_f_m_locs:
+        forest_or_mountain_name = random.choice(potential_f_m_locs)["name"]
+    else:
+        forest_or_mountain_name = _get_dynamic_placeholder("[Location_Name_Nearby_Minor]", current_location_data) # Default
 
     title = chosen_template["title_template"].replace("[LOCATION_NAME]", final_quest_location_obj["name"]).replace("[RUIN_NAME]", actual_ruin_name).replace("[ARTIFACT_NAME]", actual_artifact_name).replace("[BEAST_TYPE]", beast_type).replace("[FOREST_OR_MOUNTAIN_NAME]", forest_or_mountain_name)
     description = chosen_template["desc_template"].replace("[LOCATION_NAME]", final_quest_location_obj["name"]).replace("[RUIN_NAME]", actual_ruin_name).replace("[ARTIFACT_NAME]", actual_artifact_name).replace("[BEAST_TYPE]", beast_type).replace("[FOREST_OR_MOUNTAIN_NAME]", forest_or_mountain_name).replace("[LOCAL_LANDMARK_NAME]", _get_dynamic_placeholder("[Location_Name_Nearby_Minor]", current_location_data)).replace("[WILDERNESS_TYPE]", random.choice(["the dark woods","the craggy hills","the misty fens"]))
@@ -141,7 +154,7 @@ def generate_location_appropriate_quest(player_level: int, current_location_data
 
     quest = Quest(
         quest_id=chosen_template["id"] + f"_{random.randint(100,999)}",
-        title=title, description=description, reward=reward_dict, level_requirement=player_level,
+        title=title, description=description, reward=reward_dict,
         location=final_quest_location_obj, stages=stages_list, status="active",
         turn_in_npc_id=quest_giver_id, initial_flavor_text=initial_flavor_text
     )
@@ -149,7 +162,9 @@ def generate_location_appropriate_quest(player_level: int, current_location_data
         for lore_tag in chosen_template["lore_tags"]: quest.add_tag("quest", "lore", lore_tag)
     if "flavor_tags" in chosen_template and "quest" in chosen_template["flavor_tags"] and \
        "type" in chosen_template["flavor_tags"]["quest"] and chosen_template["flavor_tags"]["quest"]["type"]:
-        quest.add_tag("quest", "type", random.choice(chosen_template["flavor_tags"]["quest"]["type"]))
+       if chosen_template["flavor_tags"]["quest"]["type"]:
+           quest.add_tag("quest", "type", random.choice(chosen_template["flavor_tags"]["quest"]["type"]))
+       else: quest.add_tag("quest", "type", "general_adventure")
     else: quest.add_tag("quest", "type", "general_adventure")
     return quest
 
@@ -189,9 +204,9 @@ def generate_rumor(player_level: int, current_location_obj: Any, quest_giver_id:
         quest_data_object = generate_location_appropriate_quest(player_level, location_data_dict, quest_giver_id)
 
     if quest_data_object and isinstance(quest_data_object, Quest) and not force_no_quest:
-        location_name_for_rumor = quest_data_object.location.get('name') if quest_data_object.location else "a nearby place"
-        
-        quest_type_tags_list = quest_data_object.tags.get("quest", {}).get("type", [])
+        location_name_for_rumor = quest_data_object.location.get('name') if isinstance(quest_data_object.location, dict) and quest_data_object.location else "a nearby place"
+
+        quest_type_tags_list = quest_data_object.tags.get("quest", {}).get("type", []) if isinstance(quest_data_object.tags, dict) else []
         if not isinstance(quest_type_tags_list, list): quest_type_tags_list = [quest_type_tags_list]
 
         if any(verb in quest_type_tags_list for verb in ["hunt", "clear"]): action_verb = "dealing with"
@@ -205,9 +220,9 @@ def generate_rumor(player_level: int, current_location_obj: Any, quest_giver_id:
              flavor_snippet = f" {quest_data_object.initial_flavor_text}" if quest_data_object.initial_flavor_text else ""
              rumor_text = f"There's talk of trouble over at {location_name_for_rumor}. {short_desc_snippet}.{flavor_snippet} Sounds like it could use a capable hand."
     else:
-        location_tags = location_data_dict.get("tags", [])
-        
-        chosen_rumor_category_key = "general_skyrim" # Default
+        location_tags = location_data_dict.get("tags", []) if isinstance(location_data_dict, dict) else []
+
+        chosen_rumor_category_key = "general_skyrim"  # Default
         tag_precedence = [
             *(tag for tag in ["tavern", "inn", "market", "shop", "blacksmith", "alchemy_shop", "temple", "college", "palace", "keep", "docks"] if tag in location_tags),
             *(tag for tag in ["city", "town", "village"] if tag in location_tags),
@@ -217,12 +232,15 @@ def generate_rumor(player_level: int, current_location_obj: Any, quest_giver_id:
         ]
 
         for tag_key in tag_precedence:
-            if tag_key in FLAVOR_RUMOR_TEMPLATES:
+            if tag_key in FLAVOR_RUMOR_TEMPLATES.keys():
                 chosen_rumor_category_key = tag_key
                 break
         
-        rumor_list_for_category = FLAVOR_RUMOR_TEMPLATES.get(chosen_rumor_category_key, FLAVOR_RUMOR_TEMPLATES["general_skyrim"])
-        rumor_template = random.choice(rumor_list_for_category)
-        rumor_text = _replace_placeholders_in_rumor(rumor_template, location_data_dict) # Uses imported _replace_placeholders_in_rumor
+        rumor_list_for_category = FLAVOR_RUMOR_TEMPLATES.get(chosen_rumor_category_key, FLAVOR_RUMOR_TEMPLATES.get("general_skyrim", []))
+        if rumor_list_for_category:
+            rumor_template = random.choice(rumor_list_for_category) if isinstance(rumor_list_for_category, list) else ""
+        else:
+            rumor_template = ""
+        rumor_text = _replace_placeholders_in_rumor(rumor_template, location_data_dict) if rumor_template else "I have no news."
 
     return {"text": UI.capitalize_dialogue(rumor_text.strip()), "quest_data": quest_data_object}

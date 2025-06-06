@@ -84,12 +84,19 @@ NAME_POOLS = {
             "female": ["Nimrodel", "Gilfre", "Indara", "Ardwen", "Drynea", "Elrinde", "Lirienwe", "Celmine", "Anoriel", "Selvynia", "Faelindra", "Thalindra", "Vindrel"]
         }
     },
-    "orsimer": {
-"noble": {
+    "orc": {
+        "noble": {
             "male": ["Ghorbash", "Urag", "Yashnag", "Burguk", "Larak", "Murob", "Gularzob", "Ogol", "Dushnamub", "Yamarz", "Gorzod", "Shuftharz", "Bazrag"],
             "female": ["Mogakh", "Shel", "Borba", "Batul", "Gharol", "Ugor", "Shuftharz", "Lashgra", "Bagrak", "Gul", "Atub", "Sharamph", "Urgarlag"],
             "noble_surnames": ["gro-Dushnikh", "gro-Shub", "gro-Yazguul", "gro-Bol", "gro-Largash", "gro-Batul", "gro-Bagol", "gra-Dushnikh", "gra-Yazguul", "gra-Uzg", "gra-Sharob", "gra-Lagash", "gra-Shamub", "gra-Larguk", "gro-Nar", "gro-Fel"]
         },
+        "commoner": {
+            "male": ["Grogmar", "Muzgonk", "Shagrol", "Urzog", "Yamorz", "Gat", "Oglub", "Durak", "Bazgrol", "Ulag", "Garoth", "Malkus", "Durgash"],
+            "female": ["Urzoga", "Yatul", "Bagrak", "Gharol", "Uglarz", "Borgakh", "Dulug", "Lash", "Sharamph", "Gul", "Borzog", "Orzoga", "Murgol"],
+            "commoner_surnames": ["gro-Burzag", "gro-Bulfim", "gro-Yarug", "gro-Shamub", "gro-Ghorak", "gro-Shargakh", "gro-Largashbur", "gra-Sharn", "gra-Lag", "gra-Lazga", "gra-Phorkh", "gra-Gasnouk", "the Steel Heart", "gra-Shug", "gro-Narzul", "gra-Bol"]
+        }
+    },
+    "orsimer": {
         "noble": {
             "male": ["Ghorbash", "Urag", "Yashnag", "Burguk", "Larak", "Murob", "Gularzob", "Ogol", "Dushnamub", "Yamarz", "Gorzod", "Shuftharz", "Bazrag"],
             "female": ["Mogakh", "Shel", "Borba", "Batul", "Gharol", "Ugor", "Shuftharz", "Lashgra", "Bagrak", "Gul", "Atub", "Sharamph", "Urgarlag"],
@@ -345,3 +352,4 @@ def assign_unique_npc_ids(name_pools):
                     gender_name_list[i] = unique_id # Store the ID directly in the list
 
 assign_unique_npc_ids(NAME_POOLS) # Call this once at module load
+assign_unique_npc_ids(NAME_POOLS) # Call this again to assign unique ids to the new orc names

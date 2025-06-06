@@ -1,3 +1,16 @@
+import logging
+
+logging.basicConfig(level=logging.DEBUG, filename='debug.log')
+from damage_utils import calculate_damage_logic
+
+try:
+    def calculate_damage_logic():
+        logging.debug("calculate_damage_logic is defined")
+        pass  # Add actual logic later
+except Exception as e:
+    logging.error(f"Error defining calculate_damage_logic: {e}")
+
+logging.debug("combat_logic.py is being imported")
 # combat_logic.py
 
 import random
@@ -13,8 +26,8 @@ from tags import get_tags  # Corrected import for get_tags
 from spells import Spell
 from combat_targeting import get_target_logic, get_body_part_choice
 from combat_player_actions import handle_player_turn
-from combat_npc_actions import handle_npc_turn
-from combat_interactions import Combo, create_dynamic_interaction
+
+# from combat_interactions import Combo, create_dynamic_interaction
 
 # Helper function, was _is_two_handed_weapon in Combat class
 # def is_two_handed_weapon(character) -> bool:
@@ -164,7 +177,7 @@ def handle_counter_attack_logic(defender, attacker, ui_instance: UI, combo_count
             ui_instance.slow_print(f"{defender.name} performs a perfect block and counter-attacks!")
             # For counter-attack, combo_counter and player_is_power_attacking for the 'defender' (who is now attacking) would be 0/False
             # from combat_logic import calculate_damage_logic
-            from combat import calculate_damage_logic
+            from combat_core import calculate_damage_logic
             counter_damage = calculate_damage_logic(defender, attacker, ui_instance, 0, False) // 2
             attacker.stats.current_health -= counter_damage
             ui_instance.slow_print(f"Counter-attack deals {counter_damage} damage!")

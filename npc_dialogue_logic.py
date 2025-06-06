@@ -20,6 +20,29 @@ from rumors import generate_rumor # For _handle_npc_share_rumor
 # def _handle_npc_offer_quest(npc: Any, player: Any, quest: Quest, from_rumor: bool = False) -> None:
 # pass
 
+def is_quest_related_to_npc(npc: Any, quest: Quest) -> bool:
+    """
+    Checks if a quest is related to an NPC's work/purpose based on their role and tags.
+    """
+    try:
+        npc_role = npc.role.lower()
+        npc_tags = npc.tags.get("npc", {})
+        quest_tags = quest.tags.get("quest", {})
+
+        # Check if the quest has any tags related to the NPC's role
+        for tag_type, tag_values in npc_tags.items():
+            if tag_type in quest_tags:
+                return True
+
+        # Check if the quest description mentions the NPC's role
+        if npc_role in quest.description.lower():
+            return True
+
+        # If no relation is found, return False
+        return False
+    except Exception as e:
+        print(f"Error checking quest relation: {e}")
+        return False
 
 def _handle_npc_discuss_place(npc: Any, player: Any, current_location: Any) -> None:
     """Provides a tag/flavor related answer when asked about the location."""
@@ -163,6 +186,21 @@ def _handle_npc_share_rumor(npc: Any, player: Any, current_location_obj: Any) ->
                 npc.rumor_pool.append("I've heard nothing new lately. The wind carries few secrets today.")
 
         rumor_text_to_share = npc.rumor_pool[npc.current_rumor_index]
+        
+        # Add recent events to the rumor pool
+        from events import get_recent_events
+        recent_events = get_recent_events()
+        if recent_events:
+            num_events_to_add = random.randint(1, min(2, len(recent_events)))
+            selected_events = random.sample(recent_events, num_events_to_add)
+            
+            # Add recent events to the rumor pool, ensuring no duplicates
+            for event in selected_events:
+                if event not in npc.rumor_pool:
+                    npc.rumor_pool.append(event)
+
+            # Limit the number of recent events in the pool to 1-2
+            npc.rumor_pool = npc.rumor_pool[-2:]
         UI.slow_print(f'"{rumor_text_to_share}"')
         npc.current_rumor_index = (npc.current_rumor_index + 1) % len(npc.rumor_pool)
 
@@ -171,9 +209,7 @@ def _handle_npc_share_rumor(npc: Any, player: Any, current_location_obj: Any) ->
             if random.random() < 0.20: # 20% chance for this NPC to decide to offer a quest
                 quest_to_offer = generate_location_appropriate_quest(player.stats.level, location_data_dict, npc.unique_id)
                 if quest_to_offer:
-                    if player.quest_log.get_quest_by_id(quest_to_offer.quest_id):
-                        UI.slow_print(UI.capitalize_dialogue(f"“It seems you're already familiar with that matter, {player.full_name}.”"))
-                    else:
+                    if not player.quest_log.get_quest_by_id(quest_to_offer.quest_id):
                         _handle_npc_offer_quest(npc, player, quest_to_offer, from_rumor=True)
                 # else: No quest generated, or NPC decided not to offer.
     except Exception as e:
@@ -241,7 +277,6 @@ def handle_npc_dialogue(npc: Any, player: Any, current_location: Any) -> None:
 
             options_texts.append("Ask for rumors or work")
             options_texts.append("Ask about your work/purpose")
-            options_texts.append("Discuss recent events")
             options_texts.append("Discuss this place")
 
             if not npc.is_follower and npc not in player.followers:
@@ -308,7 +343,12 @@ def handle_npc_dialogue(npc: Any, player: Any, current_location: Any) -> None:
                 spoken_purpose = current_dialogue.strip()
                 first_word = spoken_purpose.split(' ')[0].lower() if spoken_purpose else ""
                 if not first_word in ("i", "my", "i'm", "i've", "to"):
-                    spoken_purpose = "I " + spoken_purpose
+                    # Check if the second word starts with a capital letter
+                    words = spoken_purpose.split()
+                    if len(words) > 1 and words[1][0].isupper():
+                        pass  # Do not add "I "
+                    else:
+                        spoken_purpose = "I " + spoken_purpose
                 if spoken_purpose.startswith("I ") and len(spoken_purpose) > 2 and spoken_purpose[2].islower():
                     spoken_purpose = "I " + spoken_purpose[2].upper() + spoken_purpose[3:]
                 elif spoken_purpose and spoken_purpose[0].islower():
@@ -336,8 +376,11 @@ def handle_npc_dialogue(npc: Any, player: Any, current_location: Any) -> None:
                         location_data_dict_for_quest = {"name": "this area", "tags": [], "id": "unknown_loc_id_purpose_quest"}
 
                     quest_to_offer = generate_location_appropriate_quest(player.stats.level, location_data_dict_for_quest, npc.unique_id)
-                    if quest_to_offer and not player.quest_log.get_quest_by_id(quest_to_offer.quest_id):
-                        _handle_npc_offer_quest(npc, player, quest_to_offer)
+                    if quest_to_offer:
+                        if is_quest_related_to_npc(npc, quest_to_offer) and not player.quest_log.get_quest_by_id(quest_to_offer.quest_id):
+                            _handle_npc_offer_quest(npc, player, quest_to_offer)
+                        else:
+                            UI.slow_print(UI.capitalize_dialogue(random.choice(['"But perhaps it\'s best not to burden you with my troubles."', '"Nevermind, I\'ll handle it myself."'])))
                     else:
                         UI.slow_print(UI.capitalize_dialogue(random.choice(['"But perhaps it\'s best not to burden you with my troubles."', '"Nevermind, I\'ll handle it myself."'])))
                 action_taken = True

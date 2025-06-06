@@ -1,5 +1,9 @@
 import random
 from items import generate_random_item
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG, filename='debug.log', filemode='w', format='%(asctime)s - %(levelname)s - %(message)s')
 
 def add_random_item_with_rarity(player, category, rarity):
     """Adds a random item of a specified category and rarity to the player's inventory."""
@@ -8,8 +12,10 @@ def add_random_item_with_rarity(player, category, rarity):
         player.add_item(item)
     elif hasattr(player, 'stats') and hasattr(player.stats, 'inventory'):
         player.stats.inventory.append(item)
-    else: # Fallback, though less ideal
+    elif hasattr(player, 'inventory'): # Fallback, though less ideal
         player.inventory.append(item)
+    else:
+        print("Player has no inventory.")
     print(f"Added {item.name} to inventory.")
 
 # game.py
@@ -24,9 +30,14 @@ try:
     from player import Player # Import Player from player.py
     from stats import Stats, RACES, CLASSES # Import Stats, RACES, CLASSES from stats.py
     from npc import NPC # NPC class
-    from npc_roles import FRIENDLY_ROLES, HOSTILE_ROLES # Roles
+    from npc import NPC # NPC class
+    from npc_roles import FRIENDLY_ROLES, HOSTILE_ROLES, define_fixed_npcs # Roles
     from npc_names import NAME_POOLS # Name pools
-    from combat import Combat
+    npc_registry = {}
+    define_fixed_npcs(npc_registry) # Define fixed NPCs after NPC class is loaded
+    from npc_entities import define_specific_npcs, NPC
+    specific_npcs = define_specific_npcs()
+    from combat_core import Combat
     from ui import UI
     from items import generate_random_item, Item, generate_item_from_key, Torch
     from events import trigger_random_event, explore_location # Now triggers events with more detail
@@ -222,14 +233,14 @@ def handle_player_choice(choice, player, current_loc_obj: Location, menu_options
 
     if action == "explore known world":
         UI.print_heading(f"Travel from {current_loc_obj.name}")
+        if discovered_for_startup:
+            UI.slow_print(f"You know of: {', '.join(reversed(discovered_for_startup))}")
         if current_loc_obj.exits:
             UI.slow_print("Available destinations:")
             exit_options = list(current_loc_obj.exits.items())
             for i, (direction, dest_loc_obj) in enumerate(exit_options):
                 formatted_direction = ' '.join(word.capitalize() for word in direction.split())
-                description_to_display = getattr(dest_loc_obj, 'travel_desc', dest_loc_obj.description)
-                if not description_to_display:
-                    description_to_display = f"Travel to {dest_loc_obj.name}"
+                description_to_display = RAW_LOCATION_DATA_MAP.get(dest_loc_obj.id, {}).get('travel_desc', RAW_LOCATION_DATA_MAP.get(dest_loc_obj.id, {}).get('desc'))
                 UI.slow_print(f"{i+1}. {formatted_direction} - {description_to_display}")
             
             travel_choice_str = UI.print_prompt("Where to? (Enter number or 'cancel') ").strip().lower()
@@ -351,22 +362,34 @@ def initialize_starting_location(player: Player):
             current_for_discovery = GAME_LOCATIONS_MAP.get(current_for_discovery.parent_id)
         else:
             break
-    if discovered_for_startup:
-        UI.slow_print(f"You know of: {', '.join(reversed(discovered_for_startup))}")
+    #if discovered_for_startup:
+    #    UI.slow_print(f"You know of: {', '.join(reversed(discovered_for_startup))}")
     hold_obj, city_obj, _ = _find_hierarchy(starting_loc_obj)
     hold_name_display = hold_obj.name if hold_obj else "an unknown hold"
     city_name_display = city_obj.name if city_obj else "an unknown city"
     if starting_loc_obj.name == city_name_display:
         message = f"You awaken in {starting_loc_obj.name}, a seemingly cozy establishment within the lands of {hold_name_display}..."
     else:
-        message = f"You awaken in {starting_loc_obj.name}, a seemingly cozy establishment in {city_name_display}, within the lands of {hold_name_display}..."
-    UI.slow_print(message)
-    UI.slow_print(starting_loc_obj.description)
-    UI.slow_print("The warm fire crackles. A few patrons murmur over their drinks. Adventure awaits.")
+        message = f"You awaken in {starting_loc_obj.name}, a seemingly cozy establishment in {city_name_display}, within the lands of {hold_name_display}."
+    wrapped_message = UI.wrap_text(message, width=120)
+    padding = " " * ((120 - len(wrapped_message)) // 2)
+    UI.slow_print(padding + wrapped_message)
+    #UI.slow_print(starting_loc_obj.description)
+    #UI.print_line()
+    centered_text = "Your journey begins..."
+    wrapped_centered_text = UI.wrap_text(centered_text, width=120)
+    padding = " " * ((120 - len(wrapped_centered_text)) // 2)
+    UI.slow_print(padding + wrapped_centered_text)
+    #UI.print_line()
+    text_to_center = "The warm fire crackles. A few patrons murmur over their drinks. Adventure awaits."
+    wrapped_centered_text = UI.wrap_text(text_to_center, width=120)
+    centered_text = " " * ((120 - len(wrapped_centered_text)) // 2) + wrapped_centered_text
+    UI.slow_print(centered_text)
     generate_npcs_for_location(starting_loc_obj, npc_registry, _find_hierarchy)
     return starting_loc_obj
 
 def initialize_game_state(player: Player):
+    logging.debug("Before initialize_game_state")
     # Removed global game_start_time, as it's handled by game_time object now
     global npc_registry
     player.known_location_ids.clear()
@@ -392,19 +415,20 @@ def start_game():
         if not player:
             UI.print_failure("Failed to initialize player. Exiting.")
             return
-        UI.print_system_message("initialize_player() completed successfully.")
 
         initialize_game_state(player) # This now calls initialize_game_events()
+        logging.debug("After initialize_game_state")
 
         current_location_global_obj = initialize_starting_location(player)
+        logging.debug("After initialize_starting_location")
         if not current_location_global_obj:
             UI.print_failure("Failed to set starting location. Exiting.")
             return
-        UI.print_system_message("initialize_starting_location() completed successfully.")
         player.update_current_location_for_quest(current_location_global_obj)
         
         main_loop_running = True
         while main_loop_running:
+            logging.debug("Inside main_loop_running loop")
             try:
                 if not player.stats.is_alive():
                     UI.print_heading("Your Legend Ends Here")
@@ -438,10 +462,14 @@ def start_game():
 
                 if player.stats.current_encumbrance > player.stats.encumbrance_limit:
                     UI.slow_print("Your heavy load weighs you down.", speed=0.005)
-                
-                UI.print_line('=')
-                UI.print_info(f"Location: {current_location_global_obj.name} | {get_current_game_time_string(game_time)}")
-                UI.print_info(f"HP: {player.stats.current_health}/{player.stats.max_health} | MP: {player.stats.current_magicka}/{player.stats.max_magicka} | FP: {player.stats.current_fatigue}/{player.stats.max_fatigue}")
+                    
+                    UI.print_line('=')
+                    UI.slow_print(starting_loc_obj.description)
+                    UI.print_line('=')
+                    UI.print_info(f"Location: {current_location_global_obj.name} | {get_current_game_time_string(game_time)}\nHP: {player.stats.current_health}/{player.stats.max_health} | MP: {player.stats.current_magicka}/{player.stats.max_magicka} | FP: {player.stats.current_fatigue}/{player.stats.max_fatigue}")
+                    
+                menu_options = [] # Initialize menu_options here
+                logging.debug("Before menu options")
                 
                 menu_options = [
                     "Explore Known World", "Parley with Souls", "Behold Thy Spirit",
@@ -449,9 +477,10 @@ def start_game():
                     "Review Quest Log", "View World Map", "Use Item from Inventory",
                     "Wait / Pass Time", "Depart This Realm (Quit)"
                 ]
-                UI.print_info("What is thy will?")
+                logging.debug("After printing 'What is thy will?'")
                 UI.print_menu(menu_options)
                 player_input = UI.print_prompt("Your choice: ")
+                logging.debug("After getting player choice")
 
                 action_result, game_time = handle_player_choice(player_input, player, current_location_global_obj, menu_options, game_time)
 
@@ -505,3 +534,4 @@ if __name__ == "__main__":
     print("--- ENTERING MAIN EXECUTION BLOCK (__name__ == '__main__') ---")
     start_game()
     print("--- START_GAME() COMPLETED ---")
+    logging.debug("--- START_GAME() COMPLETED ---")

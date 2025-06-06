@@ -1,6 +1,7 @@
 # character_creation.py
 import random
 import traceback
+from ui import LINE_WIDTH
 
 from player import Player
 from stats import Stats, RACES, CLASSES
@@ -13,7 +14,9 @@ def initialize_player():
     try:
         UI.clear_screen() # Changed from clear_screen()
         UI.print_heading("Forge Your Legend")
-        UI.slow_print("The scrolls have foretold your arrival, yet your path remains unwritten...")
+        wrapped_text = UI.wrap_text("The scrolls have foretold your arrival, yet your path remains unwritten...", width=LINE_WIDTH)
+        padding = " " * ((LINE_WIDTH - len(wrapped_text)) // 2)
+        UI.slow_print(padding + wrapped_text)
 
         # --- Quick-Start / Manual Choice ---
         UI.print_line()
@@ -331,30 +334,34 @@ def initialize_player():
             skills=player_skills,
             starting_spell_keys=starting_spell_keys_for_subclass # Pass starting spell keys
         )
+        player.class_key = selected_class_key # Set the class_key attribute
         player.combat = None
+
         # Initialize player's known locations (will be populated by initialize_starting_location)
         player.known_location_ids = set()
         player.known_locations_objects = []
 
         UI.slow_print("Preparing your starting gear...")
+        given_items = set()
         for item_key_from_subclass in selected_subclass_final_data["inventory"]:
-           item_instance = generate_item_from_key(item_key_from_subclass, player.stats.level)
-           if item_instance:
-                if player.add_item(item_instance):
-                    if item_instance.category in ["weapon", "armor"]:
-                        player.equip_item(item_instance)
+            if item_key_from_subclass not in given_items:
+                item_instance = generate_item_from_key(item_key_from_subclass, player.stats.level)
+                if item_instance:
+                    if player.add_item(item_instance):
+                        if item_instance.category in ["weapon", "armor"]:
+                            player.equip_item(item_instance)
+                    else:
+                        UI.print_warning(f"Could not add starting item {item_instance.name} (inventory full or error).")
                 else:
-                    UI.print_warning(f"Could not add starting item {item_instance.name} (inventory full or error).")
-           else:
-                UI.print_warning(f"Could not generate starting item for key: {item_key_from_subclass}")
+                    UI.print_warning(f"Could not generate starting item for key: {item_key_from_subclass}")
+                given_items.add(item_key_from_subclass)
 
-        if player.stats.inventory: UI.slow_print(f"In your satchel: {', '.join([item.name for item in player.stats.inventory if item not in player.equipment])}.", speed=0.01)
-        if player.equipment: UI.slow_print(f"Equipped: {', '.join([eq.name for eq in player.equipment])}.", speed=0.01)
+        if player.stats.inventory: UI.slow_print(f"In Your Satchel: {', '.join([item.name.replace('_', ' ').title() for item in player.stats.inventory if item not in player.equipment])}.", speed=0.01)
+        if player.equipment: UI.slow_print(f"Equipped: {', '.join([eq.name.replace('_', ' ').title().split(' equipped to ')[0] for eq in player.equipment])}.", speed=0.01)
         else: UI.slow_print("You start with no items equipped.", speed=0.01)
 
         player.quest_log = QuestLog()
         UI.print_line()
-        UI.slow_print("Your journey begins...", speed=0.02)
         UI.press_enter()
         return player
 

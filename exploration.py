@@ -153,10 +153,11 @@ def display_world_map(player: Player, game_locations_map: Dict[int, Location]): 
             
             indent = "  " * indent_level
             # RAW_LOCATION_DATA_MAP should be imported from locations module
-            raw_data_for_type = RAW_LOCATION_DATA_MAP.get(child_loc.id, {}) 
+            raw_data_for_type = RAW_LOCATION_DATA_MAP.get(child_loc.id, {})
             type_display_str = _get_loc_type_str(raw_data_for_type)
-            
-            UI.print_info(f"{indent}- {child_loc.name} {type_display_str}")
+            travel_desc = raw_data_for_type.get("travel_desc", raw_data_for_type.get("desc", ""))
+
+            UI.print_info(f"{indent}- {child_loc.name} {type_display_str} - {travel_desc}")
             processed_ids.add(child_loc.id)
             _recursive_print(child_loc.id, indent_level + 1)
 
@@ -176,10 +177,11 @@ def display_world_map(player: Player, game_locations_map: Dict[int, Location]): 
     ))
 
     for root_loc in root_locations_to_print:
-        if root_loc.id not in processed_ids: 
+        if root_loc.id not in processed_ids:
             raw_data_for_type = RAW_LOCATION_DATA_MAP.get(root_loc.id, {})
             type_display_str = _get_loc_type_str(raw_data_for_type)
-            UI.print_info(f"- {root_loc.name} {type_display_str}")
+            travel_desc = raw_data_for_type.get("travel_desc", raw_data_for_type.get("desc", ""))
+            UI.print_info(f"- {root_loc.name} {type_display_str} - {travel_desc}")
             processed_ids.add(root_loc.id)
             _recursive_print(root_loc.id, 1)
 
@@ -217,7 +219,7 @@ def process_travel(player: Player, destination_loc_obj: Dict[str, Any], previous
     discover_connected_locations_func(player, destination_loc_obj, location_by_name_map)
 
     UI.slow_print(f"You arrive at {destination_loc_obj['name']}.")
-    UI.slow_print(destination_loc_obj['desc'])
+    UI.slow_print(destination_loc_obj.get('TRAVEL DESCRIPTION', destination_loc_obj['desc']))
 
     tags_for_dest = list(destination_loc_obj.get("tags", []))
     inheritable = tags.INHERITABLE_TAGS if hasattr(tags, 'INHERITABLE_TAGS') else set()

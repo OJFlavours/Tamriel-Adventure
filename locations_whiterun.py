@@ -264,6 +264,9 @@ WHITERUN_LOCATIONS = [
                 "travel_desc": "Small cave inhabited by bandits.",
                 "tags": ["structure_type_natural_cave", "bandit_minor_camp", "dungeon_minor", "terrain_river_delta_overlook", "state_or_condition_current_bandit_controlled_area"],
                 "context_tags": ["exterior", "rural_wilderness", "dungeon_type", "cave_type"],
+                "fixed_npcs": [
+                    {"name": "Hajvarr Iron-Hand", "race": "Nord", "role": "bandit_leader", "level": 10}
+                ],
                 "exit_label_from_parent": "Cave Entrance",
                 "exit_label_to_parent": "Exit Cave"
             },

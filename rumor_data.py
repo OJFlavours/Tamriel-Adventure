@@ -107,13 +107,13 @@ RANDOM_CREATURE_TYPES: List[str] = ["wolf pack", "frostbite spider", "cave bear"
 RANDOM_RUIN_TYPES: List[str] = ["Nordic barrow", "Dwemer ruin", "Imperial fort", "ancient watchtower"]
 RANDOM_NOBLE_FAMILY_NAMES: List[str] = ["Black-Briar", "Silver-Blood", "Battle-Born", "Gray-Mane", "Shatter-Shield", "Cruel-Sea"]
 RANDOM_GUILD_NAMES: List[str] = ["Thieves Guild", "Companions", "College of Winterhold", "Dark Brotherhood (whispers, of course)", "Bards College"]
-RANDOM_DIVINE_NAMES: List[str] = ["Akatosh", "Mara", "Dibella", "Kynareth", "Stendarr", "Zenithar", "Julianos", "Arkay", "(and some still say Talos...)"]
+RANDOM_DIVINE_NAMES: List[str] = ["Akatosh", "Mara", "Dibella", "Kynareth", "Stendarr", "Zenithar", "Julianos", "Arkay", "Talos"]
 RANDOM_DAEDRIC_PRINCE_NAMES: List[str] = ["Mehrunes Dagon", "Molag Bal", "Vaermina", "Sheogorath", "Hermaeus Mora", "Namira", "Boethiah", "Azura"]
 RANDOM_JASCO_ADJECTIVES: List[str] = ["fierce","cunning","shadowy","ancient","forgotten","cursed","sacred","hidden","lost","powerful","dangerous","mysterious"]
 RANDOM_ENEMIES: List[str] = ["bandits", "Forsworn", "draugr", "necromancers", "vampires", "Falmer", "hagravens", "Thalmor patrols"]
 
 # --- Flavor Rumor Templates ---
-FLAVOR_RUMOR_TEMPLATES: List[Rumor] = [
+FLAVOR_RUMOR_TEMPLATES_LIST: List[Rumor] = [
     Rumor(
         category="general_skyrim",
         text="They say the civil war could flare up again any day now. Best keep your head down and your blade sharp.",
@@ -148,7 +148,7 @@ FLAVOR_RUMOR_TEMPLATES: List[Rumor] = [
     ),
     Rumor(
         category="general_skyrim",
-        text="The Divines seem distant these days, don't they? Or perhaps we've just forgotten how to listen. Pray to [Divine_Name], just in case.",
+        text="The Divines seem distant these days, don't they? Or perhaps we've just forgotten how to listen. Pray to Talos, just in case.",
     ),
     Rumor(
         category="general_skyrim",
@@ -390,3 +390,9 @@ FLAVOR_RUMOR_TEMPLATES: List[Rumor] = [
         dynamic=True,
     ),
 ]
+
+FLAVOR_RUMOR_TEMPLATES = {}
+for rumor in FLAVOR_RUMOR_TEMPLATES_LIST:
+    if rumor.category not in FLAVOR_RUMOR_TEMPLATES:
+        FLAVOR_RUMOR_TEMPLATES[rumor.category] = []
+    FLAVOR_RUMOR_TEMPLATES[rumor.category].append(rumor.text)

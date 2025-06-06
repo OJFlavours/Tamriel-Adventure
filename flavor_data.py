@@ -165,7 +165,7 @@ LOCATION_FLAVORS = {
             "This inn, the Windpeak... it's a reflection of Dawnstar. Cold, a bit grim, but stubborn. We've weathered worse than bad dreams, I reckon. Or at least, I hope so.",
             "The Windpeak Inn, a weathered refuge in the perpetually gloomy town of Dawnstar, stands as a testament to the resilience of its inhabitants. Despite the town's recent troubles with nightmares and strange occurrences, Thoring, the innkeeper, maintains a stoic demeanor and a steady supply of ale.",
             "Seek solace from Dawnstar's chilling winds within the walls of the Windpeak Inn. The hearth crackles with a defiant warmth, offering a temporary escape from the town's pervasive unease. But be warned - even here, the whispers of nightmares and unsettling rumors can be heard in hushed tones.",
-            "The Windpeak Inn is more than just a place to find a bed; it's a gathering point for those seeking answers to Dawnstar's unsettling mysteries. Fishermen swap tales of strange sightings in the Sea of Ghosts, while miners recount disturbing dreams plaguing their sleep. If you're brave enough to listen, you might uncover the truth behind the town's troubles."
+            "The Windpeak Inn is more than just a place to find a bed; it's a gathering point for those seeking answers to Dawnstar's unsettling mysteries. Fishermen swap tales of strange sightings in the Sea of Ghosts, while miners recount disturbing dreams plaguing their sleep. If you're brave enough to listen, you might just uncover the truth behind the town's troubles."
         ],
         "location_specific_silver_blood_inn": [
             "The Silver-Blood Inn? Heh. More like the Silver-Blood *everything* in this city. My advice? Keep your head down, your coin purse light, and don't ask too many questions. The walls have ears, and most of 'em report to Thonar or Nepos.",
@@ -227,161 +227,26 @@ LOCATION_FLAVORS = {
     }
 }
 
-# Faction Flavors
-FACTION_FLAVORS = {
-    "type": {
-        "military": [
-            "Upholding order with unwavering discipline.",
-            "The iron fist of the empire.",
-            "Protecting the realm with steel and resolve."
-        ],
-        "religious": [
-            "Whispering secrets and chanting dark rituals.",
-            "Seeking forbidden knowledge and power.",
-            "A shadowy group with sinister motives."
-        ],
-        "criminal": [
-            "Operating in the shadows, profiting from vice.",
-            "A web of deceit and treachery.",
-            "A force to be reckoned with, feared by all."
-        ],
-        "political": [
-            "Shaping the destiny of nations with cunning and ambition.",
-            "A game of power, where alliances are forged and broken.",
-            "A constant struggle for dominance and control."
-        ],
-        "mercantile": [
-            "Controlling trade routes and amassing vast fortunes.",
-            "A driving force in the economy, shaping markets and prices.",
-            "A network of merchants and entrepreneurs, seeking profit and influence."
-        ],
-         "tribal": [
-            "A tribal group.",
-            "A group of people.",
-            "A place of culture."
-        ],
-        "academic": [
-            "A group of smart people.",
-            "A place of learning.",
-            "A place of books."
-        ]
-    },
-    "alignment": {
-        "good": [
-            "Striving for justice and compassion.",
-            "Protecting the innocent and upholding the law.",
-            "A beacon of hope in a world of darkness."
-        ],
-        "evil": [
-            "Seeking to dominate and control, with ruthless ambition.",
-            "Spreading chaos and destruction, reveling in suffering.",
-            "A force of darkness, threatening to consume all."
-        ],
-        "neutral": [
-            "Maintaining a balance, seeking neither good nor evil.",
-            "Observing the world with a detached gaze.",
-            "Driven by self-preservation and personal gain."
-        ],
-        "lawful": [
-            "Upholding the law, with unwavering dedication.",
-            "Seeking to maintain order and stability.",
-            "Believing in a structured and organized society."
-        ],
-        "chaotic": [
-            "Rejecting order and embracing freedom.",
-            "Driven by impulse and emotion.",
-            "Disrupting the status quo and challenging authority."
-        ]
-    },
-      "size": {
-        "small": [
-            "A small group.",
-            "A few people.",
-            "A small force."
-        ],
-        "medium": [
-            "A medium group.",
-            "A decent amount of people.",
-            "A medium force."
-        ],
-        "large": [
-            "A large group.",
-            "Many people.",
-            "A massive force."
-        ]
-    },
-        "influence": {
-        "local": [
-            "Influence in the village.",
-            "Influence in a small town.",
-            "Influence in a farm."
-        ],
-        "regional": [
-            "Influence in a region.",
-            "Influence in a few towns.",
-            "Influence in a few cities."
-        ],
-        "national": [
-            "Influence in a nation.",
-            "Influence in a many towns.",
-            "Influence in many cities."
-        ],
-        "global": [
-            "Influence in the world.",
-            "Influence in every town.",
-            "Influence in every city."
-        ]
-    },
-        "status": {
-        "active": [
-            "A active group.",
-            "A group that is working.",
-            "A group that is planning."
-        ],
-        "inactive": [
-            "A inactive group.",
-            "A group that is relaxing.",
-            "A group that is sleeping."
-        ],
-        "growing": [
-            "A growing group.",
-            "A group that is expanding.",
-            "A group that is recruiting."
-        ],
-        "secret": [
-            "A secret group.",
-            "A group that is hidden.",
-            "A group that is planning in secret."
-        ]
-    },
-}
-
-# NPC Flavors
-NPC_FLAVORS = {
-    "class": {
-        "warrior": [
-            "A skilled fighter, ready for battle.",
-            "Brave and courageous, defending the weak.",
-            "A master of arms, wielding weapons with precision."
-        ],
-        "mage": [
-            "Wielding arcane energies with effortless grace.",
-            "Seeking knowledge, unlocking ancient secrets.",
-            "A student of the elements, mastering the forces of nature."
-        ],
-        "thief": [
-            "Skilled in stealth and deception, moving unseen.",
-            "A master of disguise, blending seamlessly into the crowd.",
-            "Lightening purses with nimble fingers."
-        ],
-        "rogue": [
-            "A cunning trickster, relying on wit and agility.",
-            "Operating outside the law, with a mischievous grin.",
-            "A master of improvisation, turning any situation to their advantage."
-        ],
-        "priest": [
-            "A devout follower, spreading the word of their god.",
-            "Healing the sick and comforting the afflicted."
-        ]
-    }
+# Item Flavors
+ITEM_FLAVORS = {
+    "Iron Sword": [
+        "A sturdy sword, reliable in battle.",
+        "Forged from iron, a common weapon for adventurers.",
+        "A simple but effective blade."
+    ],
+    "Steel Sword": [
+        "A well-crafted sword, stronger than iron.",
+        "Forged from steel, a favored weapon of soldiers.",
+        "A durable blade, capable of cleaving through foes."
+    ],
+    "Potion of Healing": [
+        "A restorative potion, mending wounds and restoring health.",
+        "A vital elixir for adventurers in need of healing.",
+        "A soothing concoction, easing pain and revitalizing the body."
+    ],
+    "Torch": [
+        "A simple torch, providing light in the darkness.",
+        "A source of warmth and comfort in the cold.",
+        "A beacon of hope in the shadows."
+    ]
 }

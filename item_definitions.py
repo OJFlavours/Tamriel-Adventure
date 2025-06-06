@@ -3,14 +3,14 @@ import random
 from ui import UI
 import tags  # Assuming tags.py exists and is used by Item class
 import flavor  # Crucial for item flavor text
+from flavor import get_flavor_text
 from colorama import Fore, Style  # For colored/styled output in descriptions
 from spells import get_spell, Spell  # Import for tome functionality
 
 # Data will be imported from items_data
 from items_data import (
-    WEIGHT_MULTIPLIERS,
-    BASE_WEIGHTS,
     VALUE_MULTIPLIERS,
+    BASE_WEIGHTS,
     BASE_VALUES,
     CONSUMABLE_EFFECT_POOLS
 )
@@ -55,7 +55,7 @@ class Item:
         self.tags[tag_category][tag_type] = tag
 
     def calculate_weight(self) -> float:
-        material_multiplier = WEIGHT_MULTIPLIERS.get(self.material, 1.0)
+        material_multiplier = VALUE_MULTIPLIERS.get(self.material, 1.0)
 
         type_w = 1.0
         for type_key, weight_val in BASE_WEIGHTS.items():
@@ -226,6 +226,34 @@ class Item:
                 if hasattr(player, 'remove_item'):
                     player.remove_item(self)
 
+    def get_description(self):
+        """Returns a detailed description of the item."""
+        description = f"{Fore.GREEN}{self.name}{Style.RESET_ALL}\n"
+        description += f"Category: {self.category.title()}\n"
+        description += f"Material: {self.material.title()}\n"
+        if self.base_damage:
+            description += f"Damage: {self.base_damage}\n"
+        if self.armor_rating:
+            description += f"Armor Rating: {self.armor_rating}\n"
+        if self.enchantment:
+            description += f"Enchantment: {self.enchantment}\n"
+        description += f"Weight: {self.weight} lbs\n"
+        description += f"Value: {self.value} gold\n"
+
+        # Add flavor text from flavor.py
+        flavor_text = get_flavor_text(self.name)
+        if flavor_text:
+            description += f"\n{Fore.CYAN}Lore:{Style.RESET_ALL} {flavor_text}\n"
+
+        # Add properties
+        if self.properties:
+            description += "\nProperties:\n"
+            for key, value in self.properties.items():
+                description += f"  {key.replace('_', ' ').title()}: {value}\n"
+
+        return description
+
+
 class Torch(Item):
     def __init__(self, name="Torch", category="misc", material="Wood", properties=None):
         super().__init__(name, category, material, properties=properties)
@@ -238,3 +266,6 @@ class Torch(Item):
         # This might involve setting a flag or calling a function
         # that makes the current location brighter for the player.
         pass
+# Added by combat module restructuring
+# Armor
+# falmer_armor_basic
