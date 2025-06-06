@@ -4,7 +4,8 @@ from stats import RACES
 from npc_entities import NPC
 from npc_roles import FRIENDLY_ROLES, HOSTILE_ROLES # Import role sets
 from ui import UI
-from locations import RAW_LOCATION_DATA_MAP
+#from locations import RAW_LOCATION_DATA_MAP # Removed this line
+from locations import location_manager # Added this line
 from fixed_npc_data import FIXED_NPC_DATA
 
 def determine_npc_count(tags_list, location_data):
@@ -89,7 +90,15 @@ def determine_npc_role(tags_list, base_role_pool):
 
 def generate_npcs_for_location(location_obj, npc_registry, find_hierarchy_func):
     try:
-        raw_location_data = RAW_LOCATION_DATA_MAP.get(location_obj.id, {})
+        #raw_location_data = RAW_LOCATION_DATA_MAP.get(location_obj.id, {}) # Removed this line
+        raw_location_data = {} # Added this line
+        if location_obj.id not in location_manager.locations:
+            return
+
+        location = location_manager.get_location(location_obj.id)
+        if not location:
+            return
+
         if raw_location_data.get("is_encounter"): return
         if location_obj.id in npc_registry: return
 
@@ -115,20 +124,24 @@ def generate_npcs_for_location(location_obj, npc_registry, find_hierarchy_func):
         
         # Determine demographics source
         demographics_source = location_obj
-        raw_demographics_source_data = RAW_LOCATION_DATA_MAP.get(demographics_source.id, {})
+        #raw_demographics_source_data = RAW_LOCATION_DATA_MAP.get(demographics_source.id, {}) # Removed this line
+        raw_demographics_source_data = {} # Added this line
         if not raw_demographics_source_data.get("demographics"):
             if parent_city:
-                raw_parent_city_data = RAW_LOCATION_DATA_MAP.get(parent_city.id, {})
+                #raw_parent_city_data = RAW_LOCATION_DATA_MAP.get(parent_city.id, {}) # Removed this line
+                raw_parent_city_data = {} # Added this line
                 if raw_parent_city_data.get("demographics"):
                     demographics_source = parent_city
             elif parent_hold:
-                raw_parent_hold_data = RAW_LOCATION_DATA_MAP.get(parent_hold.id, {})
+                #raw_parent_hold_data = RAW_LOCATION_DATA_MAP.get(parent_hold.id, {}) # Removed this line
+                raw_parent_hold_data = {} # Added this line
                 if raw_parent_hold_data.get("demographics"):
                     demographics_source = parent_hold
         
-        demographics = RAW_LOCATION_DATA_MAP.get(demographics_source.id, {}).get("demographics", {"Nord": 100})
+        #demographics = RAW_LOCATION_DATA_MAP.get(demographics_source.id, {}).get("demographics", {"Nord": 100}) # Removed this line
+        demographics = {"Nord": 100} # Added this line
         
-        location_tags = list(raw_location_data.get("tags", []))
+        location_tags = [] #list(raw_location_data.get("tags", [])) # Removed this line
         npc_count = determine_npc_count(location_tags, raw_location_data)
         
         # Determine the base role pool (friendly or hostile)

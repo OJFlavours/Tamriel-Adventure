@@ -2,7 +2,7 @@
 import random
 from typing import List, Dict, Any, Optional
 
-from locations import LOCATIONS # Assuming LOCATIONS is fully defined here
+from locations import LocationManager
 import flavor # Used by generate_location_appropriate_quest
 from items import Item, generate_item_from_key # Used by process_quest_rewards and generate_location_appropriate_quest (via generate_reward)
 from ui import UI # Ensure UI is imported for capitalization
@@ -29,17 +29,18 @@ def create_quest_template_index(quest_templates: List[Dict[str, Any]]) -> Dict[s
 # Function to generate location-appropriate quest
 def generate_location_appropriate_quest(
     player_level: int,
-    current_location_obj: Dict[str, Any], # This is the raw dictionary of the current location
+    current_location_obj, # This is the Location object of the current location
     all_quest_templates: List[Dict[str, Any]],
     quest_giver_id: str | None = None,
     event_data: Dict[str, Any] | None = None
 ) -> Quest | None:
-    comprehensive_location_tags = set(current_location_obj.get("tags", []))
+    comprehensive_location_tags = set(current_location_obj.tags)
     effective_hold_name = None
 
-    current_loc_id = current_location_obj.get('id')
+    current_loc_id = current_location_obj.id
     if current_loc_id:
-        ancestry_chain_root_to_target = _find_loc_and_parents_recursive(current_loc_id, LOCATIONS, [])
+        location_manager = LocationManager()
+        ancestry_chain_root_to_target = _find_loc_and_parents_recursive(current_loc_id, location_manager.locations.values(), [])
         
         if ancestry_chain_root_to_target:
             for ancestor_dict in ancestry_chain_root_to_target:
@@ -53,8 +54,8 @@ def generate_location_appropriate_quest(
                 effective_hold_name = ancestry_chain_root_to_target[0].get("name")
     
     if not effective_hold_name:
-        if "hold" in current_location_obj.get("tags", []):
-             effective_hold_name = current_location_obj.get("name")
+        if "hold" in current_location_obj.tags:
+             effective_hold_name = current_location_obj.name
 
     current_hold_name_processed = effective_hold_name
     location_tags = comprehensive_location_tags
@@ -75,11 +76,11 @@ def generate_location_appropriate_quest(
     possible_templates = list(set(possible_templates))
 
     if not possible_templates:
-        UI.print_system_message(f"DEBUG: No specific quest template matched for Lvl {player_level}, Loc: {current_location_obj['name']}, Tags: {list(location_tags)}. Generating generic fallback.")
+        UI.print_system_message(f"DEBUG: No specific quest template matched for Lvl {player_level}, Loc: {current_location_obj.name}, Tags: {list(location_tags)}. Generating generic fallback.")
         fallback_location = current_location_obj
-        fallback_title = f"Simple Errand in {fallback_location['name']}"
-        fallback_desc = f"Someone in {fallback_location['name']} needs a hand with a minor task."
-        fallback_stages = [{"stage_name": "Task", "objectives": [{"id": "fb_obj1", "type": "talk_to_npc", "npc_id": quest_giver_id if quest_giver_id else "local_citizen_generic_ID", "note": f"Speak to the person who needs help in {fallback_location['name']}."}]}]
+        fallback_title = f"Simple Errand in {fallback_location.name}"
+        fallback_desc = f"Someone in {fallback_location.name} needs a hand with a minor task."
+        fallback_stages = [{"stage_name": "Task", "objectives": [{"id": "fb_obj1", "type": "talk_to_npc", "npc_id": quest_giver_id if quest_giver_id else "local_citizen_generic_ID", "note": f"Speak to the person who needs help in {fallback_location.name}."}]}]
         fallback_reward = generate_reward(max(1, player_level // 2), [])
         quest = Quest(title=fallback_title, description=fallback_desc, reward=fallback_reward, level_requirement=player_level, location=fallback_location, stages=fallback_stages, turn_in_npc_id=quest_giver_id)
         quest.add_tag("quest", "type", "fallback_generic")
@@ -89,7 +90,7 @@ def generate_location_appropriate_quest(
     final_quest_location_obj = current_location_obj
     title = chosen_template["title_template"]
     description = chosen_template["desc_template"]
-    generic_loc_name_for_fill = final_quest_location_obj["name"]
+    generic_loc_name_for_fill = final_quest_location_obj.name
 
     def get_specific_location_name_for_placeholder(placeholder_tag: str, base_location: Dict) -> str:
         candidates = find_locations_by_tag(placeholder_tag)
@@ -195,8 +196,10 @@ def generate_location_appropriate_quest(
     for lore_tag_val in chosen_template.get("lore_tags", []):
         quest_instance.add_tag("quest", "lore", lore_tag_val) 
     if "flavor_tags" in chosen_template and "quest" in chosen_template["flavor_tags"] and "type" in chosen_template["flavor_tags"]["quest"]:
-        quest_instance.add_tag("quest", "type", random.choice(chosen_template["flavor_tags"]["quest"]["type"]))
-    
+        if chosen_template["flavor_tags"]["quest"]["type"]:
+            quest_instance.add_tag("quest", "type", random.choice(chosen_template["flavor_tags"]["quest"]["type"]))
+        else: quest_instance.add_tag("quest", "type", "general_adventure")
+    else: quest_instance.add_tag("quest", "type", "general_adventure")
     return quest_instance
 
 def generate_dynamic_quest(event_data: Dict[str, Any]) -> Quest | None:

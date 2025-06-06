@@ -6,41 +6,45 @@ from ui import UI
 import tags # For INHERITABLE_TAGS
 from npc_generation import generate_npcs_for_location # For process_travel
 
-from locations import LOCATIONS, Location, RAW_LOCATION_DATA_MAP # Added Location, RAW_LOCATION_DATA_MAP
+from locations import Location, LocationManager
 
-_ALL_LOCATIONS_EXPLORATION = LOCATIONS
-_LOCATION_BY_ID_EXPLORATION = {}
-_LOCATION_BY_NAME_EXPLORATION = {}
+#from locations import LOCATIONS, Location, RAW_LOCATION_DATA_MAP # Added Location, RAW_LOCATION_DATA_MAP
 
-def _build_exploration_location_maps(loc_list):
-    by_id = {}
-    by_name = {}
-    def recurse(loc):
-        by_id[loc["id"]] = loc
-        by_name[loc["name"]] = loc
-        for sub in loc.get("sub_locations", []):
-            recurse(sub)
-    for top in loc_list:
-        recurse(top)
-    return by_id, by_name
+#_ALL_LOCATIONS_EXPLORATION = LOCATIONS
+#_LOCATION_BY_ID_EXPLORATION = {}
+#_LOCATION_BY_NAME_EXPLORATION = {}
 
-_LOCATION_BY_ID_EXPLORATION, _LOCATION_BY_NAME_EXPLORATION = _build_exploration_location_maps(_ALL_LOCATIONS_EXPLORATION)
+#def _build_exploration_location_maps(loc_list):
+#    by_id = {}
+#    by_name = {}
+#    def recurse(loc):
+#        by_id[loc["id"]] = loc
+#        by_name[loc["name"]] = loc
+#        for sub in loc.get("sub_locations", []):
+#            recurse(sub)
+#    for top in loc_list:
+#        recurse(top)
+#    return by_id, by_name
+
+#_LOCATION_BY_ID_EXPLORATION, _LOCATION_BY_NAME_EXPLORATION = _build_exploration_location_maps(_ALL_LOCATIONS_EXPLORATION)
 
 
 def get_hold_by_id(hold_id: int) -> Dict[str, Any] | None:
     """Finds a hold by its ID from ALL_LOCATIONS."""
-    for loc in _ALL_LOCATIONS_EXPLORATION:
-        if loc.get("id") == hold_id and "hold" in loc.get("tags", []):
-            return loc
+    location_manager = LocationManager()
+    for loc in location_manager.locations.values():
+        if loc.id == hold_id and "hold" in loc.tags:
+            return {"id": loc.id, "name": loc.name, "tags": loc.tags}
     return None
 
 def get_known_holds(player: Player) -> List[Dict[str, Any]]:
     """Returns a sorted list of Hold location objects known by the player."""
     known_holds = []
+    location_manager = LocationManager()
     for loc_id in player.known_location_ids:
-        loc_obj = _LOCATION_BY_ID_EXPLORATION.get(loc_id)
-        if loc_obj and "hold" in loc_obj.get("tags", []):
-            known_holds.append(loc_obj)
+        loc_obj = location_manager.get_location(loc_id)
+        if loc_obj and "hold" in loc_obj.tags:
+            known_holds.append({"id": loc_obj.id, "name": loc_obj.name, "tags": loc_obj.tags})
     return sorted(known_holds, key=lambda x: x.get("name", ""))
 
 def get_known_primary_locations_in_hold(player: Player, hold_id: int) -> List[Dict[str, Any]]:
@@ -53,9 +57,10 @@ def get_known_primary_locations_in_hold(player: Player, hold_id: int) -> List[Di
     if not hold_obj:
         return []
 
-    for sub_loc_candidate in hold_obj.get("sub_locations", []):
-        if sub_loc_candidate["id"] in player.known_location_ids:
-            known_locs_in_hold.append(sub_loc_candidate)
+    location_manager = LocationManager()
+    for loc_id, loc_obj in location_manager.locations.items():
+        if loc_obj.parent_id == hold_id and loc_obj.id in player.known_location_ids:
+            known_locs_in_hold.append({"id": loc_obj.id, "name": loc_obj.name, "tags": loc_obj.tags})
     
     return sorted(known_locs_in_hold, key=lambda x: x.get("name", ""))
 
@@ -65,13 +70,15 @@ def get_known_sub_locations(player: Player, parent_loc_id: int) -> List[Dict[str
     for a given parent location ID.
     """
     known_subs = []
-    parent_loc_obj = _LOCATION_BY_ID_EXPLORATION.get(parent_loc_id)
+    location_manager = LocationManager()
+    parent_loc_obj = location_manager.get_location(parent_loc_id)
     if not parent_loc_obj:
         return []
 
-    for sub_loc_candidate in parent_loc_obj.get("sub_locations", []):
-        if sub_loc_candidate["id"] in player.known_location_ids:
-            known_subs.append(sub_loc_candidate)
+    for sub_loc_id in parent_loc_obj.sub_locations:
+        sub_loc_obj = location_manager.get_location(sub_loc_id)
+        if sub_loc_obj and sub_loc_obj.id in player.known_location_ids:
+            known_subs.append({"id": sub_loc_obj.id, "name": sub_loc_obj.name, "tags": sub_loc_obj.tags})
             
     return sorted(known_subs, key=lambda x: x.get("name", ""))
 
@@ -153,7 +160,8 @@ def display_world_map(player: Player, game_locations_map: Dict[int, Location]): 
             
             indent = "  " * indent_level
             # RAW_LOCATION_DATA_MAP should be imported from locations module
-            raw_data_for_type = RAW_LOCATION_DATA_MAP.get(child_loc.id, {})
+            #raw_data_for_type = RAW_LOCATION_DATA_MAP.get(child_loc.id, {})
+            raw_data_for_type = {"tags": child_loc.tags, "travel_desc": child_loc.travel_desc, "desc": child_loc.description}
             type_display_str = _get_loc_type_str(raw_data_for_type)
             travel_desc = raw_data_for_type.get("travel_desc", raw_data_for_type.get("desc", ""))
 
@@ -172,13 +180,14 @@ def display_world_map(player: Player, game_locations_map: Dict[int, Location]): 
     
     # Sort roots: Holds first, then by name
     root_locations_to_print.sort(key=lambda x: (
-        not (RAW_LOCATION_DATA_MAP.get(x.id, {}).get("tags") and "hold" in RAW_LOCATION_DATA_MAP.get(x.id, {}).get("tags", [])),
+        not (x.tags and "hold" in x.tags),
         x.name
     ))
 
     for root_loc in root_locations_to_print:
         if root_loc.id not in processed_ids:
-            raw_data_for_type = RAW_LOCATION_DATA_MAP.get(root_loc.id, {})
+            #raw_data_for_type = RAW_LOCATION_DATA_MAP.get(root_loc.id, {})
+            raw_data_for_type = {"tags": root_loc.tags, "travel_desc": root_loc.travel_desc, "desc": root_loc.description}
             type_display_str = _get_loc_type_str(raw_data_for_type)
             travel_desc = raw_data_for_type.get("travel_desc", raw_data_for_type.get("desc", ""))
             UI.print_info(f"- {root_loc.name} {type_display_str} - {travel_desc}")
@@ -202,7 +211,8 @@ def discover_connected_locations(player: Player, location_data: dict, location_b
 
 def process_travel(player: Player, destination_loc_obj: Dict[str, Any], previous_location_obj: Dict[str, Any],
                    find_hierarchy_func, get_flavor_text_func, npc_registry_arg, 
-                   generate_npcs_func, discover_connected_locations_func, location_by_name_map, exploration_events) -> Dict[str, Any]:
+                   generate_npcs_func, discover_connected_locations_func, 
+                   location_by_name_map, exploration_events) -> Dict[str, Any]:
     UI.clear_screen()
     UI.print_heading(f"Traveling to {destination_loc_obj['name']}")
 

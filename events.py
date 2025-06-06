@@ -11,25 +11,27 @@ from npc_roles import HOSTILE_ROLES # Corrected import for HOSTILE_ROLES
 from exploration_data import EXPLORATION_RESULTS
 # from npc import generate_npc_from_tags # Conceptual import, depends on implementation
 from event_data import RANDOM_EVENTS, DUNGEON_NAMES, SPECIFIC_LOCATION_TAGS
+from locations import LocationManager
 
-def trigger_random_event(location_tags, player, ui, current_location_raw_data): # Renamed current_location to current_location_raw_data
+location_manager = LocationManager()
+
+def trigger_random_event(location_tags, player, ui, current_location):
     """Triggers a random event based on location tags and context."""
     try:
-        current_time = current_location_raw_data.get("time_of_day", "day")  # Default to "day" if not specified
+        current_time = "day"  # Default to "day" if not specified
         player_action = player.current_action if hasattr(player, "current_action") else "exploring" # Default to "exploring"
-        if not location_tags: # location_tags is from current_location_raw_data.get('tags')
+        if not location_tags:
             return None
 
-        current_context_tags = set(current_location_raw_data.get("context_tags", [])) # Expecting context_tags like "interior", "urban"
-        if not current_context_tags: # Fallback if not present, derive basic ones
-            if any(t in location_tags for t in ["tavern", "inn", "shop", "house", "keep", "temple", "cave", "mine", "barrow", "dungeon"]):
-                current_context_tags.add("interior")
-            else:
-                current_context_tags.add("exterior")
-            if any(t in location_tags for t in ["city", "town", "village", "market"]):
-                current_context_tags.add("urban")
-            elif any(t in location_tags for t in ["forest", "plains", "mountain", "roadside", "wilderness"]):
-                current_context_tags.add("wilderness")
+        current_context_tags = set()
+        if any(t in location_tags for t in ["tavern", "inn", "shop", "house", "keep", "temple", "cave", "mine", "barrow", "dungeon"]):
+            current_context_tags.add("interior")
+        else:
+            current_context_tags.add("exterior")
+        if any(t in location_tags for t in ["city", "town", "village", "market"]):
+            current_context_tags.add("urban")
+        elif any(t in location_tags for t in ["forest", "plains", "mountain", "roadside", "wilderness"]):
+            current_context_tags.add("wilderness")
 
 
         possible_events = []
@@ -150,12 +152,12 @@ def get_recent_events():
 def explore_location(player, current_location, random_encounters, npc_registry, all_locations_list, ui):
     """Explores the current location and triggers random events based on its tags."""
     try:
-        ui.slow_print(f"You carefully explore {current_location['name']}...")
-        current_time = current_location.get("time_of_day", "day")  # Default to "day" if not specified
+        ui.slow_print(f"You carefully explore {current_location.name}...")
+        current_time = "day"  # Default to "day" if not specified
         player_action = player.current_action if hasattr(player, "current_action") else "exploring" # Default to "exploring"
 
 
-        current_location_tags = current_location.get("tags", [])
+        current_location_tags = current_location.tags
         present_specific_tags = [tag for tag in current_location_tags if tag in SPECIFIC_LOCATION_TAGS]
         available_results_data = []
 
@@ -230,7 +232,7 @@ def explore_location(player, current_location, random_encounters, npc_registry, 
                         # This should now leverage the new quest generation that creates Quest objects
                         quest_template_id = details.get("quest_hint_template_id")
                         if quest_template_id:
-                            new_quest = generate_location_appropriate_quest(player.level, current_location.get("tags", []), None) # quest_giver_id is None for general finds
+                            new_quest = generate_location_appropriate_quest(player.level, current_location.tags, None) # quest_giver_id is None for general finds
                             if new_quest and player.quest_log.add_quest(new_quest):
                                 ui.slow_print(f"A new lead found: '{new_quest.title}' has been added to your journal.")
                             else:
@@ -306,7 +308,7 @@ def explore_location(player, current_location, random_encounters, npc_registry, 
                  ui.slow_print("You sense a potential occurrence, but it passes without incident this time.")
 
         # Trigger random event
-        trigger_random_event(current_location_tags, player, ui, current_location)
+        trigger_random_event(current_location.tags, player, ui, current_location)
 
         return selected_exploration_outcomes
     except Exception as e:

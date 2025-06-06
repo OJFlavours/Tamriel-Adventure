@@ -1,12 +1,13 @@
 # event_data.py
-from locations import LOCATIONS # For DUNGEON_NAMES generation
+from locations import LocationManager
+from typing import List, Dict
 
 # --- DYNAMICALLY GENERATED DUNGEON_NAMES (from your provided code) ---
-def get_all_dungeon_style_locations(locations_data):
+def get_all_dungeon_style_locations(locations_data: List):
     dungeon_names = set()
     def find_dungeons_recursive(location_list):
         for loc in location_list:
-            loc_tags = loc.get("tags", [])
+            loc_tags = loc.tags if hasattr(loc, 'tags') else loc.get("tags", [])
             is_settlement = "city" in loc_tags or "town" in loc_tags or "village" in loc_tags or "hold" in loc_tags
             is_dungeon_type = "dungeon" in loc_tags or \
                               "dwemer" in loc_tags or \
@@ -16,14 +17,18 @@ def get_all_dungeon_style_locations(locations_data):
                               (("mine" in loc_tags and not is_settlement) and ("abandoned" in loc_tags or "infested" in loc_tags or "haunted" in loc_tags))
 
             if is_dungeon_type:
-                dungeon_names.add(loc["name"])
+                dungeon_names.add(loc.name if hasattr(loc, 'name') else loc["name"])
 
-            if "sub_locations" in loc:
-                find_dungeons_recursive(loc["sub_locations"])
+            if hasattr(loc, 'sub_locations') and loc.sub_locations:
+                sub_locations = [location_manager.get_location(sub_id) for sub_id in loc.sub_locations]
+                find_dungeons_recursive(sub_locations)
+            #elif "sub_locations" in loc: # Removed this line
+            #    find_dungeons_recursive(loc["sub_locations"])
     find_dungeons_recursive(locations_data)
     return list(dungeon_names)
 
-DUNGEON_NAMES = get_all_dungeon_style_locations(LOCATIONS)
+location_manager = LocationManager()
+DUNGEON_NAMES = get_all_dungeon_style_locations(location_manager.locations.values())
 if not DUNGEON_NAMES: # Fallback (from original)
     DUNGEON_NAMES = [
         "Bleak Falls Barrow", "Quicksilver Mine", "Nightcaller Temple", "Iron-Breaker Mine",

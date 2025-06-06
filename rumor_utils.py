@@ -3,7 +3,7 @@ from typing import List, Dict, Any
 
 from ui import UI
 from items import generate_random_item as gr_item_func
-from locations import LOCATIONS # RAW_LOCATION_DATA_MAP is not used here
+from locations import LocationManager
 from quests import find_locations_by_tag # Ensure Quest class is not needed here directly
 
 # Import data from rumor_data.py
@@ -84,9 +84,10 @@ def _get_dynamic_placeholder(placeholder_type: str, current_location: Dict[str, 
     if placeholder_type == "[Location_Name_Nearby_Minor]":
         if current_location and current_location.get("parent_name"):
             parent_hold_name = current_location["parent_name"]
-            hold_obj = next((loc for loc in LOCATIONS if loc["name"] == parent_hold_name), None)
-            if hold_obj and hold_obj.get("sub_locations"):
-                minor_locs = [s_loc["name"] for s_loc in hold_obj["sub_locations"] if any(tag in s_loc.get("tags",[]) for tag in ["village", "camp", "cave", "mine", "shack"])]
+            location_manager = LocationManager()
+            hold_obj = next((loc for loc in location_manager.locations.values() if loc.name == parent_hold_name), None)
+            if hold_obj and hold_obj.sub_locations:
+                minor_locs = [location_manager.get_location(s_loc_id).name for s_loc_id in hold_obj.sub_locations if any(tag in location_manager.get_location(s_loc_id).tags for tag in ["village", "camp", "cave", "mine", "shack"])]
                 if minor_locs: return random.choice(minor_locs)
         return random.choice(["a nearby cave", "an old watchtower", "that farmstead down the road"])
     if placeholder_type == "[Item_Type_Common]": return random.choice(["axe", "some firewood", "a healing poultice", "some bread"])

@@ -2,7 +2,7 @@
 import random
 from typing import List, Dict, Any, Optional
 
-from locations import LOCATIONS # Assuming LOCATIONS is fully defined here
+from locations import LocationManager
 from items import generate_random_item as gr_item_func # For generate_reward
 from quest_config import QUEST_REWARDS_TEMPLATE # For generate_reward
 # Quest import will be needed if list_player_quests_for_display uses Quest type hint directly
@@ -21,34 +21,60 @@ def find_locations_by_tag(tag: str) -> List[Dict]:
     """
     global LOCATION_INDEX
     if not LOCATION_INDEX:
-        LOCATION_INDEX = index_locations_by_tag(LOCATIONS)
+        location_manager = LocationManager()
+        LOCATION_INDEX = index_locations_by_tag(location_manager.locations.values())
     return LOCATION_INDEX.get(tag, [])
 # Index locations by tag for faster lookup
-def index_locations_by_tag(locations: List[Dict]) -> Dict[str, List[Dict]]:
+def index_locations_by_tag(locations: List) -> Dict[str, List[Dict]]:
     """
     Indexes the LOCATIONS data structure by tag for faster lookup.
     Returns a dictionary that maps tags to lists of locations.
     """
     index: Dict[str, List[Dict]] = {}
     for loc in locations:
-        for tag in loc.get("tags", []):
+        if hasattr(loc, 'tags'):
+            tags = loc.tags
+        else:
+            tags = loc.get("tags", [])
+        for tag in tags:
             if tag not in index:
                 index[tag] = []
-            index[tag].append(loc)
-        for sub in loc.get("sub_locations", []):
-            for tag in sub.get("tags", []):
-                if tag not in index:
-                    index[tag] = []
-                sub_copy = sub.copy()
-                sub_copy["parent_name"] = loc["name"]
-                index[tag].append(sub_copy)
-            for sub2 in sub.get("sub_locations", []):
-                for tag in sub2.get("tags", []):
+            index[tag].append({"id": loc.id, "name": loc.name, "tags": loc.tags})
+        if hasattr(loc, 'sub_locations'):
+            sub_locations = loc.sub_locations
+        else:
+            sub_locations = loc.get("sub_locations", [])
+        for sub_id in sub_locations:
+            location_manager = LocationManager()
+            sub = location_manager.get_location(sub_id)
+            if sub:
+                if hasattr(sub, 'tags'):
+                    sub_tags = sub.tags
+                else:
+                    sub_tags = sub.get("tags", [])
+                for tag in sub_tags:
                     if tag not in index:
                         index[tag] = []
-                    sub2_copy = sub2.copy()
-                    sub2_copy["parent_name"] = f'{loc["name"]} -> {sub["name"]}'
-                    index[tag].append(sub2_copy)
+                    sub_copy = {"id": sub.id, "name": sub.name, "tags": sub.tags}
+                    sub_copy["parent_name"] = loc.name if hasattr(loc, 'name') else loc["name"]
+                    index[tag].append(sub_copy)
+                if hasattr(sub, 'sub_locations'):
+                    sub2_locations = sub.sub_locations
+                else:
+                    sub2_locations = sub.get("sub_locations", [])
+                for sub2_id in sub2_locations:
+                    sub2 = location_manager.get_location(sub2_id)
+                    if sub2:
+                        if hasattr(sub2, 'tags'):
+                            sub2_tags = sub2.tags
+                        else:
+                            sub2_tags = sub2.get("tags", [])
+                        for tag in sub2_tags:
+                            if tag not in index:
+                                index[tag] = []
+                            sub2_copy = {"id": sub2.id, "name": sub2.name, "tags": sub2.tags}
+                            sub2_copy["parent_name"] = f'{loc.name if hasattr(loc, "name") else loc["name"]} -> {sub.name if hasattr(sub, "name") else sub["name"]}'
+                            index[tag].append(sub2_copy)
     return index
 
 # Helper to get NPC name by role hint
@@ -91,21 +117,22 @@ def get_npc_name_by_role_hint(role_hint: str) -> Dict[str, str]:
     return {"name": name_display, "id": chosen_name_with_id}
 
 # Helper function to find a location and its parent chain
-def _find_loc_and_parents_recursive(target_id: str, current_level_list: List[Dict], parent_chain_from_root: List[Dict]) -> Optional[List[Dict]]:
+def _find_loc_and_parents_recursive(target_id: str, current_level_list: List, parent_chain_from_root: List[Dict]) -> Optional[List[Dict]]:
     """
     Recursively searches for a location by ID within the LOCATIONS structure.
     Returns a list: [target_loc_dict, parent1_dict (immediate parent), ..., root_level_dict]
     parent_chain_from_root is the chain from the ultimate root down to the parent of current_level_list.
     """
     for loc_dict in current_level_list:
-        if loc_dict.get('id') == target_id:
+        if hasattr(loc_dict, 'id') and loc_dict.id == target_id:
             # Found the target. The chain is [target] + reversed parents from this path
             return [loc_dict] + parent_chain_from_root # parent_chain_from_root is already root -> immediate_parent
         
-        if "sub_locations" in loc_dict:
+        if hasattr(loc_dict, 'sub_locations'):
+            sub_locations = [location_manager.get_location(sub_id) for sub_id in loc_dict.sub_locations]
             # When going deeper, loc_dict becomes the most recent parent.
             # Add loc_dict to the end of the chain being passed down (root -> ... -> loc_dict)
-            found_in_sub = _find_loc_and_parents_recursive(target_id, loc_dict["sub_locations"], parent_chain_from_root + [loc_dict])
+            found_in_sub = _find_loc_and_parents_recursive(target_id, sub_locations, parent_chain_from_root + [loc_dict])
             if found_in_sub:
                 return found_in_sub
     return None

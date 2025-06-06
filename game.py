@@ -28,7 +28,7 @@ from datetime import datetime, timezone, timedelta
 
 # --- Main Game Imports (Corrected) ---
 try:
-    from locations import Location, initialize_skyrim_map, RAW_LOCATION_DATA_MAP
+    from locations import Location, LocationManager
     from player import Player
     from stats import Stats, RACES, CLASSES
     from npc_entities import NPC
@@ -57,7 +57,8 @@ except ImportError as e:
 
 # Globals
 npc_registry = {}
-GAME_LOCATIONS_MAP = {} # Will store Location objects, keyed by ID
+location_manager = LocationManager()
+GAME_LOCATIONS_MAP = location_manager.locations # Will store Location objects, keyed by ID
 action_time_map = {
     "travel": 120,
     "search": 45,
@@ -74,26 +75,28 @@ ENCOUNTER_NAMES = {
     "city": [
         {"name": "Street Urchin", "desc": "A nimble child attempts to pickpocket you.", "type": "thieves_encounter"},
         {"name": "Drunkard",    "desc": "A staggering drunkard accosts you for coin.", "type": "social_encounter"},
-    ],
-    "forest": [
         {"name": "Wolf Pack",     "desc": "A pack of wolves circles, seeking prey.", "type": "hostile_creatures"},
         {"name": "Lost Traveler", "desc": "A lost traveler asks for directions.", "type": "social_encounter"},
     ],
-    "plains": [
+    "forest": [
         {"name": "Merchant Caravan", "desc": "A well-guarded merchant caravan passes by.", "type": "neutral_encounter"},
         {"name": "Lone Elk", "desc": "A majestic elk grazes peacefully.", "type": "neutral_creature"}
     ],
-    "mountain": [
+    "plains": [
         {"name": "Rockslide", "desc": "The ground trembles as rocks tumble down a nearby slope!", "type": "hazard_event"},
         {"name": "Goat Herd", "desc": "A herd of mountain goats skillfully navigates the cliffs.", "type": "neutral_creature"}
     ],
-    "cave": [
-        {"name": "Bear", "desc": "A large bear growls from the darkness.", "type": "hostile_creature"},
+    "mountain": [
+        {"name": "Bear", "desc": "A large bear growls from the darkness.", "type": "hostile_creatures"},
         {"name": "Lost Explorer's Note", "desc": "You find a tattered note, the last words of a lost explorer.", "type": "lore_find"}
     ],
-    "ruin": [
+    "cave": [
         {"name": "Restless Spirit", "desc": "A ghostly figure materializes, bound to these ancient stones.", "type": "undead_encounter"},
         {"name": "Ancient Trap", "desc": "You narrowly avoid an ancient, cunningly hidden trap.", "type": "hazard_event"}
+    ],
+    "ruin": [
+        {"name": "Street Urchin", "desc": "A nimble child attempts to pickpocket you.", "type": "thieves_encounter"},
+        {"name": "Drunkard",    "desc": "A staggering drunkard accosts you for coin.", "type": "social_encounter"},
     ],
 }
 
@@ -134,7 +137,21 @@ def get_location_obj_by_name(name):
     return None
 
 def get_location_raw_data(loc_id):
-    return RAW_LOCATION_DATA_MAP.get(loc_id)
+    location = GAME_LOCATIONS_MAP.get(loc_id)
+    if location:
+        return {
+            "id": location.id,
+            "name": location.name,
+            "desc": location.description,
+            "travel_desc": location.travel_desc,
+            "tags": location.tags,
+            "demographics": location.demographics,
+            "density": location.density,
+            "is_dark": location.is_dark,
+            "travel": location.travel,
+            "sub_locations": location.sub_locations
+        }
+    return None
 
 def _find_hierarchy(loc_id_or_obj):
     if isinstance(loc_id_or_obj, Location):
@@ -162,15 +179,15 @@ def _find_hierarchy(loc_id_or_obj):
     return hold_obj, primary_obj, specific_obj
 
 def look_around_area(player, current_location_obj: Location, npc_registry_param, game_loc_map_param, ui_param):
-    UI.slow_print(f"You take a moment to observe your surroundings in {current_location_obj.name}...")
-    current_loc_raw_data = get_location_raw_data(current_location_obj.id)
-    if not current_loc_raw_data:
-        UI.print_warning(f"Could not find raw data for {current_location_obj.name}")
-        current_loc_raw_data = {"name": current_location_obj.name, "desc": current_location_obj.description, "tags": [], "id": current_location_obj.id}
-    explore_location(player, current_loc_raw_data, {}, npc_registry_param, game_loc_map_param, ui_param)
-    location_tags = RAW_LOCATION_DATA_MAP.get(current_location_obj.id, {}).get("tags", [])
+    UI.slow_print(f"You take a moment to observe your surroundings in {current_location_obj.name if current_location_obj.name else 'A mysterious place'}...")
+    #current_loc_raw_data = get_location_raw_data(current_location_obj.id)
+    #if not current_loc_raw_data:
+    #    UI.print_warning(f"Could not find raw data for {current_location_obj.name}")
+    #    current_loc_raw_data = {"name": current_location_obj.name, "desc": current_location_obj.description, "tags": [], "id": current_location_obj.id}
+    explore_location(player, current_location_obj, {}, npc_registry_param, game_loc_map_param, ui_param)
+    location_tags = current_location_obj.tags
     if random.random() < 0.25:
-        new_quest = generate_location_appropriate_quest(player.level, location_tags, None)
+        new_quest = generate_location_appropriate_quest(player.level, current_location_obj, None)
         if new_quest:
             UI.slow_print("\nSomething catches your eye... it seems to be a new undertaking!")
             UI.slow_print(f"Quest: {new_quest.title}")
@@ -218,7 +235,8 @@ def handle_player_choice(choice, player, current_loc_obj: Location, menu_options
             exit_options = list(current_loc_obj.exits.items())
             for i, (direction, dest_loc_obj) in enumerate(exit_options):
                 formatted_direction = ' '.join(word.capitalize() for word in direction.split())
-                description_to_display = RAW_LOCATION_DATA_MAP.get(dest_loc_obj.id, {}).get('travel_desc', RAW_LOCATION_DATA_MAP.get(dest_loc_obj.id, {}).get('desc'))
+                #description_to_display = RAW_LOCATION_DATA_MAP.get(dest_loc_obj.id, {}).get('travel_desc', RAW_LOCATION_DATA_MAP.get(dest_loc_obj.id, {}).get('desc'))
+                description_to_display = dest_loc_obj.travel_desc if hasattr(dest_loc_obj, 'travel_desc') else dest_loc_obj.description
                 UI.slow_print(f"{i+1}. {formatted_direction} - {description_to_display}")
             
             travel_choice_str = UI.print_prompt("Where to? (Enter number or 'cancel') ").strip().lower()
@@ -305,9 +323,11 @@ def get_current_game_time_string(game_time_obj):
 
 def initialize_starting_location(player: Player):
     all_taverns = []
-    for loc_id, raw_data in RAW_LOCATION_DATA_MAP.items():
-        if any(tag in raw_data.get("tags", []) for tag in ["tavern", "inn", "structure_type_inn_building", "settlement_features_tavern"]):
-            location_obj = GAME_LOCATIONS_MAP.get(loc_id)
+    #for loc_id, raw_data in RAW_LOCATION_DATA_MAP.items():
+    for loc_id, location_obj in GAME_LOCATIONS_MAP.items():
+        #if any(tag in raw_data.get("tags", []) for tag in ["tavern", "inn", "structure_type_inn_building", "settlement_features_tavern"]):
+        if any(tag in location_obj.tags for tag in ["tavern", "inn", "structure_type_inn_building", "settlement_features_tavern"]):
+            #location_obj = GAME_LOCATIONS_MAP.get(loc_id)
             if location_obj:
                 all_taverns.append(location_obj)
     starting_loc_obj = None
@@ -330,18 +350,23 @@ def initialize_starting_location(player: Player):
             player.known_location_ids.add(current_for_discovery.id)
             if not any(obj.id == current_for_discovery.id for obj in player.known_locations_objects):
                 player.known_locations_objects.append(current_for_discovery)
-            discovered_for_startup.append(current_for_discovery.name)
+            discovered_for_startup.append(current_for_discovery.name if current_for_discovery.name else "A mysterious place")
         if current_for_discovery.parent_id:
-            current_for_discovery = GAME_LOCATIONS_MAP.get(current_for_discovery.parent_id)
+            parent_location = GAME_LOCATIONS_MAP.get(current_for_discovery.parent_id)
+            if parent_location:
+                current_for_discovery = parent_location
+            else:
+                break
         else:
             break
     hold_obj, city_obj, _ = _find_hierarchy(starting_loc_obj)
     hold_name_display = hold_obj.name if hold_obj else "an unknown hold"
     city_name_display = city_obj.name if city_obj else "an unknown city"
-    if starting_loc_obj.name == city_name_display:
-        message = f"You awaken in {starting_loc_obj.name}, a seemingly cozy establishment within the lands of {hold_name_display}..."
+    starting_location_name = starting_loc_obj.name if starting_loc_obj.name else "A mysterious place"
+    if city_obj and starting_loc_obj.name == city_name_display:
+        message = f"You awaken in {starting_location_name}, a seemingly cozy establishment within the lands of {hold_name_display}..."
     else:
-        message = f"You awaken in {starting_loc_obj.name}, a seemingly cozy establishment in {city_name_display}, within the lands of {hold_name_display}."
+        message = f"You awaken in {starting_location_name}, a seemingly cozy establishment in {city_name_display}, within the lands of {hold_name_display}."
     wrapped_message = UI.wrap_text(message, width=120)
     padding = " " * ((120 - len(wrapped_message)) // 2)
     UI.slow_print(padding + wrapped_message)
@@ -371,12 +396,15 @@ def start_game():
 
     try:
         try:
-            GAME_LOCATIONS_MAP = initialize_skyrim_map()
+            #GAME_LOCATIONS_MAP = initialize_skyrim_map()
+            GAME_LOCATIONS_MAP = location_manager.locations
             UI.print_system_message("initialize_skyrim_map() completed successfully.")
         except Exception as e:
             UI.print_failure(f"Failed to initialize Skyrim map: {e}. Exiting.")
             traceback.print_exc()
             return
+        except:
+            pass
 
         player = initialize_player()
         if not player:
@@ -430,9 +458,9 @@ def start_game():
                     UI.slow_print("Your heavy load weighs you down.", speed=0.005)
                     
                 UI.print_line('=')
-                UI.slow_print(current_location_global_obj.description)
+                UI.slow_print(current_location_global_obj.description if current_location_global_obj else "A mysterious place.")
                 UI.print_line('=')
-                UI.print_info(f"Location: {current_location_global_obj.name} | {get_current_game_time_string(game_time)}\nHP: {player.stats.current_health}/{player.stats.max_health} | MP: {player.stats.current_magicka}/{player.stats.max_magicka} | FP: {player.stats.current_fatigue}/{player.stats.max_fatigue}")
+                UI.print_info(f"Location: {current_location_global_obj.name if current_location_global_obj else 'None'} | {get_current_game_time_string(game_time)}\nHP: {player.stats.current_health}/{player.stats.max_health} | MP: {player.stats.current_magicka}/{player.stats.max_magicka} | FP: {player.stats.current_fatigue}/{player.stats.max_fatigue}")
                     
                 menu_options = [
                     "Explore Known World", "Parley with Souls", "Behold Thy Spirit",
@@ -456,17 +484,17 @@ def start_game():
                     if new_loc_obj and new_loc_obj != current_location_global_obj:
                         current_location_global_obj = new_loc_obj
                         player.update_current_location_for_quest(current_location_global_obj)
-                        current_location_raw_data = get_location_raw_data(current_location_global_obj.id)
-                        location_tags = RAW_LOCATION_DATA_MAP.get(current_location_global_obj.id, {}).get("tags", [])
-                        trigger_random_event(location_tags, player, UI, current_location_raw_data)
+                        #current_location_raw_data = get_location_raw_data(current_location_global_obj.id)
+                        location_tags = current_location_global_obj.tags
+                        trigger_random_event(location_tags, player, UI, current_location_global_obj)
                 elif isinstance(action_result, tuple) and len(action_result) == 2 and isinstance(action_result[0], Location):
                      new_loc_obj_from_tuple = action_result[0]
                      if new_loc_obj_from_tuple and new_loc_obj_from_tuple != current_location_global_obj:
                          current_location_global_obj = new_loc_obj_from_tuple
                          player.update_current_location_for_quest(current_location_global_obj)
-                         current_location_raw_data = get_location_raw_data(current_location_global_obj.id)
-                         location_tags = RAW_LOCATION_DATA_MAP.get(current_location_global_obj.id, {}).get("tags", [])
-                         trigger_random_event(location_tags, player, UI, current_location_raw_data)
+                         #current_location_raw_data = get_location_raw_data(current_location_global_obj.id)
+                         location_tags = current_location_global_obj.tags
+                         trigger_random_event(location_tags, player, UI, current_location_global_obj)
 
             except Exception as e:
                 UI.print_failure(f"UNEXPECTED ERROR IN MAIN LOOP: {e}")
@@ -480,7 +508,8 @@ def start_game():
         print(f"--- A CRITICAL ERROR OCCURRED IN START_GAME ---")
         traceback.print_exc()
         print(f"ERROR DETAILS: {e}")
-        print(f"--- END OF CRITICAL ERROR ---")
+    except:
+        pass
     finally:
         print("--- SCRIPT EXECUTION FINISHING. PAUSING... ---")
         input("Script has finished or errored. Press Enter to exit.")
@@ -490,79 +519,3 @@ if __name__ == "__main__":
     start_game()
     print("--- START_GAME() COMPLETED ---")
     logging.debug("--- START_GAME() COMPLETED ---")
-
-import random
-import logging
-from datetime import datetime, timezone, timedelta
-import time
-import traceback
-
-# Configure logging
-logging.basicConfig(level=logging.DEBUG, filename='debug.log', filemode='w', format='%(asctime)s - %(levelname)s - %(message)s')
-
-try:
-    from locations import LOCATIONS, Location, initialize_skyrim_map, RAW_LOCATION_DATA_MAP
-    from player import Player
-    from stats import Stats, RACES, CLASSES
-    from npc_entities import NPC
-    from npc_roles import HOSTILE_ROLES
-    from combat import Combat
-    from ui import UI
-    from items import generate_random_item, Item, generate_item_from_key
-    from events import trigger_random_event, explore_location
-    from quests import QuestLog, generate_location_appropriate_quest, Quest
-    from character_creation import initialize_player
-    from npc_generation import generate_npcs_for_location, determine_npc_culture
-    from exploration import display_world_map
-    from inventory_manager import handle_inventory_menu, handle_item_use
-    from npc_dialogue_logic import handle_npc_dialogue
-    from game_events import initialize_game_events, check_and_trigger_events
-    import tags
-    import flavor
-except ImportError as e:
-    print(f"Error importing modules: {e}")
-    traceback.print_exc()
-    input("Press Enter to exit...")
-    exit(1)
-
-# Globals
-npc_registry = {}
-GAME_LOCATIONS_MAP = {}
-action_time_map = {
-    "travel": 120, "search": 45, "rest": 480, "craft": 360, "combat": 30,
-    "dialogue": 5, "wait / pass time": 60, "look around the area": 15
-}
-
-def list_npcs_at_location(location_obj, player, npc_registry_param):
-    try:
-        if not location_obj:
-            UI.slow_print("You are nowhere in particular.")
-            return
-    except Exception as e:
-        UI.print_failure(f"Error in list_npcs_at_location: {e}")
-
-        npcs_here = npc_registry_param.get(location_obj.id, [])
-        active_npcs = [npc for npc in npcs_here if npc.stats.is_alive()]
-
-        if not active_npcs:
-            UI.slow_print("No souls linger here, save the whispers of the wind.")
-            return
-
-        UI.print_heading(f"Souls at {location_obj.name}")
-        for i, npc in enumerate(active_npcs, 1):
-            attitude = npc.tags.get("npc", {}).get("attitude", "neutral")
-            role_display = npc.role.replace('_', ' ').title()
-            UI.print_info(f"[{i}] {npc.full_name} — {role_display} ({npc.race.capitalize()}) ({attitude.capitalize()})")
-        
-        UI.print_line()
-        sel = UI.print_prompt("With whom do you wish to parley? (0 to pass)").strip()
-
-        if sel.isdigit():
-            choice_index = int(sel)
-            if 1 <= choice_index <= len(active_npcs):
-                selected_npc = active_npcs[choice_index - 1]
-                is_hostile = "hostile" in selected_npc.tags.get("npc", {}).get("attitude", "")
-
-                if is_hostile and player.combat is None:
-                    UI.slow_print(f"{selected_npc.name} snarls and lunges with clear hostile intent!")
-                    combat_instance = Combat(player, [selected_npc], location_obj)
