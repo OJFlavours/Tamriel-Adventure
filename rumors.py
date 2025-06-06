@@ -1,3 +1,4 @@
+from locations import Location
 import random
 from typing import List, Dict, Any
 from locations import LocationManager

@@ -123,6 +123,7 @@ def _find_loc_and_parents_recursive(target_id: str, current_level_list: List, pa
     Returns a list: [target_loc_dict, parent1_dict (immediate parent), ..., root_level_dict]
     parent_chain_from_root is the chain from the ultimate root down to the parent of current_level_list.
     """
+    location_manager = LocationManager()
     for loc_dict in current_level_list:
         if hasattr(loc_dict, 'id') and loc_dict.id == target_id:
             # Found the target. The chain is [target] + reversed parents from this path

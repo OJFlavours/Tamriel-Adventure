@@ -44,6 +44,7 @@ try:
     from combat_interactions import combat_demo, list_npcs_at_location  # CORRECT: Imports from combat_interactions
     from npc_dialogue_logic import handle_npc_dialogue
     from game_events import initialize_game_events, check_and_trigger_events
+    from events import explore_location
     import tags
     import flavor
     from rumors import generate_rumor

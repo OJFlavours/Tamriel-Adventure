@@ -1,255 +1,140 @@
 import json
-import os
-from typing import Dict, Optional, List
+from typing import Dict, List, Optional
+import os # Import the 'os' module to handle file paths
+
+# --- Data Loading (Corrected) ---
+def load_json_data(filepath: str) -> dict:
+    """Loads data from a JSON file, handling paths correctly."""
+    try:
+        # Get the directory where this script (locations.py) is located.
+        script_dir = os.path.dirname(os.path.realpath(__file__))
+        # Construct the full, absolute path to the data file.
+        full_path = os.path.join(script_dir, filepath)
+        with open(full_path, 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        print(f"FATAL ERROR: Data file not found at {full_path}. Ensure 'game_data' directory is in the same folder as your scripts.")
+        return {}
+    except json.JSONDecodeError:
+        print(f"FATAL ERROR: Could not decode JSON from {full_path}. Check for syntax errors.")
+        return {}
+
+# Load all location data using the corrected loader
+LOCATION_DESCRIPTIONS = load_json_data('game_data/locations/location_descriptions.json')
+LOCATION_TAGS = load_json_data('game_data/locations/location_tags.json')
+LOCATION_POPULATION_DATA = load_json_data('game_data/locations/location_population.json')
+LOCATION_TRAVEL_CONNECTIONS = load_json_data('game_data/locations/location_travel.json')
+LOCATION_MISC_ATTRIBUTES = load_json_data('game_data/locations/location_misc_attributes.json')
+LOCATION_STRUCTURES = load_json_data('game_data/locations/map_hierarchy.json')
+
+
+# --- Global Registries ---
+ALL_LOCATIONS_INSTANCES: Dict[int, 'Location'] = {}
+RAW_LOCATION_DATA_MAP: Dict[int, dict] = {} # This will be rebuilt for compatibility
+
 
 class Location:
-    def __init__(self, id: int, name: str, description: str, travel_desc: str, tags: List[str], demographics: Dict[str, int], density: str, is_dark: bool, travel: dict, sub_locations: List[int], parent_id: Optional[int] = None, adjacent_locations: Optional[List[int]] = None):
+    def __init__(self, id: int, name: str, parent_id: Optional[int] = None):
         self.id = id
         self.name = name
-        self.description = description
-        self.travel_desc = travel_desc
-        self.tags = tags
-        self.demographics = demographics
-        self.density = density
-        self.is_dark = is_dark
-        self.travel = travel
-        self.sub_locations = sub_locations
         self.parent_id = parent_id
-        self.adjacent_locations = adjacent_locations if adjacent_locations is not None else []
-        self.exits: Dict[str, Location] = {}
+        
+        # Initialize attributes to default values
+        self.description: str = "A mysterious place."
+        self.travel_desc: str = "A mysterious place."
+        self.tags: List[str] = []
+        self.demographics: Dict[str, int] = {}
+        self.density: str = "sparse"
+        self.is_dark: bool = False
+        self.exits: Dict[str, 'Location'] = {}
+        self.travel_links: dict = {}
+        self.sub_location_ids: List[int] = []
 
-    def add_exit(self, direction: str, location: 'Location'):
-        self.exits[direction] = location
+    def populate_attributes(self):
+        """Populates the location's attributes from the centrally loaded data."""
+        desc_data = LOCATION_DESCRIPTIONS.get(str(self.id), {})
+        self.description = desc_data.get("desc", self.description)
+        self.travel_desc = desc_data.get("travel_desc", self.travel_desc)
 
-    def __str__(self):
+        self.tags = LOCATION_TAGS.get(str(self.id), [])
+
+        pop_data = LOCATION_POPULATION_DATA.get(str(self.id), {})
+        self.demographics = pop_data.get("demographics", {})
+        self.density = pop_data.get("density", "sparse")
+        
+        self.travel_links = LOCATION_TRAVEL_CONNECTIONS.get(str(self.id), {})
+
+        misc_data = LOCATION_MISC_ATTRIBUTES.get(str(self.id), {})
+        self.is_dark = misc_data.get("is_dark", False)
+
+    def add_exit(self, direction: str, location_obj: 'Location'):
+        self.exits[direction] = location_obj
+        
+    def __str__(self) -> str:
         return self.name
 
-class LocationManager:
-    def __init__(self, data_dir: str = 'game_data/locations/'):
-        self.data_dir = data_dir
-        self.locations: Dict[int, Location] = {}
-        self.load_locations()
-        self.connect_locations()
+def _create_location_objects_recursive(location_data_list: List[dict], parent_obj: Optional[Location] = None):
+    """Recursively creates Location objects, populates them, and links them."""
+    for loc_data in location_data_list:
+        loc_id = loc_data['id']
+        
+        loc_obj = Location(id=loc_id, name=loc_data['name'], parent_id=parent_obj.id if parent_obj else None)
+        loc_obj.populate_attributes()
+        
+        ALL_LOCATIONS_INSTANCES[loc_id] = loc_obj
 
-    def load_locations(self):
-        """Loads location data from JSON files in the specified directory."""
-        for filename in os.listdir(self.data_dir):
-            if filename.endswith('.json'):
-                filepath = os.path.join(self.data_dir, filename)
-                self.load_location_data(filename, filepath)
+        if parent_obj:
+            parent_obj.sub_location_ids.append(loc_id)
+            misc_attrs = LOCATION_MISC_ATTRIBUTES.get(str(loc_id), {})
+            exit_label = misc_attrs.get("exit_label_from_parent", f"Enter {loc_obj.name}")
+            parent_obj.add_exit(exit_label, loc_obj)
+            
+            exit_label_to_parent = misc_attrs.get("exit_label_to_parent", f"Exit to {parent_obj.name}")
+            loc_obj.add_exit(exit_label_to_parent, parent_obj)
 
-    def load_location_data(self, filename: str, filepath: str):
-        """Loads location data from a single JSON file."""
-        try:
-            with open(filepath, 'r') as f:
-                data = json.load(f)
-                if isinstance(data, dict):
-                    for loc_id_str, location_data in data.items():
-                        try:
-                            loc_id = int(loc_id_str)
-                            if filename == "location_tags.json":
-                                self.load_location_tags(loc_id, location_data, filepath)
-                            elif filename == "map_hierarchy.json":
-                                self.load_location_hierarchy(loc_id, location_data, filepath)
-                            elif filename == "location_travel.json":
-                                self.load_location_travel(loc_id, location_data, filepath)
-                            elif filename == "location_names.json":
-                                self.load_location_names(loc_id, location_data, filepath)
-                            else:
-                                self.load_location(loc_id, location_data, filepath)
-                        except ValueError:
-                            print(f"Warning: Invalid location ID: {loc_id_str} in {filepath}")
-                elif isinstance(data, list):
-                    if filename == "map_hierarchy.json":
-                        for location_data in data:
-                            if isinstance(location_data, dict):
-                                loc_id_str = str(location_data.get('id'))
-                                try:
-                                    loc_id = int(loc_id_str)
-                                    self.load_location_hierarchy(loc_id, location_data, filepath)
-                                except ValueError:
-                                    print(f"Warning: Invalid location ID: {loc_id_str} in {filepath}")
-                            else:
-                                print(f"Warning: Unexpected data format in {filepath}. Expected dict, got {type(location_data)}.")
-                    else:
-                        print(f"Warning: Unexpected data format in {filepath}. Expected dict, got list.")
-                else:
-                    print(f"Warning: Unexpected data format in {filepath}. Expected dict or list.")
-        except FileNotFoundError:
-            print(f"Error: File not found: {filepath}")
-        except json.JSONDecodeError:
-            print(f"Error: Could not decode JSON from {filepath}")
-        except Exception as e:
-            print(f"Error loading {filepath}: {e}")
+        if "sub_locations" in loc_data:
+            _create_location_objects_recursive(loc_data["sub_locations"], loc_obj)
 
-    def load_location(self, loc_id: int, location_data: any, filepath: str):
-        """Loads a single location from a dictionary."""
-        try:
-            name = None
-            description = None
-            travel_desc = None
-            tags = None
-            demographics = None
-            density = None
-            is_dark = None
-            travel = None
-            sub_locations = None
-            parent_id = None
-            adjacent_locations = None
+def _connect_travel_routes():
+    """Connects locations based on the travel connections data."""
+    for loc_id_str, travel_data in LOCATION_TRAVEL_CONNECTIONS.items():
+        loc_id = int(loc_id_str)
+        origin_loc = ALL_LOCATIONS_INSTANCES.get(loc_id)
+        if not origin_loc: continue
 
-            if isinstance(location_data, dict):
-                name = location_data.get('name')
-                description = location_data.get('desc', "A mysterious place.")
-                travel_desc = location_data.get('travel_desc', "A mysterious place.")
-                tags = location_data.get('tags', [])
-                demographics = location_data.get('demographics', {})
-                density = location_data.get('density', 'sparse')
-                is_dark = location_data.get('is_dark', False)
-                travel = location_data.get('travel', {})
-                sub_locations = location_data.get('sub_locations', [])
-                parent_id = location_data.get('parent_id')
-                adjacent_locations = location_data.get('adjacent_locations')
-            else:
-                print(f"Warning: Unexpected data format for location ID: {loc_id} in {filepath}. Expected dict, got {type(location_data)}.")
-                # If the location data is not a dict, it's likely a string or a list
-                # We can't load a location from this, so we just skip it
-                return
+        for link in travel_data.get("links", []):
+            dest_name = link.get("name")
+            conn_type = link.get("connection_type", "Path")
+            
+            dest_loc = next((loc for loc in ALL_LOCATIONS_INSTANCES.values() if loc.name == dest_name), None)
 
-            location = Location(loc_id, name, description, travel_desc, tags, demographics, density, is_dark, travel, sub_locations, parent_id, adjacent_locations)
-            self.locations[loc_id] = location
-        except ValueError as ve:
-            print(f"Error loading location: {ve}")
-        except Exception as e:
-            print(f"Error loading location data: {e} - Data: {location_data}")
+            if dest_loc:
+                origin_loc.add_exit(f"{conn_type} to {dest_loc.name}", dest_loc)
+                dest_loc.add_exit(f"{conn_type} to {origin_loc.name}", origin_loc)
 
-    def load_location_tags(self, loc_id: int, location_data: any, filepath: str):
-        """Loads location tags from a dictionary."""
-        try:
-            if loc_id not in self.locations:
-                print(f"Warning: Location ID {loc_id} not found while loading tags from {filepath}")
-                return
+def initialize_skyrim_map() -> Dict[int, Location]:
+    """Initializes all locations, populates their data, and connects them."""
+    if ALL_LOCATIONS_INSTANCES:
+        return ALL_LOCATIONS_INSTANCES
 
-            location = self.locations[loc_id]
+    _create_location_objects_recursive(LOCATION_STRUCTURES)
+    _connect_travel_routes()
 
-            if isinstance(location_data, list):
-                location.tags.extend(location_data)
-            else:
-                print(f"Warning: Unexpected data format for location ID: {loc_id} in {filepath}. Expected list, got {type(location_data)}.")
-
-        except Exception as e:
-            print(f"Error loading location tags: {e} - Data: {location_data}")
-
-    def load_location_hierarchy(self, loc_id: int, location_data: any, filepath: str):
-        """Loads location hierarchy data from a dictionary."""
-        try:
-            if loc_id not in self.locations:
-                print(f"Warning: Location ID {loc_id} not found while loading hierarchy from {filepath}")
-                return
-
-            location = self.locations[loc_id]
-
-            if isinstance(location_data, dict):
-                parent_id = location_data.get('parent_id')
-                location.parent_id = parent_id
-            else:
-                print(f"Warning: Unexpected data format for location ID: {loc_id} in {filepath}. Expected dict, got {type(location_data)}.")
-
-        except Exception as e:
-            print(f"Error loading location hierarchy: {e} - Data: {location_data}")
-
-    def load_location_travel(self, loc_id: int, location_data: any, filepath: str):
-        """Loads location travel data from a dictionary."""
-        try:
-            if loc_id not in self.locations:
-                print(f"Warning: Location ID {loc_id} not found while loading travel data from {filepath}")
-            return
-
-            location = self.locations[loc_id]
-
-            if isinstance(location_data, dict):
-                adjacent_locations = location_data.get('adjacent_locations')
-                if adjacent_locations is not None:
-                    location.adjacent_locations = adjacent_locations
-                else:
-                    location.adjacent_locations = []
-            else:
-                print(f"Warning: Unexpected data format for location ID: {loc_id} in {filepath}. Expected dict, got {type(location_data)}.")
-
-        except Exception as e:
-            print(f"Error loading location travel data: {e} - Data: {location_data}")
-
-    def load_location_names(self, loc_id: int, location_data: any, filepath: str):
-        """Loads location names from a dictionary."""
-        try:
-            if loc_id not in self.locations:
-                print(f"Warning: Location ID {loc_id} not found while loading names from {filepath}")
-                return
-
-            location = self.locations[loc_id]
-
-            if isinstance(location_data, str):
-                location.name = location_data
-            else:
-                print(f"Warning: Unexpected data format for location ID: {loc_id} in {filepath}. Expected str, got {type(location_data)}.")
-
-        except Exception as e:
-            print(f"Error loading location names: {e} - Data: {location_data}")
-
-    def connect_locations(self):
-        """Connects locations based on the 'travel' data."""
-        for location in self.locations.values():
-            if location.adjacent_locations:
-                for adjacent_location_id in location.adjacent_locations:
-                    target_location = self.get_location(adjacent_location_id)
-                    if target_location:
-                        location.add_exit("to", target_location)
-                    else:
-                        print(f"Warning: Could not connect {location.name} to {adjacent_location_id}. Location not found.")
-            else:
-                print(f"Warning: Location {location.name} has no adjacent locations.")
-
-    def get_location(self, location_id: int) -> Optional[Location]:
-        """Returns a location object by its ID."""
-        return self.locations.get(location_id)
-
-    def get_location_by_name(self, location_name: str) -> Optional[Location]:
-        """Returns a location object by its name."""
-        for location in self.locations.values():
-            if location.name == location_name:
-                return location
-        return None
-
-location_manager = LocationManager()
-# Example usage (for testing):
-if __name__ == '__main__':
-    location_manager = LocationManager()
-
-    # Get a location by ID
-    whiterun = location_manager.get_location(1)
-    if whiterun:
-        print(f"Location ID 1: {whiterun.name}, {whiterun.description}")
-
-        # Check its exits
-        if whiterun.exits:
-            print(f"Exits from Whiterun:")
-            for direction, exit_location in whiterun.exits.items():
-                print(f"- {direction}: {exit_location.name}")
-        else:
-            print("No exits found for Whiterun.")
-    else:
-        print("Location ID 1 not found.")
-
-    # Get a location by name
-    riften = location_manager.get_location_by_name("Riften")
-    if riften:
-        print(f"Location Riften: {riften.name}, {riften.description}")
-    else:
-        print("Location Riften not found.")
-
-    # Example of iterating through all locations
-    print("\nAll Locations:")
-    for loc_id, loc_obj in location_manager.locations.items():
-        print(f"  - {loc_obj.name} (ID: {loc_id})")
+    for loc_id, loc_obj in ALL_LOCATIONS_INSTANCES.items():
+        sub_locs_data = [RAW_LOCATION_DATA_MAP.get(sub_id, {}) for sub_id in loc_obj.sub_location_ids]
+        RAW_LOCATION_DATA_MAP[loc_id] = {
+            "id": loc_id,
+            "name": loc_obj.name,
+            "desc": loc_obj.description,
+            "travel_desc": loc_obj.travel_desc,
+            "tags": loc_obj.tags,
+            "demographics": loc_obj.demographics,
+            "density": loc_obj.density,
+            "is_dark": loc_obj.is_dark,
+            "travel": loc_obj.travel_links,
+            "sub_locations": sub_locs_data
+        }
+    return ALL_LOCATIONS_INSTANCES
 
 # To maintain compatibility with scripts that might import from the top-level
-#LOCATIONS = location_manager.locations # Removed this line
+LOCATIONS = LOCATION_STRUCTURES
