@@ -221,11 +221,18 @@ class UI:
     @staticmethod
     def display_location_info(location):
         """Displays information about the current location."""
-        UI.print_subheading(f"Current Location: {location['name']}")
-        UI.print_info(UI.wrap_text(location['description']))
-        if 'exits' in location and location['exits']:
-            exit_names = ", ".join(location['exits'].keys())
-            UI.print_info(f"Available Exits: {exit_names}")
+        if isinstance(location, dict):
+            UI.print_subheading(f"Current Location: {location['name']}")
+            UI.print_info(UI.wrap_text(location['description']))
+            if 'exits' in location and location['exits']:
+                exit_names = ", ".join(location['exits'].keys())
+                UI.print_info(f"Available Exits: {exit_names}")
+        else:
+            UI.print_subheading(f"Current Location: {location.name}")
+            UI.print_info(UI.wrap_text(location.description))
+            if hasattr(location, 'exits') and location.exits:
+                exit_names = ", ".join(location.exits.keys())
+                UI.print_info(f"Available Exits: {exit_names}")
         print()
 
     @staticmethod
